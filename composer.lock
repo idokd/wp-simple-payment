@@ -1,0 +1,46 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "5e9afa3cbfdf9b19e6b1df2cea5dcc61",
+    "packages": [
+        {
+            "name": "leewillis77/WpListTableExportable",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/leewillis77/WpListTableExportable.git",
+                "reference": "f4d2d3ddab3dcedefbbd5026fce6dc5d0a3ea394"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/leewillis77/WpListTableExportable/zipball/f4d2d3ddab3dcedefbbd5026fce6dc5d0a3ea394",
+                "reference": "f4d2d3ddab3dcedefbbd5026fce6dc5d0a3ea394",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "leewillis77\\WpListTableExportable\\": "src/"
+                }
+            },
+            "support": {
+                "source": "https://github.com/leewillis77/WpListTableExportable/tree/v0.3.1",
+                "issues": "https://github.com/leewillis77/WpListTableExportable/issues"
+            },
+            "time": "2017-10-11T09:23:19+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "leewillis77/wplisttableexportable": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

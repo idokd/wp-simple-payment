@@ -1,0 +1,225 @@
+@import url(https://fonts.googleapis.com/earlyaccess/opensanshebrew.css);
+
+body {
+  font-family: 'Open Sans Hebrew';
+  margin: 0;
+}
+
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  body {
+    font-family: sans-serif;
+  }
+}
+
+body, #Content {
+  overflow: hidden;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-pay {
+  direction: rtl;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-pay * {
+  box-sizing: border-box;
+}
+
+.pay-item {
+}
+
+/* ------------- Elements ------------- */
+.pay-desc {
+  line-height: 1.65;
+  font-size: 0.88em;
+  margin-bottom: 2em;
+}
+
+.pay-item input:not([class*="btn"]),
+.pay-item select {
+  border: 1px solid #cdcdcd;
+  font-size: 14px;
+  border-radius: 0px;
+  line-height: 1;
+  background: white;
+  padding: 0.6em 1em;
+  max-width: 100%;
+}
+
+.pay-item select {
+  cursor: pointer;
+}
+
+.pay-item input:not([class*="btn"]) {
+  width: 100%;
+}
+
+.pay-item input.btn {
+  white-space: nowrap;
+  padding: 1rem 3.7rem;
+  border-radius: 0px;
+  text-align: center;
+  background-color: #d4b037;
+  color: #2f3034;
+  text-decoration: blink;
+  box-sizing: border-box;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: bold;
+  position: relative;
+  vertical-align: middle;
+  border: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.pay-item>label {
+  font-size: 0.942em;
+  line-height: 1;
+  padding: 0;
+  margin-bottom: 1em;
+  display: block;
+  font-weight: bold;
+}
+
+/* ------------- .pay-group ------------- */
+.pay-group {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-box-align: start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+}
+
+.pay-sub-item {
+  margin-bottom: 1em;
+}
+
+.pay-sub-item>label {
+  font-weight: normal;
+  display: block;
+  font-size: 1em;
+  margin-bottom: 0.3em;
+  padding: 0;
+  width: 100%;
+}
+
+/* ------------- .pay-group.pay ------------- */
+.pay-group.pay {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.pay-group.pay .pay-sub-item {
+  width: 48%;
+}
+
+.pay-group.pay .pay-sub-item.date-item {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+.pay-item .pay-sub-item.date-item select {
+  width: 44%;
+}
+
+/* ------------- .pay-item.logo-images ------------- */
+.pay-item.logo-images, .pay-item.logo-images .images {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+.pay-item.logo-images img {
+  width: 93px;
+  margin-left: 1em;
+}
+
+.pay-item .logo-images>* {
+  display: inline-block;
+}
+
+@media (max-width: 515px) {
+
+  .pay-item input:not([class*="btn"]),
+  .pay-item select {
+    font-size: 16px;
+  }
+
+  .pay-item input.btn {
+    width: 100%;
+    -webkit-box-ordinal-group: 0;
+    -webkit-order: -1;
+    -ms-flex-order: -1;
+    order: -1;
+    margin-bottom: 0.5em;
+  }
+
+  /* ------------- .pay-group.pay ------------- */
+  .pay-group.pay .pay-sub-item {
+    width: 100%;
+  }
+
+  .pay-group.pay .pay-sub-item.card-num-item {
+    width: 66%;
+  }
+
+  .pay-group.pay .pay-sub-item.cvv-item {
+    width: 30%;
+  }
+
+  /* ------------- .pay-item.logo-images ------------- */
+  .pay-item.logo-images {
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+  }
+
+  .pay-item.logo-images+.pay-item {
+    text-align: center;
+  }
+}

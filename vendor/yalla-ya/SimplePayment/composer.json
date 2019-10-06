@@ -1,0 +1,16 @@
+{
+    "name": "yalla-ya/simple-payment",
+    "description": "Simple Payment - Payment Processing via Different Gateways",
+    "authors": [
+        {
+            "name": "Ido Kobelkowsky",
+            "email": "ido@yalla-ya.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "SimplePayment\\": "."
+        }
+    }
+}

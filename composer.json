@@ -1,0 +1,25 @@
+{
+    "name": "yalla-ya/simple-payment",
+    "description": "Simple Payment plugin for WordPress",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Ido Kobelkowsky",
+            "email": "ido@yalla-ya.com"
+        }
+    ],
+   "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/leewillis77/WpListTableExportable"
+        }
+    ],
+    "require": {
+        "leewillis77/WpListTableExportable": "dev-master"
+    },
+    "autoload": {
+       "classmap":[
+           "vendor/yalla-ya/SimplePayment"
+       ]
+    }
+}
