@@ -4,9 +4,11 @@ Contributors: idokd
 Tags: credit card, donation, membership, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce
 
 Requires at least: 4.0
+Requires PHP: 7.2
 Tested up to: 5.2
 Stable tag: 1.0.0
 License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Simple Payment enables a simple, fast and easy integration to process payments. Convert any Post/Page to a product - easy and powerful tool
 
@@ -39,13 +41,12 @@ PS: You'll need an [Simple Payment API key for advanced gateways](https://simple
 
 3. add shortcode on the Payment Page
 
-4. Activate your Payment Processing on the Admin Menu: Settings -> Simple Payment 
+4. Activate your Payment Processing on the Admin Menu: Settings -> Simple Payment
 
 4. That's it, track your payments on the Payments Admin Menu log.
 
-== Changelog ==
+== Advanced Configuration: Theme Custom Payment Processing ==
 
-= 1.0.0 =
-*Release Date - 1 October 2019*
+To write your own payment processing integration, to be pluggin, read the information at this link: https://github.com/idokd/simple-payment
 
-* First release
+you will require to write a simple php class that Pre Process, Process and Post Process the transaction with your your payment gateway.

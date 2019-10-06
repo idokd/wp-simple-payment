@@ -1,10 +1,11 @@
-# Simple Payment Wordpress Plugins
+# Simple Payment Wordpress Plugin
 
 
 # Theme Payment Gateway Example
 ```
 <?php
-namespace SimplePayment\Engines;
+
+use SimplePayment\Engines\Engine;
 
 if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
@@ -38,3 +39,4 @@ class Theme extends Engine {
     }
 
 }
+```
