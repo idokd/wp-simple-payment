@@ -21,10 +21,10 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   protected function get_views() {
       $status_links = [
-          "all"       => __("<a href=''>All</a>", 'simple-payment'),
-          "success" => __("<a href='&status=success'>Success</a>", 'simple-payment'),
-          "failed"   => __("<a href='&status=failed'>Failed</a>", 'simple-payment'),
-          "cancelled"   => __("<a href='&status=cancelled'>Cancelled</a>", 'simple-payment')
+          "all"       => "<a href=''>".__("All", 'simple-payment')."</a>",
+          "success" => "<a href='&status=success'>".__("Success", 'simple-payment')."</a>",
+          "failed"   => "<a href='&status=failed'>".__("Failed", 'simple-payment')."</a>",
+          "cancelled"   =>"<a href='&status=cancelled'>". __("Cancelled", 'simple-payment')."</a>"
       ];
       return($status_links);
   }

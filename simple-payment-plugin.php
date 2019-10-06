@@ -155,12 +155,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       'sp',
       [$this, 'render_admin_page']
     );
+
     add_menu_page(
       __('Payments', 'simple-payment'),
       __('Payments', 'simple-payment'),
       'manage_options',
       'simple-payments',
-      [$this, 'transactions']
+      [$this, 'transactions'],
+      plugin_dir_url( __FILE__ ).'assets/simple-payment-icon.png'
     );
   }
 
