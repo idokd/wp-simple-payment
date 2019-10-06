@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Simple Payment
- * Plugin URI: https://www.yalla-ya.com
+ * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
  * Version: 1.0.0
  * Author: Ido Kobelkowsky / yalla ya!
- * Author URI: https://www.yalla-ya.com
+ * Author URI: https://github.com/idokd
  * License: GPL
  */
 
