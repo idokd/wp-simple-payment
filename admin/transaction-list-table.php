@@ -5,6 +5,7 @@ use leewillis77\WpListTableExportable;
 class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   public static $table_name = 'sp_transactions';
+  public static $views_rendered = false;
 
   public function __construct() {
     global $wpdb;
@@ -21,12 +22,20 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   protected function get_views() {
       $status_links = [
-          "all"       => "<a href=''>".__("All", 'simple-payment')."</a>",
-          "success" => "<a href='&status=success'>".__("Success", 'simple-payment')."</a>",
-          "failed"   => "<a href='&status=failed'>".__("Failed", 'simple-payment')."</a>",
-          "cancelled"   =>"<a href='&status=cancelled'>". __("Cancelled", 'simple-payment')."</a>"
+          "all"       => "<a href='?page=simple-payments'>".__("All", 'simple-payment')."</a>",
+          "success" => "<a href='?page=simple-payments&status=success'>".__("Success", 'simple-payment')."</a>",
+          "failed"   => "<a href='?page=simple-payments&status=failed'>".__("Failed", 'simple-payment')."</a>",
+          "cancelled"   =>"<a href='?page=simple-payments&status=cancelled'>". __("Cancelled", 'simple-payment')."</a>",
+          "pending"   =>"<a href='?page=simple-payments&status=pending'>". __("Pending", 'simple-payment')."</a>"
+
       ];
       return($status_links);
+  }
+
+  public function views() {
+      if (self::$views_rendered) return;
+      parent::views();
+      self::$views_rendered = true;
   }
 
   function extra_tablenav( $which ) {
@@ -38,9 +47,9 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
           <?php
           $options = $wpdb->get_results('SELECT `engine` AS `title` FROM '.self::$table_name.' GROUP BY `engine` ORDER BY `engine` ASC ', ARRAY_A);
           if ($options) {
-              echo '<select name="engine" class="sp-filter-engine"><option value="">All Engines</option>';
+              echo '<select name="engine" class="sp-filter-engine"><option>'.__('All Engines', 'simple-payment').'</option>';
               foreach ($options as $option) {
-                  if ($option['title']) echo '<option value="'.$move_on_url . $cat['id'].'"'.( $_GET['engine'] == $option['id'] ? ' selected' : '').'>'.$option['title'].'</option>';
+                  if ($option['title']) echo '<option value="' . $cat['id'].'"'.( isset($_REQUEST['engine']) && $_REQUEST['engine'] == $option['id'] ? ' selected' : '').'>'.$option['title'].'</option>';
               }
               echo "</select>";
           }
@@ -50,7 +59,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       }
   }
 
-  public static function get_transactions( $per_page = 5, $page_number = 1, $instance = null ) {
+  public static function get_transactions( $per_page = 5, $page_number = 1, $instance = null, $count = false) {
     global $wpdb;
     if ($instance) {
       $orderby = $instance->get_pagination_arg('orderby');
@@ -58,7 +67,20 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     } else {
       $order = 'ASC';
     }
-    $sql = "SELECT * FROM ".self::$table_name;
+    if ($count) $sql = "SELECT COUNT(*) FROM ".self::$table_name;
+    else $sql = "SELECT * FROM ".self::$table_name;
+    $where = [];
+    if ( ! empty( $_REQUEST['status'] ) ) $where[] = '`status` =  "' .esc_sql($_REQUEST['status']).'"';
+
+    if ( ! empty( $_REQUEST['engine'] ) ) $where[] = '`engine` =  "' .esc_sql($_REQUEST['engine']).'"';
+    if ( ! empty( $_REQUEST['s'] ) ) {
+      $where[] = '`transaction_id` LIKE "%' .esc_sql($_REQUEST['s']).'%" OR `concept` LIKE "%' .esc_sql($_REQUEST['s']).'%"';
+    }
+
+    if (count($where) > 0) $sql .=  ' WHERE '.implode(' AND ', $where);
+    if ($count) {
+      return($wpdb->get_var($sql));
+    }
     if ( ! empty( $_REQUEST['orderby'] ) || isset($orderby) ) {
       $sql .= ' ORDER BY ' . (isset($_REQUEST['orderby']) && ! empty($_REQUEST['orderby']) ? esc_sql ($_REQUEST['orderby']) : $orderby) ;
       $sql .= isset($_REQUEST['order']) && !empty($_REQUEST['order']) ? ' '.esc_sql($_REQUEST['order']) : ' '.$order;
@@ -196,7 +218,10 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
     $per_page     = $this->get_items_per_page( 'transactions_per_page', 20 );
     $current_page = $this->get_pagenum();
-    $total_items  = self::record_count();
+
+    $this->items = self::get_transactions( $per_page, $current_page, $this );
+    $total_items = self::get_transactions( 0, 0, $this, true );
+
     $this->set_pagination_args([
       'total_items' => $total_items,
       'per_page'    => $per_page,
@@ -205,7 +230,6 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       'offset' => ( $this->get_pagenum() - 1 ) * $per_page,
     ]);
 
-    $this->items = self::get_transactions( $per_page, $current_page, $this );
   }
 
 }

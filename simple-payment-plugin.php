@@ -178,22 +178,30 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             <a id="cardcom" href="options-general.php?page=sp&tab=cardcom" class="nav-tab <?php echo $tab == 'cardcom' ? 'nav-tab-active' : ''; ?>"><?php _e('Cardcom', 'simple-payment'); ?></a>
             <a id="license" href="options-general.php?page=sp&tab=license" class="nav-tab <?php echo $tab == 'license' ? 'nav-tab-active' : ''; ?>"><?php _e('License', 'simple-payment'); ?></a>
             <a id="shortcode" href="options-general.php?page=sp&tab=shortcode" class="nav-tab <?php echo $tab == 'shortcode' ? 'nav-tab-active' : ''; ?>"><?php _e('Shortcode', 'simple-payment'); ?></a>
+            <a id="instructions" href="options-general.php?page=sp&tab=instructions" class="nav-tab <?php echo $tab == 'instructions' ? 'nav-tab-active' : ''; ?>"><?php _e('Instructions', 'simple-payment'); ?></a>
         </h2>
-      <form method="post" action="options.php">
-        <?php
-        settings_fields('sp');
-        do_settings_sections($section);
-        submit_button();
-        if ($tab ==  'shortcode') foreach ($this->test_shortcodes as $key => $shortcode) {
-          if (isset($shortcode['title'])) echo '<div>'.$shortcode['title'].'</div>';
-          if (isset($shortcode['description'])) echo '<div>'.$shortcode['description'].'</div>';
-          echo '<pre>'.$shortcode['shortcode'].'</pre>';
-          echo do_shortcode($shortcode['shortcode']);
-        }
-        ?>
-      </form>
-    </div>
-    <?php
+      <?php
+      switch ($tab) {
+        case 'instructions':
+          require(SP_PLUGIN_DIR.'/admin/instructions.php');
+          break;
+        case 'shortcode':
+          require(SP_PLUGIN_DIR.'/admin/shortcode.php');
+          foreach ($this->test_shortcodes as $key => $shortcode) {
+              if (isset($shortcode['title'])) echo '<div>'.$shortcode['title'].'</div>';
+              if (isset($shortcode['description'])) echo '<div>'.$shortcode['description'].'</div>';
+              echo '<pre>'.$shortcode['shortcode'].'</pre>';
+              echo do_shortcode($shortcode['shortcode']);
+          }
+          break;
+        default:
+          echo '<form method="post" action="options.php">';
+          settings_fields('sp');
+          do_settings_sections($section);
+          submit_button();
+          echo '</form>';
+    }
+    echo "</div>";
   }
 
   public function register_license_settings() {
@@ -621,7 +629,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       //$sql = $wpdb->prepare($sql, []);
       $data = $wpdb->get_results($sql);
 
-      require(SP_PLUGIN_DIR.'/templates/admin-transactions.php');
+      require(SP_PLUGIN_DIR.'/admin/transactions.php');
   }
 
   /**
