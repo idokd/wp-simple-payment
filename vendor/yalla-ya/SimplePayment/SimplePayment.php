@@ -12,6 +12,11 @@ class SimplePayment {
   const TRANSACTION_FAILED = 'failed';
   const TRANSACTION_CANCEL = 'canceled';
 
+  const OPERATION_SUCCESS = 'success';
+  const OPERATION_CANCEL = 'cancel';
+  const OPERATION_STATUS = 'status';
+  const OPERATION_ERROR = 'error';
+
   protected $callback = '/sp';
   protected $testing = true;
   protected $engine;
@@ -20,15 +25,18 @@ class SimplePayment {
   protected static $params = [];
 
   public function __construct() {
-    $this->license = $this->param('sp_license');
-    $this->testing = $this->param('sp_mode') != 'production';
+    // TODO: check if license dates are  valid and general validity, domain
   }
 
   public function setEngine($engine) {
-    $this->engine = $engine;
+    // TODO: check if license is valid for engine
+    $class = __NAMESPACE__ . '\\Engines\\' . $engine;
+    $this->engine = new $class(self::param());
+    $this->engine->handler = $this;
   }
 
-  public static function param($key) {
+  public static function param($key = null) {
+    if (!$key) return(self::$params);
     return(isset(self::$params[$key]) ? self::$params[$key] : null);
   }
 
@@ -53,5 +61,9 @@ class SimplePayment {
   }
 
   function callback() {}
+
+  function save($schema, $params) {
+    return(true);
+  }
 
 }

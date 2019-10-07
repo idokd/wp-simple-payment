@@ -9,8 +9,8 @@
     ],
     "require": {},
     "autoload": {
-        "psr-4": {
-            "SimplePayment\\": "."
+        "psr-0": {
+            "SimplePayment": "."
         }
     }
 }

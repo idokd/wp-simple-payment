@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define('SPGB_PLUGIN_URL', plugin_dir_url(SP_PLUGIN_FILE).'addons/gutenberg'.);
+define('SPGB_PLUGIN_URL', plugin_dir_url(SPWP_PLUGIN_FILE).'addons/gutenberg'.);
 define('SPGB_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
 

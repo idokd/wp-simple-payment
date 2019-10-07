@@ -1,5 +1,14 @@
 {
-  "name": "simple-payment",
-  "devDependencies": {
-  }
+
+  "name": "yalla-ya/simple-payment",
+  "description": "SimplePayment - Make Payment Integration Easy",
+  "keywords": ["payments", "gateway", "sdk", "paypal"],
+  "type": "library",
+  "homepage": "https://github.com/idokd/simple-payment",
+  "authors": [
+      {
+          "name": "Ido Kobelkowsky",
+          "homepage": "https://github.com/idokd"
+      }
+  ],
 }

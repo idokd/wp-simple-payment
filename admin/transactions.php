@@ -1,5 +1,5 @@
 <?php
-require(SP_PLUGIN_DIR.'/admin/transaction-list-table.php');
+require(SPWP_PLUGIN_DIR.'/admin/transaction-list-table.php');
 
 $list = new Transaction_List();
 ?>

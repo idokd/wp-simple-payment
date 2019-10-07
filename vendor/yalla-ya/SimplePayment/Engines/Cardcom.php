@@ -1,6 +1,8 @@
 <?php
 namespace SimplePayment\Engines;
 
+use SimplePayment\SimplePayment;
+
 if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
@@ -8,10 +10,8 @@ if (!defined("ABSPATH")) {
 class Cardcom extends Engine {
 
   public $name = 'Cardcom';
-  public $transaction = null;
   protected $cancelType = 2;
   // CancelType (0 - no cancel, 1 - back button, 2 - cancel url)
-  protected $callback;
 
   public $api = [
     'version' => 10,
@@ -41,12 +41,14 @@ class Cardcom extends Engine {
   const CREDIT_TYPES = [ 1 => 'Normal', 6 => 'Credit'];
   const DOC_OPERATIONS = [ 0 => 'No Invoice', 1 => 'Invoice', 2 => 'Forward (Do not show)'];
 
-  public function __construct($terminal = null, $username = null, $password = null) {
-      if ($terminal) {
-        $this->terminal = $terminal;
-        $this->username = $username;
-        $this->password = $password;
-      }
+  public function __construct($params = null) {
+    parent::__construct($params);
+    $testing = $this->param('testing') ? : ($this->param('cardcom_terminal') && $this->param('cardcom_username') && $this->param('cardcom_password'));
+    if (!$testing) {
+      $this->terminal = $this->param('cardcom_terminal');
+      $this->username = $this->param('cardcom_username');
+      $this->password = $this->param('cardcom_password');
+    }
   }
 
   public function process($params) {
@@ -62,6 +64,7 @@ class Cardcom extends Engine {
 
   public function pre_process($params) {
     $post = [];
+
     $post['APILevel'] = $this->api['version'];
     $post['TerminalNumber'] = $this->terminal;
     $post['UserName'] = $this->username;
@@ -94,13 +97,11 @@ class Cardcom extends Engine {
     $payments = $this->param('default_payments');
     if ($payments != '') $post['DefaultNumOfPayments'] = isset($params['payments']) && $params['payments'] ? $params['payments'] : $payments;
 
-    $baseurl = $this->callback;
-
-    $post['SuccessRedirectUrl'] = $baseurl.'?op=success';
-    $post['ErrorRedirectUrl'] = $baseurl.'?op=error';
-    $post['IndicatorUrl'] = $baseurl.'?op=status';
-    $post['CancelUrl'] = $baseurl.'?op=cancel';
-    if ($this->param('css') != '') $post['CSSUrl'] = $baseurl.'?op=css';
+    $post['SuccessRedirectUrl'] = $this->url(SimplePayment::OPERATION_SUCCESS);
+    $post['ErrorRedirectUrl'] = $this->url(SimplePayment::OPERATION_ERROR);
+    $post['IndicatorUrl'] = $this->url(SimplePayment::OPERATION_STATUS);
+    $post['CancelUrl'] = $this->url(SimplePayment::OPERATION_CANCEL);
+    if ($this->param('css') != '') $post['CSSUrl'] = $this->callback.(strpos($this->callback, '?') ? '&' : '?').'op=css';
 
     $post['CancelType'] = $this->cancelType;
 
@@ -203,8 +204,12 @@ class Cardcom extends Engine {
 
     $status = $this->post($this->api['payment_request'], $post);
     parse_str($status, $status);
+    $status['url'] = $this->param('method') == 'paypal' ? $status['PayPalUrl'] : $status['url'];
     $this->record($post, $status);
     if (isset($status['LowProfileCode']) && $status['LowProfileCode']) $this->transaction = $status['LowProfileCode'];
+    if (isset($status['ResponseCode']) && $status['ResponseCode'] != 0) {
+      throw new Exception($status['Description'], $status['ResponseCode']);
+    }
     return($status);
   }
 
@@ -226,14 +231,7 @@ class Cardcom extends Engine {
     return($response);
   }
 
-  public function setCallback($url) {
-    $this->callback = $url;
-  }
-
   protected function record($request, $response) {
-    global $wpdb;
-    $user_id = get_current_user_id();
-    $table_name = $wpdb->prefix . 'sp_' . $this->name;
     $fields = [
         'terminal' => ['TerminalNumber', 'terminalnumber'],
         'profile_code' => ['LowProfileCode', 'lowprofilecode'],
@@ -264,8 +262,8 @@ class Cardcom extends Engine {
       }
   }
 // InternalDealNumber	, TokenExDate, CoinId, CardOwnerID, CardValidityYear, CardValidityMonth, TokenApprovalNumber, SuspendedDealResponseCode, SuspendedDealId, SuspendedDealGroup, InvoiceResponseCode, InvoiceNumber, InvoiceType, CallIndicatorResponse, ReturnValue, NumOfPayments, CardOwnerEmail, CardOwnerName, CardOwnerPhone, AccountId, ForeignAccountNumber, SiteUniqueId
-    $result = $wpdb->insert($table_name, $params);
-    return($result ? $wpdb->insert_id : false);
+
+    return($this->save($params));
   }
 
 }

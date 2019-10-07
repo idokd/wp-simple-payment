@@ -15,11 +15,12 @@
         }
     ],
     "require": {
-        "leewillis77/WpListTableExportable": "dev-master"
+        "leewillis77/WpListTableExportable": "dev-master",
+        "paypal/rest-api-sdk-php": "^1.14"
     },
     "autoload": {
-       "classmap":[
-           "vendor/yalla-ya/SimplePayment"
-       ]
+       "psr-0": {
+           "SimplePayment": "vendor/yalla-ya"
+       }
     }
 }

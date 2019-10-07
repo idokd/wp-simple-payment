@@ -45,11 +45,12 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
           ?>
           <div class="alignleft actions bulkactions">
           <?php
+          $engine = isset($_REQUEST['engine']) && $_REQUEST['engine'] ? sanitize_text_field( $_REQUEST['engine'] ) : null;
           $options = $wpdb->get_results('SELECT `engine` AS `title` FROM '.self::$table_name.' GROUP BY `engine` ORDER BY `engine` ASC ', ARRAY_A);
           if ($options) {
               echo '<select name="engine" class="sp-filter-engine"><option>'.__('All Engines', 'simple-payment').'</option>';
               foreach ($options as $option) {
-                  if ($option['title']) echo '<option value="' . $cat['id'].'"'.( isset($_REQUEST['engine']) && $_REQUEST['engine'] == $option['id'] ? ' selected' : '').'>'.$option['title'].'</option>';
+                  if ($option['title']) echo '<option value="' . $cat['id'].'"'.( $engine == $option['id'] ? ' selected' : '').'>'.$option['title'].'</option>';
               }
               echo "</select>";
           }
@@ -70,11 +71,11 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     if ($count) $sql = "SELECT COUNT(*) FROM ".self::$table_name;
     else $sql = "SELECT * FROM ".self::$table_name;
     $where = [];
-    if ( ! empty( $_REQUEST['status'] ) ) $where[] = '`status` =  "' .esc_sql($_REQUEST['status']).'"';
+    if ( ! empty( $_REQUEST['status'] ) ) $where[] = "`status` =  '" .esc_sql($_REQUEST['status'])."'";
 
-    if ( ! empty( $_REQUEST['engine'] ) ) $where[] = '`engine` =  "' .esc_sql($_REQUEST['engine']).'"';
+    if ( ! empty( $_REQUEST['engine'] ) ) $where[] = "`engine` =  '" .esc_sql($_REQUEST['engine'])."'";
     if ( ! empty( $_REQUEST['s'] ) ) {
-      $where[] = '`transaction_id` LIKE "%' .esc_sql($_REQUEST['s']).'%" OR `concept` LIKE "%' .esc_sql($_REQUEST['s']).'%"';
+      $where[] = "`transaction_id` LIKE '%" .esc_sql($_REQUEST['s'])."%' OR `concept` LIKE '%" .esc_sql($_REQUEST['s'])."%'";
     }
 
     if (count($where) > 0) $sql .=  ' WHERE '.implode(' AND ', $where);

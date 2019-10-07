@@ -7,4 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'leewillis77\\WpListTableExportable\\' => array($vendorDir . '/leewillis77/WpListTableExportable/src'),
+    'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
 );

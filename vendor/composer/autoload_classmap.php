@@ -6,8 +6,4 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'SimplePayment\\Engines\\Cardcom' => $vendorDir . '/yalla-ya/SimplePayment/Engines/Cardcom.php',
-    'SimplePayment\\Engines\\Engine' => $vendorDir . '/yalla-ya/SimplePayment/Engines/Engine.php',
-    'SimplePayment\\Engines\\PayPal' => $vendorDir . '/yalla-ya/SimplePayment/Engines/PayPal.php',
-    'SimplePayment\\SimplePayment' => $vendorDir . '/yalla-ya/SimplePayment/SimplePayment.php',
 );

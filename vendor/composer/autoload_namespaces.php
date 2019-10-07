@@ -6,4 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'SimplePayment' => array($vendorDir . '/yalla-ya'),
+    'PayPal' => array($vendorDir . '/paypal/rest-api-sdk-php/lib'),
 );

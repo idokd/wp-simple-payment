@@ -7,22 +7,14 @@
 // TODO: valdate 3 digits (or 4 in american express) cvv
 // TODO: show/hide depending if paypal or not.
 
-wp_enqueue_script( 'bootstrap-js', 'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js', ['jquery'], '4.3.1', true );
-wp_enqueue_style( 'bootstrap-4', 'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', [], '4.3.1', 'all' );
 
 ?>
-<style>
-.container {
-  max-width: 960px;
-}
-.lh-condensed { line-height: 1.25; }
-</style>
-
 <div class="col-md-8 order-md-1">
   <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" target="sp-payment-frame" method="post">
   <input type="hidden" name="op" value="purchase" />
   <input type="hidden" name="product" value="<?php echo $product; ?>" />
   <input type="hidden" name="amount" value="<?php echo $amount; ?>" />
+  <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
 
   <h4 class="mb-3">Purchase Information</h4>
   <div class="mb-3">

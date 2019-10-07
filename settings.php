@@ -1,11 +1,11 @@
 <?php
 
-$SP_CARCOM_LANGUAGES = [ 'he' => __('Hebrew', 'simple-payment'), 'en' => __('English', 'simple-payment') ];
-$SP_CARCOM_OPERATIONS = [ 1 => __('Charge', 'simple-payment'), 2 => __('Charge & Token', 'simple-payment'), 3 => __('Token (Charge Pending)', 'simple-payment'), 4 => __('Suspended Deal', 'simple-payment') ];
-$SP_CARCOM_DOC_TYPES = [ 1 => __('Invoice', 'simple-payment'), 3 => __('Donation Receipt', 'simple-payment'), 101 => __('Order Confirmation', 'simple-payment'), 400 => __('Receipt', 'simple-payment') ];
-$SP_CARCOM_FIELD_STATUS = [ 'require' => __('Shown & Required', 'simple-payment'), 'show' => __('Shown', 'simple-payment'), 'hide' => __('Hidden', 'simple-payment')];
-$SP_CARCOM_CREDIT_TYPES = [ 1 => __('Normal', 'simple-payment'), 6 => __('Credit', 'simple-payment')];
-$SP_CARCOM_DOC_OPERATIONS = [ 0 => __('No Invoice', 'simple-payment'), 1 => 'Invoice', 2 => __('Forward (Do not show)', 'simple-payment')];
+$SPWP_CARCOM_LANGUAGES = [ 'he' => __('Hebrew', 'simple-payment'), 'en' => __('English', 'simple-payment') ];
+$SPWP_CARCOM_OPERATIONS = [ 1 => __('Charge', 'simple-payment'), 2 => __('Charge & Token', 'simple-payment'), 3 => __('Token (Charge Pending)', 'simple-payment'), 4 => __('Suspended Deal', 'simple-payment') ];
+$SPWP_CARCOM_DOC_TYPES = [ 1 => __('Invoice', 'simple-payment'), 3 => __('Donation Receipt', 'simple-payment'), 101 => __('Order Confirmation', 'simple-payment'), 400 => __('Receipt', 'simple-payment') ];
+$SPWP_CARCOM_FIELD_STATUS = [ 'require' => __('Shown & Required', 'simple-payment'), 'show' => __('Shown', 'simple-payment'), 'hide' => __('Hidden', 'simple-payment')];
+$SPWP_CARCOM_CREDIT_TYPES = [ 1 => __('Normal', 'simple-payment'), 6 => __('Credit', 'simple-payment')];
+$SPWP_CARCOM_DOC_OPERATIONS = [ 0 => __('No Invoice', 'simple-payment'), 1 => 'Invoice', 2 => __('Forward (Do not show)', 'simple-payment')];
 
 
 $sp_sections = [
@@ -61,7 +61,7 @@ $sp_settings = [
   'operation' => [ //Operation
     'title' => __('Operation', 'simple-payment'),
     'type' => 'select',
-    'options' => $SP_CARCOM_OPERATIONS,
+    'options' => $SPWP_CARCOM_OPERATIONS,
     'section' => 'cardcom_settings'
   ],
   'currency_id' => [ // CoinID
@@ -74,32 +74,32 @@ $sp_settings = [
     'title' => __('Force Language Interface', 'simple-payment'),
     'type' => 'select',
     'auto' => true,
-    'options' => $SP_CARCOM_LANGUAGES,
+    'options' => $SPWP_CARCOM_LANGUAGES,
     'section' => 'cardcom_display'
   ],
   'credit_type' => [ // CreditType
     'title' => __('Credit Type', 'simple-payment'),
     'type' => 'select',
-    'options' => $SP_CARCOM_CREDIT_TYPES,
+    'options' => $SPWP_CARCOM_CREDIT_TYPES,
     'section' => 'cardcom_settings'
   ],
 
   'field_name' => [ // CardOwnerName, HideCardOwnerName
     'title' => __('Name field settings', 'simple-payment'),
     'type' => 'select',
-    'options' => $SP_CARCOM_FIELD_STATUS,
+    'options' => $SPWP_CARCOM_FIELD_STATUS,
     'section' => 'cardcom_display'
   ],
   'field_phone' => [ // ShowCardOwnerPhone, CardOwnerPhone, ReqCardOwnerPhone
     'title' => __('Phone field settings', 'simple-payment'),
     'type' => 'select',
-    'options' => $SP_CARCOM_FIELD_STATUS,
+    'options' => $SPWP_CARCOM_FIELD_STATUS,
     'section' => 'cardcom_display'
   ],
   'field_email' => [ // ShowCardOwnerEmail, CardOwnerEmail, ReqCardOwnerEmail
     'title' => __('Email field settings', 'simple-payment'),
     'type' => 'select',
-    'options' => $SP_CARCOM_FIELD_STATUS,
+    'options' => $SPWP_CARCOM_FIELD_STATUS,
     'section' => 'cardcom_display'
   ],
 
@@ -107,14 +107,14 @@ $sp_settings = [
     'title' => __('Invoice Processing', 'simple-payment'),
     'type' => 'select',
     'auto' => true,
-    'options' => $SP_CARCOM_DOC_OPERATIONS,
+    'options' => $SPWP_CARCOM_DOC_OPERATIONS,
     'section' => 'cardcom_document'
   ],
   'doc_type' => [
     'title' => __('Document Type Upon Success', 'simple-payment'),
     'type' => 'select',
     'auto' => true,
-    'options' => $SP_CARCOM_DOC_TYPES,
+    'options' => $SPWP_CARCOM_DOC_TYPES,
     'section' => 'cardcom_document'
   ],
 

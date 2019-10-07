@@ -11,11 +11,10 @@ class Engine {
 
   public $name = 'Base';
   public $transaction = null;
-  public $table_name;
+  public $handler;
   protected $callback;
 
-  public function __construct() {
-    $this->table_name = $wpdb->prefix . 'sp_' . $this->name;
+  public function __construct($params = null) {
   }
 
   protected function param($key) {
@@ -39,7 +38,7 @@ class Engine {
     $request = [];
     $response = [];
     $this->record($request, $response);
-    return($response);
+    return($params);
   }
 
   public function setCallback($url) {
@@ -47,40 +46,34 @@ class Engine {
   }
 
   protected function record($request, $response) {
-    global $wpdb;
-    $user_id = get_current_user_id();
-    $fields = [
-        'terminal' => ['TerminalNumber', 'terminalnumber'],
-        'profile_code' => ['LowProfileCode', 'lowprofilecode'],
-        'transaction_id' => ['LowProfileCode', 'lowprofilecode'],
-        'code' => '',
-        'operation' => 'Operation',
-        'response_code' => 'ResponseCode',
-        'status_code' => 'Status',
-        'deal_response' => 'DealResponse',
-        'token_response' => 'TokenResponse',
-        'token' => 'Token',
-        'operation_response' => 'OperationResponse',
-        'operation_description' => 'Description',
-  ];
-  $params = [ 'request' => json_encode($request),
-  'response' => json_encode($response) ];
-  foreach ($fields as $field => $keys) {
-      if (!is_array($keys)) $keys = [ $keys ];
-      foreach ($keys as $key) {
-          if (isset($request[$key])) {
-              $params[$field] = $request[$key];
-              break;
-          }
-          if (isset($response[$key])) {
-              $params[$field] = $response[$key];
-              break;
-          }
-      }
+    return($this->save(array('request' => $request, 'response' => $response)));
   }
-// InternalDealNumber	, TokenExDate, CoinId, CardOwnerID, CardValidityYear, CardValidityMonth, TokenApprovalNumber, SuspendedDealResponseCode, SuspendedDealId, SuspendedDealGroup, InvoiceResponseCode, InvoiceNumber, InvoiceType, CallIndicatorResponse, ReturnValue, NumOfPayments, CardOwnerEmail, CardOwnerName, CardOwnerPhone, AccountId, ForeignAccountNumber, SiteUniqueId
-    $result = $wpdb->insert($this->table_name, $params);
-    return($result ? $wpdb->insert_id : false);
+
+  protected function save($params) {
+      return($this->handler->save(strtolower($this->name), $params));
   }
+
+  public static function uuid() {
+    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+       // 32 bits for "time_low"
+       mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+       // 16 bits for "time_mid"
+       mt_rand(0, 0xffff),
+       // 16 bits for "time_hi_and_version",
+       // four most significant bits holds version number 4
+       mt_rand(0, 0x0fff) | 0x4000,
+       // 16 bits, 8 bits for "clk_seq_hi_res",
+       // 8 bits for "clk_seq_low",
+       // two most significant bits holds zero and one for variant DCE1.1
+       mt_rand(0, 0x3fff) | 0x8000,
+       // 48 bits for "node"
+       mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+      );
+    }
+
+    public function url($type) {
+      $url = $this->callback;
+      return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='.$this->name);
+    }
 
 }
