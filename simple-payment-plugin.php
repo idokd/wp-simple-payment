@@ -175,11 +175,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public function render_admin_page() {
     $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'sp';
     $section = $tab;
+    $tabs = ['General', 'PayPal', 'Cardcom', 'License', 'Shortcode', 'Instructions'];
     ?>
     <div class="wrap">
       <h1><?php _e('Simple Payment Settings', 'simple-payment'); ?></h1>
       <h2 class="nav-tab-wrapper">
             <a id="sp" href="options-general.php?page=sp" class="nav-tab <?php echo $tab == 'sp' ? 'nav-tab-active' : ''; ?>"><?php _e('General', 'simple-payment'); ?></a>
+            <a id="paypal" href="options-general.php?page=sp&tab=paypal" class="nav-tab <?php echo $tab == 'paypal' ? 'nav-tab-active' : ''; ?>"><?php _e('PayPal', 'simple-payment'); ?></a>
             <a id="cardcom" href="options-general.php?page=sp&tab=cardcom" class="nav-tab <?php echo $tab == 'cardcom' ? 'nav-tab-active' : ''; ?>"><?php _e('Cardcom', 'simple-payment'); ?></a>
             <a id="license" href="options-general.php?page=sp&tab=license" class="nav-tab <?php echo $tab == 'license' ? 'nav-tab-active' : ''; ?>"><?php _e('License', 'simple-payment'); ?></a>
             <a id="shortcode" href="options-general.php?page=sp&tab=shortcode" class="nav-tab <?php echo $tab == 'shortcode' ? 'nav-tab-active' : ''; ?>"><?php _e('Shortcode', 'simple-payment'); ?></a>

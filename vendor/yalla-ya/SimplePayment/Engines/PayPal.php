@@ -104,8 +104,8 @@ class PayPal extends Engine {
       $params['url'] = $payment->getApprovalLink();
     } else $this->transaction = self::uuid();
 
+    // for Express Checkout tradiaionl form post
     $post = [];
-    // for tradiaionl form post
     $post['cmd'] = '_xclick';
     $post['hosted_button_id'] = '';
     $post['item_name'] = $params['concept'];
@@ -137,27 +137,18 @@ class PayPal extends Engine {
   }
 
   function getApiContext($clientId, $clientSecret) {
-      $apiContext = new ApiContext(
-          new OAuthTokenCredential(
-              $clientId,
-              $clientSecret
-          )
-      );
-
-      $apiContext->setConfig(
-          array(
-              'mode' => 'sandbox',
-              //'log.LogEnabled' => true,
-              //'log.FileName' => 'PayPal.log',
-              //'log.LogLevel' => 'DEBUG', // PLEASE USE `INFO` LEVEL FOR LOGGING IN LIVE ENVIRONMENTS
-            //  'cache.enabled' => true,
-              //'cache.FileName' => '/PaypalCache' // for determining paypal cache directory
-              // 'http.CURLOPT_CONNECTTIMEOUT' => 30
-              // 'http.headers.PayPal-Partner-Attribution-Id' => '123123123'
-              //'log.AdapterFactory' => '\PayPal\Log\DefaultLogFactory' // Factory class implementing \PayPal\Log\PayPalLogFactory
-          )
-      );
-
-      return($apiContext);
+    $apiContext = new ApiContext(new OAuthTokenCredential($clientId, $clientSecret));
+    $apiContext->setConfig([
+      'mode' => 'sandbox',
+      //'log.LogEnabled' => true,
+      //'log.FileName' => 'PayPal.log',
+      //'log.LogLevel' => 'DEBUG', // PLEASE USE `INFO` LEVEL FOR LOGGING IN LIVE ENVIRONMENTS
+      //'cache.enabled' => true,
+      //'cache.FileName' => '/PaypalCache' // for determining paypal cache directory
+      //'http.CURLOPT_CONNECTTIMEOUT' => 30
+      //'http.headers.PayPal-Partner-Attribution-Id' => '123123123'
+      //'log.AdapterFactory' => '\PayPal\Log\DefaultLogFactory' // Factory class implementing \PayPal\Log\PayPalLogFactory
+      ]);
+    return($apiContext);
   }
 }
