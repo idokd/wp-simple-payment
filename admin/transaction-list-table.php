@@ -66,7 +66,8 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       $orderby = $instance->get_pagination_arg('orderby');
       $order = $instance->get_pagination_arg('order');
     } else {
-      $order = 'ASC';
+      $orderb = 'id';
+      $order = 'DESC';
     }
     if ($count) $sql = "SELECT COUNT(*) FROM ".self::$table_name;
     else $sql = "SELECT * FROM ".self::$table_name;
@@ -220,6 +221,12 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     $per_page     = $this->get_items_per_page( 'transactions_per_page', 20 );
     $current_page = $this->get_pagenum();
 
+    $this->set_pagination_args([
+      'per_page'    => $per_page,
+      'orderby' => 'id',
+      'order' => 'DESC',
+    ]);
+    
     $this->items = self::get_transactions( $per_page, $current_page, $this );
     $total_items = self::get_transactions( 0, 0, $this, true );
 
@@ -230,6 +237,8 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       'order' => 'DESC',
       'offset' => ( $this->get_pagenum() - 1 ) * $per_page,
     ]);
+
+
 
   }
 

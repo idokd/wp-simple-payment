@@ -36,6 +36,10 @@ $sp_sections = [
 ];
 
 $sp_settings = [
+  'engine' => [
+    'title' => __('Engine', 'simple-payment'),
+    'type' => 'select',
+    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment')]],
   'mode' => [ //Mode
     'title' => __('Mode', 'simple-payment'),
     'type' => 'radio',
@@ -45,7 +49,7 @@ $sp_settings = [
   'form_type' => [ //Mode
     'title' => __('Form Template', 'simple-payment'),
     'type' => 'select',
-    'options' => ['bootstrap' => __('Bootstrap', 'simple-payment'), 'experimental' => __('Experimental', 'simple-payment'), 'legacy' => __('Legacy', 'simple-payment')]],
+    'options' => ['legacy' => __('Legacy', 'simple-payment'), 'bootstrap' => __('Bootstrap', 'simple-payment'), 'experimental' => __('Experimental', 'simple-payment')]],
   'cardcom_terminal' => [
     'title' => __('Terminal ID', 'simple-payment'),
     'section' => 'cardcom_settings'

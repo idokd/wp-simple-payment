@@ -6,7 +6,7 @@ Tags: credit card, donation, membership, payment request, payment gateway, sales
 Requires at least: 4.0
 Requires PHP: 7.2
 Tested up to: 5.2
-Stable tag: 1.0.0
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ Simple Payment enables a simple, fast and easy integration to process payments. 
 
 Simple Payment enables a simple, fast and easy integration to process payments, converting any post or page to a Product or Service, no need to install complicated plugins.
 
-Simple Payment works with many payment procesing, and enables you to add you customized gateway easily
+Simple Payment works with many payment processing, and enables you to add you customized gateway easily
 
 Major features in Simple Payment include:
 
@@ -26,12 +26,12 @@ Major features in Simple Payment include:
 * Custom Field: amount - will be the amount to be charged
 * Full Form with Templates: Bootstrap, Legacy
 * Support for personalized theme payment forms templates
-* Simple Use of Shortcode to convert any post/pag
+* Simple Use of Shortcode to convert any post/page
 * Enable Multiple Payment Engines
 * Transactions / Payments Log with Filtering
 * Export Transactions to CSV
 
-PS: You'll need an [Simple Payment API key for advanced gateways](https://simple-payment.yalla-ya.com/get/) to use it.  Keys are available for personal blogs; sinlge doains, businesses and commercial sites.
+PS: You'll need an [Simple Payment API key for advanced gateways](https://simple-payment.yalla-ya.com/get/) to use it.  Keys are available for personal blogs; single domain, multiple domains, businesses and commercial sites.
 
 == Installation ==
 
@@ -47,6 +47,6 @@ PS: You'll need an [Simple Payment API key for advanced gateways](https://simple
 
 == Advanced Configuration: Theme Custom Payment Processing ==
 
-To write your own payment processing integration, to be pluggin, read the information at this link: https://github.com/idokd/simple-payment
+To write your own payment processing integration, to be plugin, read the information at this link: https://github.com/idokd/simple-payment
 
 you will require to write a simple php class that Pre Process, Process and Post Process the transaction with your your payment gateway.

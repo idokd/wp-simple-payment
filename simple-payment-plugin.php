@@ -3,10 +3,10 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
- * Version: 1.0.0
+ * Version: 1.0.3
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
- * License: GPL
+ * License: GPLv2
  */
 
 if (!defined("ABSPATH")) {
@@ -173,13 +173,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   // Render our plugin's option page.
   public function render_admin_page() {
-    $tab = isset( $_GET[ 'tab' ] ) ? $_GET[ 'tab' ] : 'sp';
+    $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'sp';
     $section = $tab;
     ?>
     <div class="wrap">
       <h1><?php _e('Simple Payment Settings', 'simple-payment'); ?></h1>
       <h2 class="nav-tab-wrapper">
-            <a id="sp" href="options-general.php?page=sp" class="nav-tab <?php echo $tab == 'sp' ? 'nav-tab-active' : ''; ?>">General</a>
+            <a id="sp" href="options-general.php?page=sp" class="nav-tab <?php echo $tab == 'sp' ? 'nav-tab-active' : ''; ?>"><?php _e('General', 'simple-payment'); ?></a>
             <a id="cardcom" href="options-general.php?page=sp&tab=cardcom" class="nav-tab <?php echo $tab == 'cardcom' ? 'nav-tab-active' : ''; ?>"><?php _e('Cardcom', 'simple-payment'); ?></a>
             <a id="license" href="options-general.php?page=sp&tab=license" class="nav-tab <?php echo $tab == 'license' ? 'nav-tab-active' : ''; ?>"><?php _e('License', 'simple-payment'); ?></a>
             <a id="shortcode" href="options-general.php?page=sp&tab=shortcode" class="nav-tab <?php echo $tab == 'shortcode' ? 'nav-tab-active' : ''; ?>"><?php _e('Shortcode', 'simple-payment'); ?></a>
@@ -504,7 +504,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $this->setEngine($engine);
     switch (strtolower(sanitize_text_field($_REQUEST['op']))) {
         case 'success':
-          $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? sanitize_text_field($_REQUEST['redirect_url']) : self::param('redirect_url');
+          $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
           if (!$url) $url = $this->payment_page ? get_page_link($this->payment_page) : get_bloginfo('url');
           $url .= (strpos($url, '?') ? '' : '?').http_build_query($_REQUEST);
           $this->post_process();
