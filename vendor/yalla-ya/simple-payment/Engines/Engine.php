@@ -13,11 +13,17 @@ class Engine {
   public $transaction = null;
   public $handler;
   protected $callback;
+  protected static $params;
+  protected $sandbox;
 
-  public function __construct($params = null) {
+  public function __construct($params = null, $handler = null, $sandbox = true) {
+    self::$params = $params;
+    $this->handler = $handler;
+    $this->sandbox = $sandbox;
   }
 
   protected function param($key) {
+    if (isset(self::$params[$key])) return(self::$params[$key]);
     return(SimplePayment\SimplePayment::param($key));
   }
 
@@ -76,4 +82,21 @@ class Engine {
       return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='.$this->name);
     }
 
+    protected function post($url, $vars) {
+      $urlencoded = http_build_query($vars);
+      $curl = curl_init();
+      curl_setopt($curl, CURLOPT_URL, $url);
+      curl_setopt($curl, CURLOPT_POST, 1);
+      curl_setopt($curl, CURLOPT_FAILONERROR, true);
+      curl_setopt($curl, CURLOPT_POSTFIELDS, $urlencoded);
+      curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0); // TODO: consider enabling it
+      curl_setopt($curl, CURLOPT_FAILONERROR, true);
+      $response = curl_exec($curl);
+      $error = curl_error($curl);
+      # some error , send email to developer // TODO: Handle Error
+      if (!empty( $error )) die($error);
+      curl_close($curl);
+      return($response);
+    }
 }

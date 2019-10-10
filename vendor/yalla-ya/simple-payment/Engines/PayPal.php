@@ -33,16 +33,18 @@ class PayPal extends Engine {
   public $name = 'PayPal';
   public $api = [
       'post' => 'https://www.paypal.com/cgi-bin/webscr',
-      'testing' => [
+      'sandbox' => [
           'post' => 'https://www.sandbox.paypal.com/cgi-bin/webscr'
       ]
   ];
   protected $context;
-  protected $clientId = 'AU6we3NU4uWTK9gBkr11KL4wKFA0nR8GP1Je85HTRohuySf493_Ja7lQuXMDBfrlj6EDeZBckPZGoxGV';
-  protected $clientSecret = 'EJWSbvJXbrdINh9l_-QW7K0NNEQMI-HW2yu8v0wy9omZQH7HMzoDI4rRcpnQtNrH9DijsHONhaX9SZ19';
+  protected $clientId;
+  protected $clientSecret;
 
-  public function __construct($params = null) {
-    parent::__construct($params);
+  public function __construct($params = null, $handler = null, $sandbox = true) {
+    parent::__construct($params, $handler, $sandbox);
+    $this->clientId = $this->param('client_id');
+    $this->clientSecret = $this->param('client_secret');
     if ($this->clientId && $this->clientSecret) $this->context = $this->getApiContext($this->clientId, $this->clientSecret);
   }
 
@@ -63,7 +65,7 @@ class PayPal extends Engine {
     // - Call payment gateway API
     // - Redirect to the payment gateway url with params
     // Return FALSE if transaction failed
-    echo '<form id="frm" action="'.$this->api['testing']['post'].'" method="post">';
+    echo '<form id="frm" action="'.$this->api['sandbox']['post'].'" method="post">';
     foreach ($post as $key => $value) {
         echo '<input type="hidden" name="'.htmlentities($key).'" value="'.htmlentities($value).'">';
     }
@@ -74,19 +76,22 @@ class PayPal extends Engine {
 
   public function pre_process($params) {
     // no_shipping, lc, image_url
+    $amount = $params['amount'];
+    $currency = $this->param('currency');
+    $concept = $params['concept'];
     if ($this->context) {
       $payer = new Payer();
-      $payer->setPaymentMethod("paypal");
+      $payer->setPaymentMethod("paypal"); // $this->param('paypal_method')
       $item = new Item();
-      $item->setName($params['concept'])->setCurrency('USD')->setQuantity(1)->setPrice($params['amount']);
+      $item->setName($concept)->setCurrency($currency)->setQuantity(1)->setPrice($amount);
       $list = new ItemList();
       $list->setItems(array($item));
-      $amount = new Amount();
-      $amount->setCurrency("USD")->setTotal($params['amount']);
+      $amnt = new Amount();
+      $amnt->setCurrency($currency)->setTotal($amount);
       $transaction = new Transaction();
-      $transaction->setAmount($amount)
+      $transaction->setAmount($amnt)
           ->setItemList($list)
-          ->setDescription($params['concept'])
+          ->setDescription($concept)
           ->setInvoiceNumber($this->transaction);
       $redirectUrls = new RedirectUrls();
       $redirectUrls->setReturnUrl($this->url(SimplePayment::OPERATION_SUCCESS))
@@ -108,15 +113,15 @@ class PayPal extends Engine {
     $post = [];
     $post['cmd'] = '_xclick';
     $post['hosted_button_id'] = '';
-    $post['item_name'] = $params['concept'];
-    $post['currency_code'] = 'USD';
-    $post['business'] = 'sb-wd8o3349405@personal.example.com';
-    $post['amount'] = $params['amount'];
+    $post['item_name'] = $concept;
+    $post['currency_code'] = $currency;
+    $post['business'] = $this->param('paypal_business');
+    $post['amount'] = $amount;
     $post['return'] = $this->url(SimplePayment::OPERATION_SUCCESS);
     $post['cancel_return'] = $this->url(SimplePayment::OPERATION_CANCEL);
     $post['notify_url'] = $this->url(SimplePayment::OPERATION_STATUS);
     $post['rm'] = '2';
-    $post['url'] = $this->api['testing']['post'];
+    $post['url'] = $this->api['sandbox']['post'];
     $params['post'] = $post;
     $this->record($params, []);
     return($params);

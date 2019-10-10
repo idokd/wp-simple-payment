@@ -10,7 +10,7 @@
 $phone_pattern= '^\d{4}-\d{3}-\d{4}$';
 ?>
 <div class="col-md-8 order-md-1">
-  <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment">
+  <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" method="post">
   <input type="hidden" name="op" value="purchase" />
   <input type="hidden" name="product" value="<?php echo $product; ?>" />
   <input type="hidden" name="amount" value="<?php echo $amount; ?>" />

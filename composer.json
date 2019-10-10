@@ -19,8 +19,8 @@
         "paypal/rest-api-sdk-php": "^1.14"
     },
     "autoload": {
-       "psr-0": {
-           "SimplePayment": "vendor/yalla-ya"
+       "psr-4": {
+           "SimplePayment\\": "vendor/yalla-ya/simple-payment"
        }
     }
 }

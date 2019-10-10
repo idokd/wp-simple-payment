@@ -11,4 +11,12 @@
           "homepage": "https://github.com/idokd"
       }
   ],
+  "autoload": {
+      "psr-0": {
+          "SimplePayment": "."
+      },
+      "psr-4": {
+          "SimplePayment\\": "."
+      }
+  }
 }

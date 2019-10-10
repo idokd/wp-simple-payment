@@ -217,15 +217,20 @@ $sp_settings = [
   'engine' => [
     'title' => __('Engine', 'simple-payment'),
     'type' => 'select',
-    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment')]],
+    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
   'mode' => [ //Mode
     'title' => __('Mode', 'simple-payment'),
     'type' => 'radio',
-    'options' => ['production' => __('Production', 'simple-payment'), 'testing' => __('Testing', 'simple-payment')]],
+    'options' => ['live' => __('Live', 'simple-payment'), 'sandbox' => __('Sandbox', 'simple-payment')]],
   'currency' => [
     'title' => __('Currency', 'simple-payment'),
     'type' => 'select',
-    'options' => $SPWP_CURRENCIES],
+    'options' => $SPWP_CURRENCIES, 'display' => 'both'],
+  'sp_payment_page' => [
+    'title' => __('Payment Page', 'simple-payment'),
+    'label_for' => 'sp_payment_page', 'render_function' => 'setting_callback_function'],
+  'callback_url' => [ // Redirect URL
+    'title' => __('Callback URL', 'simple-payment')],
   'redirect_url' => [ // Redirect URL
     'title' => __('Redirect URL', 'simple-payment')],
   'form_type' => [ //Mode
@@ -233,84 +238,79 @@ $sp_settings = [
     'type' => 'select',
     'options' => ['legacy' => __('Legacy', 'simple-payment'), 'bootstrap' => __('Bootstrap', 'simple-payment'), 'experimental' => __('Experimental', 'simple-payment')]],
 
-  'paypal_client_id' => [ // Redirect URL
+  'paypal.client_id' => [ // Redirect URL
     'title' => __('Client ID', 'simple-payment'),
     'section' => 'paypal_settings'],
-  'paypal_client_secret' => [ // Redirect URL
+  'paypal.client_secret' => [ // Redirect URL
     'title' => __('Client Secret', 'simple-payment'),
     'section' => 'paypal_settings'],
-  'paypal_business' => [ // Redirect URL
+  'paypal.business' => [ // Redirect URL
     'title' => __('Business', 'simple-payment'),
     'section' => 'paypal_settings'],
-  'paypal_hosted_button_id' => [ // Redirect URL
+  'paypal.hosted_button_id' => [ // Redirect URL
     'title' => __('Hosted Button ID', 'simple-payment'),
     'section' => 'paypal_settings'],
 
-  'cardcom_terminal' => [
+  'cardcom.terminal' => [
     'title' => __('Terminal ID', 'simple-payment'),
     'section' => 'cardcom_settings'
   ],
-  'cardcom_username' => [
+  'cardcom.username' => [
     'title' => __('Username', 'simple-payment'),
     'section' => 'cardcom_settings'
   ],
-  'cardcom_password' => [
+  'cardcom.password' => [
     'title' => __('API Password', 'simple-payment'),
     'section' => 'cardcom_settings'
   ],
-  'operation' => [ //Operation
+  'cardcom.operation' => [ //Operation
     'title' => __('Operation', 'simple-payment'),
     'type' => 'select',
     'options' => $SPWP_CARCOM_OPERATIONS,
     'section' => 'cardcom_settings'
   ],
-  'currency_id' => [ // CoinID
-    'title' => __('Currency', 'simple-payment'),
-    'type' => 'select',
-    'options' => SimplePayment\Engines\Cardcom::CURRENCIES,
-    'section' => 'cardcom_settings'
-  ],
-  'language' => [ // Language
+  'cardcom.language' => [ // Language
     'title' => __('Force Language Interface', 'simple-payment'),
     'type' => 'select',
     'auto' => true,
     'options' => $SPWP_CARCOM_LANGUAGES,
     'section' => 'cardcom_display'
   ],
-  'credit_type' => [ // CreditType
+  'cardcom.credit_type' => [ // CreditType
     'title' => __('Credit Type', 'simple-payment'),
     'type' => 'select',
     'options' => $SPWP_CARCOM_CREDIT_TYPES,
-    'section' => 'cardcom_settings'
+    'section' => 'cardcom_settings',
+    'auto' => true
   ],
 
-  'field_name' => [ // CardOwnerName, HideCardOwnerName
+  'cardcom.field_name' => [ // CardOwnerName, HideCardOwnerName
     'title' => __('Name field settings', 'simple-payment'),
     'type' => 'select',
     'options' => $SPWP_CARCOM_FIELD_STATUS,
-    'section' => 'cardcom_display'
+    'section' => 'cardcom_display', 'auto' => true
   ],
-  'field_phone' => [ // ShowCardOwnerPhone, CardOwnerPhone, ReqCardOwnerPhone
+  'cardcom.field_phone' => [ // ShowCardOwnerPhone, CardOwnerPhone, ReqCardOwnerPhone
     'title' => __('Phone field settings', 'simple-payment'),
     'type' => 'select',
     'options' => $SPWP_CARCOM_FIELD_STATUS,
-    'section' => 'cardcom_display'
+    'section' => 'cardcom_display', 'auto' => true
   ],
-  'field_email' => [ // ShowCardOwnerEmail, CardOwnerEmail, ReqCardOwnerEmail
+  'cardcom.field_email' => [ // ShowCardOwnerEmail, CardOwnerEmail, ReqCardOwnerEmail
     'title' => __('Email field settings', 'simple-payment'),
     'type' => 'select',
     'options' => $SPWP_CARCOM_FIELD_STATUS,
-    'section' => 'cardcom_display'
+    'section' => 'cardcom_display', 'auto' => true
   ],
 
-  'show_invoice_operation' => [ //InvoiceHeadOperation
+  'cardcom.show_invoice_operation' => [ //InvoiceHeadOperation
     'title' => __('Invoice Processing', 'simple-payment'),
     'type' => 'select',
     'auto' => true,
     'options' => $SPWP_CARCOM_DOC_OPERATIONS,
     'section' => 'cardcom_document'
   ],
-  'doc_type' => [
+  'cardcom.doc_type' => [
     'title' => __('Document Type Upon Success', 'simple-payment'),
     'type' => 'select',
     'auto' => true,
@@ -318,61 +318,61 @@ $sp_settings = [
     'section' => 'cardcom_document'
   ],
 
-  'auto_create_account' => [
+  'cardcom.auto_create_account' => [
     'title' => __('Auto Create/Update Account', 'simple-payment'),
     'type' => 'check',
     'section' => 'cardcom_settings'
   ], // IsAutoCreateUpdateAccount
-  'auto_load_account' => [
+  'cardcom.auto_load_account' => [
     'title' => __('Load Account Info to Invoice', 'simple-payment'),
     'type' => 'check',
     'section' => 'cardcom_settings'
    ], // IsLoadInfoFromAccountID
-  'show_invoice_info' => [
+  'cardcom.show_invoice_info' => [
     'title' => __('Show Invoice Information', 'simple-payment'),
     'type' => 'check',
     'section' => 'cardcom_display'
   ], // ShowInvoiceHead
-  'min_payments' => [ // MinNumOfPayments
+  'cardcom.min_payments' => [ // MinNumOfPayments
     'title' => __('Min # of Payments', 'simple-payment'),
     'type' => 'select',
     'min' => 1, 'max' => 36,
     'section' => 'cardcom_display'
   ],
-  'max_payments' => [  // MaxNumOfPayments
+  'cardcom.max_payments' => [  // MaxNumOfPayments
     'title' => __('Max # of Payments', 'simple-payment'),
     'type' => 'select',
     'min' => 1, 'max' => 36,
     'section' => 'cardcom_display'
   ],
-  'default_payments' => [ // DefaultNumOfPayments
+  'cardcom.default_payments' => [ // DefaultNumOfPayments
     'title' => __('Default # of Payments', 'simple-payment'),
     'type' => 'select',
     'min' => 1, 'max' => 36,
     'section' => 'cardcom_display'
   ],
 
-  'css' => [ // ShowCardOwnerEmail, CardOwnerEmail, ReqCardOwnerEmail
+  'cardcom.css' => [ // ShowCardOwnerEmail, CardOwnerEmail, ReqCardOwnerEmail
     'title' => __('CSS', 'simple-payment'),
     'type' => 'textarea',
     'section' => 'cardcom_display'
   ],
 
-  'vat_free' => [
+  'cardcom.vat_free' => [
     'title' => __('Prices Globally VAT Free', 'simple-payment'),
     'type' => 'check',
     'section' => 'cardcom_document'
   ], // ExtIsVatFree
-  'email_invoice' => [ // SendByEmail
+  'cardcom.email_invoice' => [ // SendByEmail
     'title' => __('Email Invoice to Client', 'simple-payment'),
     'type' => 'check',
     'section' => 'cardcom_document'
   ],
-  'site_id' => [
+  'cardcom.site_id' => [
     'title' => __('Site ID', 'simple-payment'),
     'section' => 'cardcom_document'
   ], // SiteUniqueId
-  'department_id' => [
+  'cardcom.department_id' => [
     'title' => __('Department ID', 'simple-payment'),
     'section' => 'cardcom_document',
     'description' => __('Numeric ID', 'simple-payment'),

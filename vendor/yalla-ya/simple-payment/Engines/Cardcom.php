@@ -2,6 +2,7 @@
 namespace SimplePayment\Engines;
 
 use SimplePayment\SimplePayment;
+use Exception;
 
 if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
@@ -41,13 +42,13 @@ class Cardcom extends Engine {
   const CREDIT_TYPES = [ 1 => 'Normal', 6 => 'Credit'];
   const DOC_OPERATIONS = [ 0 => 'No Invoice', 1 => 'Invoice', 2 => 'Forward (Do not show)'];
 
-  public function __construct($params = null) {
-    parent::__construct($params);
-    $testing = $this->param('testing') ? : ($this->param('cardcom_terminal') && $this->param('cardcom_username') && $this->param('cardcom_password'));
-    if (!$testing) {
-      $this->terminal = $this->param('cardcom_terminal');
-      $this->username = $this->param('cardcom_username');
-      $this->password = $this->param('cardcom_password');
+  public function __construct($params = null, $handler = null, $sandbox = true) {
+    parent::__construct($params, $handler, $sandbox);
+    $sandbox = $this->sandbox ? : !($this->param('terminal') && $this->param('username'));
+    if (!$sandbox) {
+      $this->terminal = $this->param('terminal');
+      $this->username = $this->param('username');
+      $this->password = $this->param('password');
     }
   }
 
@@ -201,7 +202,6 @@ class Cardcom extends Engine {
     // Operation 4
     // SuspendedDealJValidateType
     // SuspendedDealGroup
-
     $status = $this->post($this->api['payment_request'], $post);
     parse_str($status, $status);
     $status['url'] = $this->param('method') == 'paypal' ? $status['PayPalUrl'] : $status['url'];
@@ -213,23 +213,7 @@ class Cardcom extends Engine {
     return($status);
   }
 
-  protected function post($url, $vars) {
-    $urlencoded = http_build_query($vars);
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_POST, 1);
-    curl_setopt($curl, CURLOPT_FAILONERROR, true);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, $urlencoded);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0); // TODO: consider enabling it
-    curl_setopt($curl, CURLOPT_FAILONERROR, true);
-    $response = curl_exec($curl);
-    $error = curl_error($curl);
-    # some error , send email to developer // TODO: Handle Error
-    if (!empty( $error )) die($error);
-    curl_close($curl);
-    return($response);
-  }
+
 
   protected function record($request, $response) {
     $fields = [

@@ -35,8 +35,8 @@
   </tr>
   <tr>
       <td>form</td>
-      <td>Bootstrap</td>
-      <td>Some predefined forms inclueded in the plugin; Bootstrap, Legacy, Expermintal</td>
+      <td>legacy</td>
+      <td>Some predefined forms inclueded in the plugin; Legacy, Bootstrap, Expermintal</td>
   </tr>
   <tr>
       <td>template</td>
@@ -54,24 +54,23 @@
       <td>Custom field to use for product name, if null uses post title</td>
   </tr>
   <tr>
-      <td>engine</td>
-      <td>Cardcom</td>
-      <td>Available Payment Engines</td>
-  </tr>
-  <tr>
       <td>redirect_url</td>
       <td>null</td>
       <td>Redirect after successful transactions (depending on engine funcionality)</td>
+  </tr>
+  <tr>
+      <td>engine</td>
+      <td>PayPal</td>
+      <td>Available Payment Engines</td>
   </tr>
   <tr>
       <td>method</td>
       <td>null</td>
       <td>Payment method, if supported by engine, some support PayPal, Credit, Debit etc.</td>
   </tr>
-
   <tr>
       <td>enable_query</td>
-      <td>true</td>
+      <td>false</td>
       <td>Enable overwrite of query parameters for product title / amount</td>
   </tr>
 </table>

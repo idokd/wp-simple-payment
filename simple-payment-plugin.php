@@ -38,35 +38,27 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     ]
   ];
 
-  public function __construct() {
-    parent::__construct();
-    $option = get_option('sp');
-    $option = $option ? $option : [];
-    self::$params = array_merge($option, [
-        'form_type' => 'legacy',
-        'amount_field' => 'amount',
-        'engine' => 'PayPal'
-    ]);
-    $this->license = $this->param('sp_license');
-    $this->testing = $this->param('sp_mode') != 'production';
+  protected $defaults = [
+      'form_type' => 'legacy',
+      'amount_field' => 'amount',
+      'engine' => 'PayPal',
+      'mode' => 'sandbox',
+      'currency' => 'USD'
+  ];
+
+  public function __construct($params = []) {
+    $option = get_option('sp') ? : [];
+    parent::__construct(array_merge(array_merge($this->defaults, $params), $option));
+    $this->license = get_option('sp_license');
   }
 
   public function setEngine($engine) {
-    $license = get_option('sp_license');
-    if (!$this->testing && $license) {
-    } else {
-      $this->testing = true;
-      self::$params['testing'] = true;
+    if ($this->param('mode') == 'live' && $this->license) {
+      $this->sandbox = false;
     }
     parent::setEngine($engine);
     if ($this->engine) $this->engine->setCallback(strpos($this->callback, '://') ? $this->callback : get_bloginfo('url') . $this->callback);
   }
-
-  public static function param($key = null, $default = false) {
-    if (!$key) return(self::$params);
-		if (false === self::$params || !isset(self::$params[$key])) return($default);
-    return(self::$params[$key]);
-	}
 
   public function load() {
     add_action('plugins_loaded', [$this, 'load_textdomain']);
@@ -98,11 +90,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function init() {
     $this->payment_page = self::param('payment_page');
-    try {
+    $this->callback = $this->payment_page();
+  }
+
+  protected function payment_page() {
       if ($this->payment_page) $this->callback = get_page_link($this->payment_page);
-    } catch (Exception $e) {
-      $this->callback = '/donations/payment/';
-    }
+      else $this->callback = self::param('callback_url');
+      return($this->callback);
   }
 
   function activate() {}
@@ -173,6 +167,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   // Render our plugin's option page.
   public function render_admin_page() {
+    if (!current_user_can('manage_options')) return;
+
     $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'sp';
     $section = $tab;
     $tabs = ['General', 'PayPal', 'Cardcom', 'License', 'Shortcode', 'Instructions'];
@@ -218,7 +214,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       __('License Key', 'simple-payment'),
       [$this, 'render_license_key_field'],
       'license',
-      'licensing'
+      'licensing',
+      array('label_for' => 'sp_license')
     );
   }
   // Initialize our plugin's settings.
@@ -237,25 +234,32 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           isset($section['section']) ? $section['section'] : 'sp'
         );
     }
-    register_setting('sp', 'sp', ['type' => 'string', 'sanitize_callback' => [$this, 'validate_options'], 'default' => []]);
+    register_setting('sp', 'sp', ['sanitize_callback' => [$this, 'validate_options'], 'default' => []]);
 
     foreach ($sp_settings as $key => $value) {
         add_settings_field(
           $key,
           $value['title'],
-          [$this, 'render_setting_field'],
+          [$this, isset($value['render_function']) ? $value['render_function'] : 'render_setting_field'],
           isset($value['section']) && isset($this->sections[$value['section']]) ? $this->sections[$value['section']]['section'] : 'sp',
           isset($value['section']) ? $value['section'] : 'settings',
-          ['option' => $key, 'params' => $value, 'default' => NULL]
+          ['option' => $key, 'params' => $value, 'default' => NULL],
+          array('label_for' => $key)
         );
     }
   }
 
+  protected function validate_single($options) {
+    foreach($options as $key => $value) $options[$key] = is_array($value) ? $this->validate_single($value) : sanitize_text_field($value);
+    return($options);
+  }
+
   public function validate_options($options) {
-    $values = self::param();
-    if (!$options) $options = sanitize_text_field($_REQUEST['sp']);
-    if (is_array($options)) foreach($options as $key => $value) $values[$key] = $value;
-    return($values);
+    if (!$options) $options = isset($_REQUEST['sp']) ? $_REQUEST['sp'] : [];
+    if (is_array($options)) $options = $this->validate_single($options);
+    else $options = sanitize_text_field($options);
+    $options = array_merge(self::$params, $options);
+    return($options);
   }
 
   public function render_section($params = null) {
@@ -281,12 +285,11 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   // Sanitize input from our plugin's option form and validate the provided key.
   public function license_key_callback($options) {
-    //return;
-    if (!isset($options['key']) || !$options['key']) {
-      //add_settings_error('sp_license', esc_attr('settings_updated'), __('License key is required', 'simple-payment'), 'error');
+    if (!isset($options['key'])) return($this->license);
+    if (isset($options['key']) && !$options['key']) {
+      add_settings_error('sp_license', esc_attr('settings_updated'), __('License key is required', 'simple-payment'), 'error');
       return;
     }
-
     // Detect multiple sanitizing passes.
     // Workaround for: https://core.trac.wordpress.org/ticket/21989
     static $cache = null;
@@ -298,19 +301,12 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
     // Validate the license key within the scope of the current domain.
     $key = sanitize_text_field($options['key']);
-    $res = $this->validate_license_key($key, $domain);
-
-    if (isset($res->errors)) {
-      $error = $res->errors[0];
-      $msg = "{$error->title}: {$error->detail}";
-      if (isset($error->source)) {
-        $msg = "{$error->title}: {$error->source->pointer} {$error->detail}";
-      }
-      add_settings_error('sp_license', esc_attr('settings_updated'), $msg, 'error');
-    }
-
-    if (!$res->meta->valid) {
-      switch ($res->meta->constant) {
+    try {
+      $license = $this->validate_key($key);//, $domain);
+    } catch (Exception $e) {
+      $message = $e->getMessage();
+      $code = $e->getCode();
+      switch ($message) {
         // When the license has been activated, but the current domain is not
         // associated with it, return an error.
         case 'FINGERPRINT_SCOPE_MISMATCH': {
@@ -330,51 +326,29 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           add_settings_error('sp_license', esc_attr('settings_updated'), __('License key was not found', 'simple-payment'), 'error');
           break;
         }
-        // You may want to handle more statuses, depending on your license requirements.
         default: {
-          add_settings_error('sp_license', esc_attr('settings_updated'), __("Unhandled error:", 'simple-payment') . " {$res->meta->detail} ({$res->meta->detail})", 'error');
+          add_settings_error('sp_license', esc_attr('settings_updated'), __("Unhandled error:", 'simple-payment') . " {$message} ({$code})", 'error');
           break;
         }
+        // Clear any options that were previously stored in the database.
       }
-      // Clear any options that were previously stored in the database.
       return([]);
     }
 
     // Save result to local cache.
     $cache = [
-      'policy' => $res->data->relationships->policy->data->id,
-      'key' => $res->data->attributes->key,
-      'expiry' => $res->data->attributes->expiry,
-      'valid' => $res->meta->valid,
-      'status' => $res->meta->detail,
+      'policy' => $license['data']['relationships']['policy']['data']['id'],
+      'key' => $license['data']['attributes']['key'],
+      'expiry' => $license['data']['attributes']['expiry'],
+      'valid' => $license['meta']['valid'],
+      'status' => $license['meta']['detail'],
       'domain' => $domain,
       'meta' => []
     ];
-    foreach ($res->data->attributes->metadata as $key => $value) {
+    foreach ($license['data']['attributes']['metadata'] as $key => $value) {
       $cache['meta'][$key] = $value;
     }
     return($cache);
-  }
-
-
-  // Validate the provided license key within the scope of the current domain. This
-  // sends a JSON request to Keygen's API, but this could also be your own server
-  // which you're using to handle licensing and activation, e.g. something like
-  // https://github.com/keygen-sh/example-php-activation-server.
-  private function validate_license_key($key, $domain) {
-    $res = wp_remote_post('https://api.keygen.sh/v1/accounts/' . self::LICENSE_ACCOUNT . '/licenses/actions/validate-key', [
-      'headers' => [
-        'Content-Type' => 'application/vnd.api+json',
-        'Accept' => 'application/vnd.api+json'
-      ],
-      'body' => json_encode([
-        'meta' => [
-          'scope' => ['fingerprint' => $domain],
-          'key' => $key
-        ]
-      ])
-    ]);
-    return json_decode($res['body']);
   }
 
   function render_setting_field($options) {
@@ -406,14 +380,22 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       }
   }
 
+  function param_name($key) {
+    $keys = explode('.', $key);
+    $keys = join('][', $keys);
+    return('['.$keys.']');
+  }
+
   function setting_select_fn($key, $params = null) {
   	$option = self::param($key);
   	$items = $params['options'];
-  	echo "<select id='$key' name='{$this->option_name}[$key]'>";
+    $field = $this->option_name.$this->param_name($key);
+  	echo "<select id='$key' name='{$field}'>";
     $auto = isset($params['auto']) && $params['auto'];
-    echo "<option value=''>".($auto ? __('Auto', 'simple-payment') : '')."</option>";
+    if ($auto) echo "<option value=''>".($auto ? __('Auto', 'simple-payment') : '')."</option>";
   	foreach ($items as $value => $title) {
   		$selected = ($option != '' && $option == $value) ? ' selected="selected"' : '';
+      if (isset($params['display']) && $params['display'] == 'both') $title = $value.' - '.$title;
   		echo "<option value='$value'$selected>$title</option>";
   	}
   	echo "</select>";
@@ -422,30 +404,35 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   function setting_radio_fn($key, $params = null) {
     $option = self::param($key);
     $items = $params['options'];
+    $field = $this->option_name.$this->param_name($key);
     foreach($items as $value => $title) {
       $checked = ($option != '' && $option == $value) ? ' checked="checked"' : '';
-      echo "<label><input ".$checked." value='$value' name='{$this->option_name}[$key]' type='radio' /> $title</label><br />";
+      echo "<label><input ".$checked." value='$value' name='{$field}' type='radio' /> $title</label><br />";
     }
   }
 
   function setting_text_fn($key, $params = null) {
     $option = self::param($key);
-    echo "<input id='$key' name='{$this->option_name}[$key]' size='40' type='text' value='{$option}' />";
+    $field = $this->option_name.$this->param_name($key);
+    echo "<input id='$key' name='{$field}' size='40' type='text' value='{$option}' />";
   }
 
   function setting_check_fn($key, $params = null) {
   	$option = self::param($key);
-  	echo "<input ".($option ? ' checked="checked" ' : '')." id='$key' value='true' name='{$this->option_name}[$key]' type='checkbox' />";
+    $field = $this->option_name.$this->param_name($key);
+  	echo "<input ".($option ? ' checked="checked" ' : '')." id='$key' value='true' name='{$field}' type='checkbox' />";
   }
 
   function setting_textarea_fn($key, $params = null) {
   	$option = self::param($key);
-  	echo "<textarea id='".$key."' name='{$this->option_name}[$key]' rows='7' cols='50' type='textarea'>{$option}</textarea>";
+    $field = $this->option_name.$this->param_name($key);
+  	echo "<textarea id='".$key."' name='{$field}' rows='7' cols='50' type='textarea'>{$option}</textarea>";
   }
 
   function setting_password_fn($key, $params = null) {
   	$option = self::param($key);
-  	echo "<input id='".$key."' name='{$this->option_name}[$key]' size='40' type='password' value='{$option}' />";
+    $field = $this->option_name.$this->param_name($key);
+  	echo "<input id='".$key."' name='{$field}' size='40' type='password' value='{$option}' />";
   }
 
 /*
@@ -507,27 +494,28 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     switch (strtolower(sanitize_text_field($_REQUEST['op']))) {
         case 'success':
           $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
-          if (!$url) $url = $this->payment_page ? get_page_link($this->payment_page) : get_bloginfo('url');
-          $url .= (strpos($url, '?') ? '' : '?').http_build_query($_REQUEST);
+          if (!$url) $url = $this->payment_page();
+          if (!$url) $url = get_bloginfo('url');
+          $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
           $this->post_process();
           break;
         case 'cancel':
-          $url = get_page_link($this->payment_page);
-          $url .= (strpos($url, '?') ? '' : '?').http_build_query($_REQUEST);
+          $url = $this->payment_page();
+          $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
           break;
         case 'purchase':
         case 'payment':
         case 'redirect':
           if ($process = $this->pre_process()) {
-            if ($process = $this->process($process)) {
-                die; break;
-            }
+            $process = $this->process($process);
+            if ($process === true) die;
+            $this->post_process($process);
+            break;
           }
         case 'error':
-          $url = get_page_link($this->payment_page);
+          $url = $this->payment_page();
           $status['op'] = 'fail';
-          $url .= (strpos($url, '?') ? '' : '?').http_build_query($status);
-          die;
+          $url .= (strpos($url, '?') ? '&' : '?').http_build_query($status);
           break;
         case 'status':
           print_r($status);

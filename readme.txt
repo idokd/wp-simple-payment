@@ -45,6 +45,25 @@ PS: You'll need an [Simple Payment API key for advanced gateways](https://simple
 
 4. That's it, track your payments on the Payments Admin Menu log.
 
+== Frequently Asked Questions ==
+
+= Which Payment Gateway this plugin support? =
+
+Currently it supports PayPal & Cardcom, with another new payment gateway added every month.
+
+== Changelog ==
+
+Checkout changelog.txt file
+
+== Screenshots ==
+
+1. Create Payment Page; use Admin -> Settings -> Reading to define which is your Payment Page.
+2. Configure the gateway parameters, you may use one of our many preinstalled gateways.
+3. Integrate our [simple_payment] shortcode on that page, to show one of our wonderful forms
+4. Track each transaction, keep record of parameters sent and responds.
+5. Payment Form example (our Legacy form) - we have bootstrap ready, donation etc.
+6. REMEMBER! Set the Payment Page so you can enjoy the plugin.
+
 == Advanced Configuration: Theme Custom Payment Processing ==
 
 To write your own payment processing integration, to be plugin, read the information at this link: https://github.com/idokd/simple-payment
