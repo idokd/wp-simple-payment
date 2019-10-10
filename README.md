@@ -18,13 +18,9 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-class Theme extends Engine {
+class Custom extends Engine {
 
-    public $name = 'Theme';
-
-    public function __construct() {
-      parent::__construct();
-    }
+    public $name = 'ThemeEngine';
 
     public function process($params) {
       parent::process($params);

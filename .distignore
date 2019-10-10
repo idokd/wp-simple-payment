@@ -5,5 +5,7 @@
 
 .distignore
 .gitignore
+Dockerfile
+entrypoint.sh
 composer.json
 composer.lock
