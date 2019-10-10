@@ -460,7 +460,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   function pre_process($params = []) {
     $method = isset($_REQUEST['method']) ? strtolower(sanitize_text_field($_REQUEST['method'])) : null;
-    $fields = ['engine', 'amount', 'product', 'concept', 'method', 'first_name', 'last_name', 'phone', 'mobile', 'address', 'address2', 'email', 'country', 'state', 'zipcode', 'payments', 'cvv', 'expiration', 'card_number', 'currency', 'comment', 'city', 'tax_id', 'card_holder_name'];
+    $fields = ['engine', 'amount', 'product', 'concept', 'method', 'first_name', 'last_name', 'phone', 'mobile', 'address', 'address2', 'email', 'country', 'state', 'zipcode', 'payments', 'installments', 'cvv', 'expiration', 'card_number', 'currency', 'comment', 'city', 'tax_id', 'card_holder_name'];
 
     foreach ($fields as $field) if (isset($_REQUEST[$field]) && $_REQUEST[$field]) $params[$field] = sanitize_text_field($_REQUEST[$field]);
 

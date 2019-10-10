@@ -91,12 +91,14 @@ class Cardcom extends Engine {
 
     $language = $this->param('language');
     if ($language != '') $post['Language'] = $language; // TODO: detect wordpress language
-    $payments = $this->param('max_payments');
-    if ($payments != '') $post['MaxNumOfPayments'] = $payments;
-    $payments = $this->param('min_payments');
-    if ($payments != '') $post['MinNumOfPayments'] = $payments;
-    $payments = $this->param('default_payments');
-    if ($payments != '') $post['DefaultNumOfPayments'] = isset($params['payments']) && $params['payments'] ? $params['payments'] : $payments;
+
+    if (isset($params['payments']) && $params['payments'] == 'installments') {
+      $payments = $this->param('max_payments');
+      if ($payments != '') $post['MaxNumOfPayments'] = $payments;
+      $payments = $this->param('min_payments');
+      if ($payments != '') $post['MinNumOfPayments'] = $payments;
+      if ($payments != '') $post['DefaultNumOfPayments'] = isset($params['installments']) && $params['installments'] ? $params['installments'] : $this->param('default_payments');
+    }
 
     $post['SuccessRedirectUrl'] = $this->url(SimplePayment::OPERATION_SUCCESS);
     $post['ErrorRedirectUrl'] = $this->url(SimplePayment::OPERATION_ERROR);

@@ -11,6 +11,9 @@
 $phone_pattern= '^\d{4}-\d{3}-\d{4}$';
 $text = __('For', 'simple-payment');
 $text = __('General Donation', 'simple-payment');
+$text = __('Direct Debit', 'simple-payment');
+$text = __('Number of Installments', 'simple-payment');
+$text = __('Number of Payments', 'simple-payment');
 
 ?>
 <div class="col-md-8 order-md-1">
