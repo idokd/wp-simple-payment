@@ -9,9 +9,7 @@ steps:
   - 'SVN_USERNAME=$_SVN_USERNAME'
   - 'SVN_PASSWORD=$_SVN_PASSWORD'
   - 'SLUG=$_SLUG'
-  - 'REPOSITORY=$REPO_NAME'
-  - 'REPOSITORY_URL=$REPO_URL'
-
+  - 'REPOSITORY_URL=$_REPOSITORY_URL'
 
 
 # Uses the docker build step to build an image

@@ -9,3 +9,4 @@
 /deploy-plugin.sh export-ignore
 /composer.json export-ignore
 /composer.lock export-ignore
+/.cloudbuild.yaml export-ignore
