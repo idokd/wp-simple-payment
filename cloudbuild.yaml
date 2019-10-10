@@ -1,0 +1,23 @@
+steps:
+- name: 'debian:stable-slim'
+  args: ['bash', './deploy-plugin.sh']
+  env:
+  - 'BUILD=$BUILD_ID'
+  - 'PROJECT=$PROJECT_ID'
+  - 'REV=$REVISION_ID'
+  - 'VERSION=$TAG_NAME'
+  - 'SVN_USERNAME=$_SVN_USERNAME'
+  - 'SVN_PASSWORD=$_SVN_PASSWORD'
+  - 'SLUG=$_SLUG'
+  - 'REPOSITORY=$REPO_NAME'
+  - 'REPOSITORY_URL=$REPO_URL'
+
+
+
+# Uses the docker build step to build an image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA', '.']
+
+# image is pushed to Container Registry
+images:
+- 'gcr.io/$PROJECT_ID/$REPO_NAME'

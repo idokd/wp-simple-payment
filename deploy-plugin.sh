@@ -1,10 +1,31 @@
 #!/bin/bash
 
+
+# Install necessary packages: subversion rsync git
+
+apt-get update \
+	&& apt-get install -y subversion rsync git \
+	&& apt-get clean -y \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& git config --global user.email "10upbot+github@10up.com" \
+	&& git config --global user.name "10upbot on GitHub"
+
 # Note that this does not use pipefail
 # because if the grep later doesn't match any deleted files,
 # which is likely the majority case,
 # it does not exit with a 0, and I only care about the final exit.
+
 set -eo
+
+mkdir /github
+
+GITHUB_WORKSPACE="/github/repos"
+
+echo "Repository: $REPOSITORY_URL"
+git clone $REPOSITORY_URL $GITHUB_WORKSPACE
+
+GITHUB_REF="$GITHUB_WORKSPACE/.git"
+echo "git ref: $GITHUB_REF"
 
 # Ensure SVN username and password are set
 # IMPORTANT: while secrets are encrypted and not viewable in the GitHub UI,
@@ -56,8 +77,7 @@ if [[ -e "$GITHUB_WORKSPACE/.distignore" ]]; then
 	rsync -rc --exclude-from="$GITHUB_WORKSPACE/.distignore" "$GITHUB_WORKSPACE/" trunk/ --delete
 else
 	echo "ℹ︎ Using .gitattributes"
-
-	cd "$GITHUB_WORKSPACE"
+  echo "ℹ︎ workspace: $GITHUB_WORKSPACE"
 
 	# "Export" a cleaned copy to a temp directory
 	TMP_DIR="/github/archivetmp"

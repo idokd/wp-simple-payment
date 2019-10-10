@@ -6,6 +6,6 @@
 .distignore
 .gitignore
 Dockerfile
-entrypoint.sh
+deploy-plugin.sh
 composer.json
 composer.lock
