@@ -12,7 +12,7 @@ Simple Payment integrates some sample Payment Gateway, and allows you to extend 
 </ol>
 
 <br />
-For further implementation checkout: <a href="https://github.com/idokd/simple-payment" target="_blank">Custom Theme Payment Engine</a>
+For further implementation checkout: <a href="https://github.com/idokd/wp-simple-payment" target="_blank">Custom Theme Payment Engine</a>
 <h2>Simple Payment Configuration</h2>
 
 You require 3 Steps configurations:

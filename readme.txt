@@ -66,6 +66,6 @@ Checkout changelog.txt file
 
 == Advanced Configuration: Theme Custom Payment Processing ==
 
-To write your own payment processing integration, to be plugin, read the information at this link: https://github.com/idokd/simple-payment
+To write your own payment processing integration, to be plugin, read the information at this link: https://github.com/idokd/wp-simple-payment
 
 you will require to write a simple php class that Pre Process, Process and Post Process the transaction with your your payment gateway.
