@@ -302,7 +302,11 @@ $sp_settings = [
     'options' => $SPWP_CARCOM_FIELD_STATUS,
     'section' => 'cardcom_display', 'auto' => true
   ],
-
+  'cardcom.hide_user_id' => [
+    'title' => __('Hide Credit Card User ID', 'simple-payment'),
+    'type' => 'check',
+    'section' => 'cardcom_settings'
+  ],
   'cardcom.show_invoice_operation' => [ //InvoiceHeadOperation
     'title' => __('Invoice Processing', 'simple-payment'),
     'type' => 'select',

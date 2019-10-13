@@ -68,24 +68,45 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       register_activation_hook(__FILE__, [$this, 'activate']);
       register_deactivation_hook(__FILE__, [$this, 'deactivate']);
 
+      //if (isset($_REQUEST['action'])) {
+      //  do_action("admin_post_{$_REQUEST['action']}", [$this, 'archive']);
+      //}
+
+      add_action( 'plugin_action_links_' . plugin_basename( __FILE__ ), [$this, 'plugin_action_links']);
+
       add_filter('display_post_states', [$this, 'add_custom_post_states']);
       add_action('admin_menu', [$this, 'add_plugin_options_page']);
-      if ( ! empty ( $GLOBALS['pagenow'] )
-          and ( 'options-general.php' === $GLOBALS['pagenow']
-          or 'options.php' === $GLOBALS['pagenow']
-          or 'options-reading.php' === $GLOBALS['pagenow']
-        ))
-        add_action('admin_init', [$this, 'add_plugin_settings']);
-      /*
-
-      add_action('save_post', array (
-                $this, 'save_post'));
-                add_action('add_meta_boxes', array (
-                $this, 'meta_box'));
-      */
+      if (!empty($GLOBALS['page'])) {
+          switch ($GLOBALS['page']) {
+              case 'simple-payments':
+                add_filter('set-screen-option', [$this, 'screen_option'], 10, 3);
+                break;
+              default:
+                break;
+          }
+      }
+      add_action('admin_menu', [$this, 'add_plugin_options_page']);
+      if (!empty($GLOBALS['pagenow'])) {
+          switch ($GLOBALS['pagenow']) {
+              case 'options-general.php':
+              case 'options.php':
+              case 'options-reading.php':
+                add_action('admin_init', [$this, 'add_plugin_settings']);
+                break;
+              default:
+                break;
+          }
+      }
     }
     add_action('parse_request', [$this, 'callback']);
     add_shortcode('simple_payment', [$this, 'shortcode'] );
+  }
+
+  function plugin_action_links($links) {
+  	$links = array_merge( array(
+  		'<a href="' . esc_url( admin_url( '/options-general.php?page=sp' ) ) . '">' . __( 'Settings', 'simple_payment' ) . '</a>'
+  	), $links );
+  	return($links);
   }
 
   public function init() {
@@ -155,14 +176,30 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       [$this, 'render_admin_page']
     );
 
-    add_menu_page(
+    $hook = add_menu_page(
       __('Payments', 'simple-payment'),
       __('Payments', 'simple-payment'),
       'manage_options',
       'simple-payments',
-      [$this, 'transactions'],
-      plugin_dir_url( __FILE__ ).'assets/simple-payment-icon.png'
+      [$this, 'render_transactions'],
+      plugin_dir_url( __FILE__ ).'assets/simple-payment-icon.png',
+      30
     );
+    add_action( "load-$hook", [$this, 'transactions'] );
+
+    $hook = add_submenu_page( null,
+      __('Transaction Details', 'simple-payment'),
+      null,
+      'manage_options',
+      'simple-payments-details',
+      [$this, 'render_transaction_log']
+    );
+    add_action( "load-$hook", [$this, 'info'] );
+  }
+
+  public function screen_option($status, $option, $value) {
+      if ( 'sp_per_page' == $option ) return $value;
+      return $status;
   }
 
   // Render our plugin's option page.
@@ -445,7 +482,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   */
 
   function process($params = []) {
-    return(parent::process($params));
+    $status = parent::process($params);
+    do_action('sp_payment_process', $params);
+    return($status);
   }
 
   function post_process($params = []) {
@@ -453,6 +492,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $this->update($this->engine->transaction, [
         'status' => self::TRANSACTION_SUCCESS
       ], true);
+      do_action('sp_payment_post_process', $params);
       return(true);
     }
     return(false);
@@ -471,6 +511,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $params['payment_id'] = $this->payment($params);
     try {
       $process = parent::pre_process($params);
+      do_action('sp_payment_pre_process', $params);
     } catch (Exception $e) {
       $this->update($params['payment_id'], [
         'status' => self::TRANSACTION_FAILED,
@@ -492,14 +533,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $engine = isset($_REQUEST['engine']) ? sanitize_text_field($_REQUEST['engine']) : self::param('engine');
     $this->setEngine($engine);
     switch (strtolower(sanitize_text_field($_REQUEST['op']))) {
-        case 'success':
+        case self::OPERATION_SUCCESS:
           $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
           if (!$url) $url = $this->payment_page();
           if (!$url) $url = get_bloginfo('url');
           $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
           $this->post_process();
           break;
-        case 'cancel':
+        case self::OPERATION_CANCEL:
           $url = $this->payment_page();
           $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
           break;
@@ -512,14 +553,18 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             $this->post_process($process);
             break;
           }
-        case 'error':
+        case self::OPERATION_ERROR:
           $url = $this->payment_page();
           $status['op'] = 'fail';
           $url .= (strpos($url, '?') ? '&' : '?').http_build_query($status);
           break;
-        case 'status':
-          print_r($status);
-          // TODO: register information on transaction table
+        case self::OPERATION_STATUS:
+          $this->status($_REQUEST);
+          die; break;
+          break;
+        case self::OPERATION_ZAPIER:
+          echo 'OK';
+          die; break;
           break;
         case 'css':
           header('Content-Type: text/css');
@@ -603,7 +648,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     return($result ? $wpdb->insert_id : false);
   }
 
-  protected function update($id, $params, $transaction_id = false) {
+  protected static function update($id, $params, $transaction_id = false) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'sp_transactions';
     if (!isset($params['modified'])) $params['modified'] = current_time('mysql');
@@ -613,18 +658,39 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   public function transactions() {
-      global $wpdb;
-      $table_name = $wpdb->prefix . 'sp_transactions';
-      $total = $wpdb->get_var( "SELECT COUNT(1) FROM `$table_name`" );
-      $page = isset($_REQUEST['cpage']) ? absint($_REQUEST['cpage']) : 1; $items_per_page = 5;
-      $offset = ( $page * $items_per_page ) - $items_per_page;
-
-      $sql = "SELECT * FROM `$table_name` ORDER BY `created` DESC LIMIT $offset, $items_per_page";
-      //$sql = $wpdb->prepare($sql, []);
-      $data = $wpdb->get_results($sql);
-
-      require(SPWP_PLUGIN_DIR.'/admin/transactions.php');
+      global $wpdb, $list;
+      add_screen_option('per_page', [
+         'default' => 20,
+         'option' => 'sp_per_page'
+      ]);
+      require(SPWP_PLUGIN_DIR.'/admin/transaction-list-table.php');
+      $list = new Transaction_List();
   }
+
+  public function info() {
+      global $wpdb, $list;
+      add_screen_option('per_page', [
+         'default' => 20,
+         'option' => 'sp_per_page'
+      ]);
+      if (!isset($_REQUEST['transaction_id']) || !isset($_REQUEST['engine'])) throw new Exception(__('Error fetching transaction'), 500);
+      $id = sanitize_text_field($_REQUEST['transaction_id']);
+      $engine = sanitize_text_field($_REQUEST['engine']);
+
+      require(SPWP_PLUGIN_DIR.'/admin/transaction-list-table.php');
+      $list = new Transaction_List($engine);
+  }
+
+  public function render_transactions() {
+    global $list;
+    require(SPWP_PLUGIN_DIR.'/admin/transactions.php');
+  }
+
+  public function render_transaction_log() {
+    global $list;
+    require(SPWP_PLUGIN_DIR.'/admin/transaction-log.php');
+  }
+
 
   /**
    * Check if Gutenberg is active
@@ -655,6 +721,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $lang_dir = apply_filters( 'sp_languages_directory', SPWP_PLUGIN_DIR . '/languages/' );
 
       load_plugin_textdomain( 'simple-payment', $lang_dir, str_replace(WP_PLUGIN_DIR, '', $lang_dir) );
+    }
+
+    public static function archive($id = null) {
+      global $wpdb;
+      self::update($id ? : $_REQUEST['transaction'], [
+        'archived' => true
+      ]);
+      //wp_redirect( wp_get_referer() );
     }
 
     public function save($tablename, $params, $id = null) {

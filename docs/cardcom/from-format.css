@@ -1,45 +1,31 @@
 @import url(https://fonts.googleapis.com/earlyaccess/opensanshebrew.css);
 
-body {
-  font-family: 'Open Sans Hebrew';
-  margin: 0;
-}
+/* Hide elements with ltr/rtl depending on language */
+.rtl, .ltr { display: none !important; }
+html[lang=en] .en { display: unset !important; }
+html[lang=he] .he { display: unset !important; }
+
+html[lang=en] body { direction: ltr; }
+html[lang=he] body { direction: rtl; }
+
+body { font-family: 'Open Sans Hebrew'; margin: 0; }
+
 
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  body {
-    font-family: sans-serif;
-  }
+  body { font-family: sans-serif; }
 }
 
-body, #Content {
-  overflow: hidden;
-}
+body, #Content { overflow: hidden; }
 
 input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-.form-pay {
-  direction: rtl;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-.form-pay * {
-  box-sizing: border-box;
-}
-
-.pay-item {
-}
+.form-pay { font-size: 16px; box-sizing: border-box; }
+.form-pay * { box-sizing: border-box; }
+.pay-item {}
 
 /* ------------- Elements ------------- */
-.pay-desc {
-  line-height: 1.65;
-  font-size: 0.88em;
-  margin-bottom: 2em;
-}
+.pay-desc { line-height: 1.65; font-size: 0.88em; margin-bottom: 2em;}
 
 .pay-item input:not([class*="btn"]),
 .pay-item select {
@@ -51,14 +37,8 @@ input[type=number]::-webkit-outer-spin-button {
   padding: 0.6em 1em;
   max-width: 100%;
 }
-
-.pay-item select {
-  cursor: pointer;
-}
-
-.pay-item input:not([class*="btn"]) {
-  width: 100%;
-}
+.pay-item select { cursor: pointer; }
+.pay-item input:not([class*="btn"]) { width: 100%; }
 
 .pay-item input.btn {
   white-space: nowrap;
@@ -103,9 +83,7 @@ input[type=number]::-webkit-outer-spin-button {
   align-items: flex-start;
 }
 
-.pay-sub-item {
-  margin-bottom: 1em;
-}
+.pay-sub-item { margin-bottom: 1em; }
 
 .pay-sub-item>label {
   font-weight: normal;
@@ -115,8 +93,6 @@ input[type=number]::-webkit-outer-spin-button {
   padding: 0;
   width: 100%;
 }
-
-/* ------------- .pay-group.pay ------------- */
 .pay-group.pay {
   display: -webkit-box;
   display: -webkit-flex;
@@ -131,11 +107,7 @@ input[type=number]::-webkit-outer-spin-button {
   justify-content: space-between;
   align-items: flex-end;
 }
-
-.pay-group.pay .pay-sub-item {
-  width: 48%;
-}
-
+.pay-group.pay .pay-sub-item { width: 48%; }
 .pay-group.pay .pay-sub-item.date-item {
   display: -webkit-box;
   display: -webkit-flex;
@@ -153,12 +125,7 @@ input[type=number]::-webkit-outer-spin-button {
   -ms-flex-pack: justify;
   justify-content: space-between;
 }
-
-.pay-item .pay-sub-item.date-item select {
-  width: 44%;
-}
-
-/* ------------- .pay-item.logo-images ------------- */
+.pay-item .pay-sub-item.date-item select { width: 44%; }
 .pay-item.logo-images, .pay-item.logo-images .images {
   display: -webkit-box;
   display: -webkit-flex;
@@ -172,54 +139,16 @@ input[type=number]::-webkit-outer-spin-button {
   -ms-flex-pack: justify;
   justify-content: space-between;
 }
-
-.pay-item.logo-images img {
-  width: 93px;
-  margin-left: 1em;
-}
-
-.pay-item .logo-images>* {
-  display: inline-block;
-}
+.pay-item.logo-images img { width: 93px; margin-left: 1em; }
+.pay-item .logo-images>* { display: inline-block; }
 
 @media (max-width: 515px) {
-
   .pay-item input:not([class*="btn"]),
-  .pay-item select {
-    font-size: 16px;
-  }
-
-  .pay-item input.btn {
-    width: 100%;
-    -webkit-box-ordinal-group: 0;
-    -webkit-order: -1;
-    -ms-flex-order: -1;
-    order: -1;
-    margin-bottom: 0.5em;
-  }
-
-  /* ------------- .pay-group.pay ------------- */
-  .pay-group.pay .pay-sub-item {
-    width: 100%;
-  }
-
-  .pay-group.pay .pay-sub-item.card-num-item {
-    width: 66%;
-  }
-
-  .pay-group.pay .pay-sub-item.cvv-item {
-    width: 30%;
-  }
-
-  /* ------------- .pay-item.logo-images ------------- */
-  .pay-item.logo-images {
-    -webkit-box-pack: center;
-    -webkit-justify-content: center;
-    -ms-flex-pack: center;
-    justify-content: center;
-  }
-
-  .pay-item.logo-images+.pay-item {
-    text-align: center;
-  }
+  .pay-item select { font-size: 16px; }
+  .pay-item input.btn { width: 100%; -webkit-box-ordinal-group: 0; -webkit-order: -1; -ms-flex-order: -1; order: -1; margin-bottom: 0.5em; }
+  .pay-group.pay .pay-sub-item { width: 100%; }
+  .pay-group.pay .pay-sub-item.card-num-item { width: 66%; }
+  .pay-group.pay .pay-sub-item.cvv-item { width: 30%; }
+  .pay-item.logo-images { -webkit-box-pack: center; -webkit-justify-content: center; -ms-flex-pack: center; justify-content: center; }
+  .pay-item.logo-images+.pay-item { text-align: center; }
 }

@@ -1,16 +1,18 @@
 === Simple Payment ===
 Contributors: idokd
 
+Simple Payment enables a simple, fast and easy integration to process payments. Convert any Post/Page to a product - easy and powerful tool
+
 Tags: credit card, donation, membership, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce
 
 Requires at least: 4.0
 Requires PHP: 7.2
 Tested up to: 5.2
-Stable tag: 1.0.3
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Simple Payment enables a simple, fast and easy integration to process payments. Convert any Post/Page to a product - easy and powerful tool
+
 
 == Description ==
 

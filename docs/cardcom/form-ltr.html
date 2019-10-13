@@ -1,0 +1,394 @@
+<!-- Header  -->
+<div class="header user-header">
+    <div class="headerIn">
+        <div class="logoDiv">
+            <img alt="" data-bind="attr: { src: images.companyLogo }" />
+        </div>
+
+        <div class="detailsDiv user-detailsDiv">
+            <div class="adress company"><span class="title" data-bind="text: labels.CompanyName"></span></div>
+            <div class="Line1"><span class="title" data-bind="text: labels.InfoLine1"></span></div>
+            <div class="Line2"><span class="title" data-bind="text: labels.InfoLine2"></span></div>
+            <div class="Line3"><span class="title" data-bind="text: labels.InfoLine3"></span></div>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+<h1 data-bind="text: lph1"></h1>
+<!-- Shop owner html comments ( from Bill Gold Admin system ) -->
+<div class="blockDetails" data-bind="visible : labels.HtmlComments">
+    <div class="blockDetailsIn">
+        <div class="htmlCommentsDiv" data-bind="html: labels.HtmlComments"></div>
+    </div>
+</div>
+
+
+<!-- Product list for mobile - using Css to show hide -->
+<!-- ko if: !IsHideInvoiceInfo -->
+<div class="productsDetails showProductsTabs">
+    <div class="productsDetailsIn">
+        <!-- The Next line is a template is randerd for every order line -->
+        <!-- k  o template: { foreach: order.lines }  -->
+        <!--<div data-bind="css: $index() % 2 == 0 ? 'lightRow': 'darkRow'">
+            <div class="productName">
+                <span class="title" data-bind="text: $root.order.name"></span>
+                <span data-bind="text: name"></span>
+            </div>
+            <div class="productPrice">
+                <span class="title" data-bind="text: $root.order.unitPrice"></span>
+                <span class="directionLTR" data-bind="text: unitPrice"></span>
+            </div>
+            <div class="productQuantity">
+                <span class="title" data-bind="text: $root.order.quantity"></span>
+                <span data-bind="text: quantity"></span>
+            </div>
+            <div class="productTotal">
+                <span class="title" data-bind="text: $root.order.total"></span>
+                <span data-bind="text: total" class="directionLTR"></span>
+            </div>
+        </div>-->
+        <!-- /k  o -->
+        <div class="totalProducts">
+            <span class="text" data-bind="text: labels.Summary"></span>
+            <span class="num" data-bind="text: summaryTotalSign"></span>
+            <div data-bind="visible: showCoinConvert">
+                <span class="text" data-bind="text: labels.TotalInfo"></span>
+                <select data-bind="options: currencyRates, optionsText: 'AlphabeticCode', value: selectedCurrencyRate"></select>
+                <span class="text" data-bind="text: currencyRateTotalSign"></span>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->
+<!-- product list for desktop - using Css to show hide -->
+<!-- ko if: !IsHideInvoiceInfo -->
+<div class="productsDetails showProductsTables">
+    <div class="productsDetailsIn">
+        <table class="productsTbl">
+            <thead>
+                <tr class="title">
+                    <th class="align"><span data-bind="text:order.name"></span></th>
+                    <th><span data-bind="text:order.unitPrice"></span></th>
+                    <th><span data-bind="text:order.quantity"></span></th>
+                    <th><span data-bind="text:order.total"></span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- this template is randerd for every order line -->
+                <!-- ko template: { foreach: order.lines }  -->
+
+                <tr data-bind="css: $index() % 2 == 0 ? 'odd': 'even' ">
+                    <td class="align"><span data-bind="text: name"></span></td>
+                    <td><span class="directionLTR" data-bind="text: unitPrice"></span></td>
+                    <td><span class="directionLTR" data-bind="text: quantity"></span></td>
+                    <td><span class="directionLTR" data-bind="text: total"></span></td>
+                </tr>
+                <!-- /ko -->
+            </tbody>
+            <tfoot>
+
+                <tr>
+                    <td style="visibility:hidden;"></td>
+                    <td style="visibility:hidden;"></td>
+                    <td style="visibility:hidden;"></td>
+                    <td class="total">
+                        <div class="paymentDetailsFlexBox">
+
+                            <!-- Payment for items with Vat (without the vat value added in) -->
+                            <!--<div data-bind="visible: !order.showVatInfo">
+                                    <span data-bind="text: order.totalPaymentThatIncludeVat.label"></span>
+                                    <span class="num" data-bind="text: order.totalPaymentThatIncludeVat.value"></span>
+                                </div>-->
+
+                            <!-- Payment for items without Vat -->
+                            <!--<div data-bind="visible: !order.showVatInfo">
+                                    <span data-bind="text: order.totalPaymentThatDontIncludeVat.label"></span>
+                                    <span class="num" data-bind="text: order.totalPaymentThatDontIncludeVat.value"></span>
+                                </div>-->
+                            <!-- Patial payment value of vat only -->
+                            <!--<div data-bind="visible: !order.showVatInfo">
+                                    <span data-bind="text: order.totalVatPayment.label"></span>
+                                    <span class="num" data-bind="text: order.totalVatPayment.value"></span>
+                            </div>-->
+
+                            <!-- Total Payment -->
+                            <div>
+                                <span data-bind="text: labels.Summary">סה"כ:</span>
+                                <span class="num" data-bind="text: summaryTotalSign"></span>
+                            </div>
+
+                            <!-- Original Payment -->
+                            <div data-bind="visible: showOriginalSum">
+                                <span data-bind="text: labels.OriginalSummary">:</span>
+                                <span class="num" data-bind="text: originalSum"></span>
+                            </div>
+
+                            <!-- Total Payment value in other currencies -->
+                            <div data-bind="visible: showCoinConvert">
+                                <span data-bind="text: labels.TotalInfo"></span>
+                                <select data-bind="options: currencyRates, optionsText: 'AlphabeticCode', value: selectedCurrencyRate"></select>
+                                <span class="num" data-bind="text: currencyRateTotalSign"></span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<!-- /ko -->
+<!-- Order Head Allow customer to edit order(invoice) information-->
+<div class="blockDetails OrderDetails" data-bind="visible: order.showInvoiceHead">
+    <div class="blockDetailsIn">
+
+        <div class="title"><span data-bind="text: labels.InvoiceInfo"></span></div>
+
+        <div class="formRow cardRow" data-bind="hide:order.custName.hide, css:order.custName.CssValid">
+            <label class="fieldName" data-bind="text:order.custName.label" for="txtCustName"></label>
+            <span class="fieldInput"><input type="text" data-bind="value:order.custName.value" id="txtCustName"></span>
+        </div>
+        <div class="formRow cardRow" data-bind="hide:order.compID.hide, css:order.compID.CssValid">
+            <label class="fieldName" data-bind="text:order.compID.label" for="txtCompID"></label>
+            <span class="fieldInput"><input type="text" data-bind="value:order.compID.value" id="txtCompID"></span>
+        </div>
+        <div class="formRow cardRow" data-bind="hide:order.custCity.hide, css:order.custCity.CssValid">
+            <label class="fieldName" data-bind="text:order.custCity.label" for="txtCustCity"></label>
+            <span class="fieldInput"><input type="text" data-bind="value:order.custCity.value" id="txtCustCity"></span>
+        </div>
+        <div class="formRow cardRow" data-bind="hide:order.custAddresLine1.hide, css:order.custAddresLine1.CssValid">
+            <label class="fieldName" data-bind="text:order.custAddresLine1.label" for="txtCustAddresLine1"></label>
+            <span class="fieldInput"><input type="text" data-bind="value:order.custAddresLine1.value" id="txtCustAddresLine1"></span>
+        </div>
+        <div class="formRow cardRow" data-bind="hide:order.custAddresLine2.hide, css:order.custAddresLine2.CssValid">
+            <label class="fieldName" data-bind="text:order.custAddresLine2.label" for="txtCustAddresLine2"></label>
+            <span class="fieldInput"><input type="text" data-bind="value:order.custAddresLine2.value" id="txtCustAddresLine2"></span>
+        </div>
+        <div class="formRow cardRow" data-bind="hide:order.custMobilePH.hide, css:order.custMobilePH.CssValid">
+            <label class="fieldName" data-bind="text:order.custMobilePH.label" for="txtCustMobilePH"></label>
+            <span class="fieldInput"><input type="tel" data-bind="value:order.custMobilePH.value" id="txtCustMobilePH"></span>
+        </div>
+        <div class="formRow cardRow" data-bind="hide:order.custLinePH.hide, css:order.custLinePH.CssValid">
+            <label class="fieldName" data-bind="text:order.custLinePH.label" for="txtCustLinePH"></label>
+            <span class="fieldInput"><input type="tel" data-bind="value:order.custLinePH.value" id="txtCustLinePH"></span>
+        </div>
+        <div class="formRow cardRow " data-bind="hide:order.email.hide, css:order.email.CssValid">
+            <label class="fieldName" data-bind="text:order.email.label" for="txtEmail"></label>
+            <span class="fieldInput"><input type="email" class="directionLTR" data-bind="value:order.email.value" id="txtEmail"></span>
+        </div>
+    </div>
+</div>
+
+<!-- custom fields -->
+<div class="blockDetails customDetails" data-bind="visible: customFields.length > 0">
+    <div class="blockDetailsIn">
+        <div class="title"><span data-bind="text: labels.MoreDetails"></span></div>
+        <!--
+            /* you can remove this comment to add a custom field manualy on the html page , change the [0] to select the number of the custom field to show ( you use the template to rander them one after the othere, see next rander)   */
+            <div class="formRow nameRow" data-bind="hide: customFields[0].hide, css: customFields[0].CssValid">
+                <span class="fieldName" data-bind="text: customFields[0].label"></span>
+                <span class="fieldInput"><input type="text" name="name" data-bind="value: customFields[0].value" /></span>
+            </div>
+            -->
+        <!-- ko template: { name:customDisplayMode , foreach: customFields}  -->
+        <!-- /ko -->
+        <script type="text/html" id="customFieldText">
+            <div class="formRow nameRow" data-bind="hide: hide, css: CssValid">
+                <label class="fieldName" data-bind="text: label"></label>
+                <span class="fieldInput"><input type="text" name="name" data-bind="value: value, attr: { id: 'custom_' + $index() }" /></span>
+            </div>
+        </script>
+        <script type="text/html" id="customFieldSelect">
+            <div class="formRow nameRow" data-bind="hide: hide, css: CssValid">
+                <span class="fieldName" data-bind="text: label"></span>
+                <span class="fieldInput"><select data-bind="options: selectValues, value: value, optionsCaption: optionsCaption" /></span>
+            </div>
+        </script>
+
+    </div>
+</div>
+
+<!-- Payments details  -->
+
+<div class="blockDetails paymentDetails">
+    <div class="blockDetailsIn">
+        <div class="title"><span data-bind="text: labels.MethodsOfPayment"></span></div>
+
+        <div class="paypalDiv" data-bind="hide: hidePayPal"><a href="#" title=""><img data-bind="attr: { src: images.paypal }, click: sendPayPalData" border="0"></a></div>
+
+        <div class="masterPassDiv" data-bind="hide: hideMasterPass">
+            <a href="#" title="">
+                <img data-bind="attr: { src: images.masterPass }, click: sendMasterPassData" border="0">
+            </a>
+            <br /><br /><br />
+        </div>
+
+
+        <div class="title" data-bind="hide: (hidePayPal && hideMasterPass)">
+            <span data-bind="text: labels.PayByCreditCard"></span>
+        </div>
+
+        <!-- Open Sum Text Box : IsOpenSum Param -->
+        <div class="formRow cardRow" data-bind="hide:openSum.hide, css:openSum.CssValid">
+            <label class="fieldName" data-bind="text:openSum.label" for="txtopenSum"></label>
+            <span class="fieldInput"><input type="number" maxlength="15" data-bind="value:openSum.value" id="txtopenSum"></span>
+        </div>
+
+        <div class="formRow cardRow" data-bind="hide:cardNumber.hide, css:cardNumber.CssValid">
+            <label class="fieldName" data-bind="text:cardNumber.label" for="txtCardNumber"></label>
+            <span class="fieldInput"><input type="text" data-bind="value:cardNumber.value, disable:cardNumber.disabled" id="txtCardNumber"></span>
+        </div>
+
+        <div class="formRow">
+            <label class="fieldName" data-bind="text: lblExpiration "></label>
+            <span class="fieldInput validityDate">
+                <select id="validityYear" class="mini" name="validityYear" data-bind="options: expirationYear.selectValues, value: expirationYear.value, disable: expirationYear.disabled, att:{'aria-label':expirationYear.label}"></select>
+                <select id="validityMonth" class="tiny" name="validityMonth" data-bind="value: expirationMonth.value, disable: expirationMonth.disabled, att:{'aria-label':expirationMonth.label}">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+            </span>
+        </div>
+
+        <div class="formRow cvvRow" data-bind="hide:cvv.hide, css:cvv.CssValid">
+            <span class="fieldName" data-bind="hide:cvv.hide">
+                <label data-bind="text:cvv.label" for="txtCvv"></label>
+
+                <a class="WhatIsCvvLightBox" target="_blank" title="what is cvv?" data-bind="attr: { href: '/Images/visamasterpic.gif' , title:cvv.label } ">
+                    <img data-bind="attr: { src: images.questionIcon , 'alt': cvvHelpIcon}">
+                </a>
+            </span>
+            <span class="fieldInput"><input maxlength="4" data-bind="hide:cvv.hide,value:cvv.value" id="txtCvv"></span>
+        </div>
+
+        <div class="formRow cardRow" data-bind="hide:cardOwnerID.hide, css:cardOwnerID.CssValid">
+            <label class="fieldName" data-bind="text:cardOwnerID.label" for="txtCardOwnerID"></label>
+            <span class="fieldInput"><input type="text" maxlength="20" data-bind="value:cardOwnerID.value" id="txtCardOwnerID"></span>
+        </div>
+
+        <div class="formRow cardRow" data-bind="hide:cardOwnerName.hide, css:cardOwnerName.CssValid">
+            <label class="fieldName" data-bind="text:cardOwnerName.label" for="txtCardOwnerName"></label>
+            <span class="fieldInput"><input type="text" maxlength="50" data-bind="value:cardOwnerName.value" id="txtCardOwnerName"></span>
+        </div>
+
+        <div class="formRow cardRow" data-bind="hide:cardOwnerPhone.hide, css:cardOwnerPhone.CssValid">
+            <label class="fieldName" data-bind="text:cardOwnerPhone.label" for="txtCardOwnerPhone"></label>
+            <span class="fieldInput"><input type="tel" maxlength="20" data-bind="value:cardOwnerPhone.value" id="txtCardOwnerPhone"></span>
+        </div>
+
+        <div class="formRow cardRow" data-bind="hide:cardOwnerEmail.hide, css:cardOwnerEmail.CssValid">
+            <label class="fieldName" data-bind="text:cardOwnerEmail.label" for="txtCardOwnerEmail"></label>
+            <span class="fieldInput"><input type="email" class="directionLTR" maxlength="150" data-bind="value:cardOwnerEmail.value" id="txtCardOwnerEmail"></span>
+        </div>
+
+        <!-- ==================================== AVS Fields ==================================== -->
+        <!-- City -->
+        <div class="formRow cardRow" data-bind="hide:avsCity.hide, css:avsCity.CssValid">
+            <label class="fieldName" data-bind="text:avsCity.label" for="txtAvsCity"></label>
+            <span class="fieldInput"><input type="text" maxlength="20" data-bind="value:avsCity.value" id="txtAvsCity"></span>
+        </div>
+
+        <!-- Address -->
+        <div class="formRow cardRow" data-bind="hide:avsAddress.hide, css:avsAddress.CssValid">
+            <label class="fieldName" data-bind="text:avsAddress.label" for="txtAvsAddress"></label>
+            <span class="fieldInput"><input type="text" maxlength="20" data-bind="value:avsAddress.value" id="txtAvsAddress"></span>
+        </div>
+
+        <!-- Zip code/Postal Code (מיקוד) -->
+        <div class="formRow cardRow" data-bind="hide:avsZip.hide, css:avsZip.CssValid">
+            <label class="fieldName" data-bind="text:avsZip.label" for="txtAvsZip"></label>
+            <span class="fieldInput"><input type="text" maxlength="20" data-bind="value:avsZip.value" id="txtAvsZip"></span>
+        </div>
+        <!-- ==================================== AVS Fields ==================================== -->
+
+        <div class="formRow cardRow" data-bind="hide:numberOfPayments.hide, css:numberOfPayments.CssValid">
+            <label class="fieldName" data-bind="text:numberOfPayments.label" for="numberOfPaymentsselect"></label>
+            <span class="fieldInput">
+                <select class="tiny" data-bind="options: numberOfPayments.selectValues, value: numberOfPayments.value" id="numberOfPaymentsselect"></select>
+            </span>
+            <span class="fieldName summaryTotal" data-bind="text: summaryTotalText, hide: hideNumberOfPayments"></span>
+        </div>
+
+        <div class="formRow cardRow" data-bind="hide: condition.hide, css:condition.CssValid">
+            <span class="fieldName" data-bind="text:labels.IHaveReadTheAgreement"></span>
+            <span class="fieldInput">
+                <input class="checkbox" type="checkbox" data-bind="checked: condition.booleanValue" />
+                <a target="_blank" href="#" data-bind="attr: { href : condition.value }"><span class="fieldname checkbox" data-bind="text: condition.label"></span></a>
+            </span>
+        </div>
+
+        <div class="formRow cardRow" id="captcha_div">
+            <span class="fieldName" ></span>
+            <span class="fieldInput">
+                <span id="captcha_container"></span>
+            </span>
+        </div>
+
+        <div class="submitDiv">
+            <div data-bind="visible:showCancelURL" class="homeLink"><a href="#" data-bind="attr: { href : cancelURL }"><span data-bind="text: labels.LinkBackToSite"></span></a></div>
+            <div class="buttonDiv">
+                <input type="button" value="Go" role="button" data-bind="value: buttonText, enable: !loadMode(), click: sendData " />
+            </div>
+        </div>
+
+        <div class="errorDiv" data-bind="visible: error.hasMessages()">
+            <div class="errorDivIn">
+                <ul>
+                    <!-- ko template: { foreach: error.messages } -->
+                    <li><span class="message message1" data-bind="text: message"></span></li>
+                    <!-- /ko -->
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- footer -->
+<div class="footer">
+    <div class="footerIn">
+        <div class="right">
+            <div class="cardsLogos">
+                <!-- ko template: { foreach: logos }  -->
+                <div class="cardsLogo">
+                    <img class="logoImg" data-bind="attr: { src: $data }" />
+                </div>
+                <!-- /ko -->
+            </div>
+            <div class="cardcomText"><span data-bind="html: labels.PoweredByCardCom"></span></div>
+        </div>
+        <div class="left">
+            <div class="pciLogo"><img alt="PCI DSS logo" data-bind="attr: { src: images.pciLogo }" border="0"></div>
+            <div class="cardcomLogo"><img alt="Cardcom logo" data-bind="attr: { src: images.cardcomLogo }" border="0"></div>
+        </div>
+    </div>
+</div>
+
+<!-- popUp Messages -->
+<div id="PopUpRTL" class='white-popup white-popup-rtl mfp-hide'>
+    <h2 data-bind="html: labels.PopUpDealWassuccessful">  </h2>
+    <span data-bind="html: labels.PopUpRedirectTo"> </span>
+
+    <br />
+    <span data-bind="html: labels.PopUpYouClickThis"> </span>
+    <img src="/Images/2015/ajax-loader.gif" />
+    <!-- <a data-bind="attr: { href: PopUpRedirectTo}"> <span data-bind="html: labels.PopUpThis">כאן</span></a>-->
+</div>
+
+<div id="PopUpLTR" class='white-popup mfp-hide'>
+    <h2 data-bind="html: labels.PopUpDealWassuccessful"> </h2>
+    <span data-bind="html: labels.PopUpRedirectTo"></span>
+    <img src="/Images/2015/ajax-loader.gif" />
+    <!--<br />
+    <span data-bind="html: labels.PopUpYouClickThis">If you are not redirect you can click</span>
+    <a data-bind="attr: { href: PopUpRedirectTo}"> <span data-bind="html: labels.PopUpThis">this</span></a>-->
+</div>

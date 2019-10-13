@@ -16,6 +16,7 @@ class SimplePayment {
   const OPERATION_CANCEL = 'cancel';
   const OPERATION_STATUS = 'status';
   const OPERATION_ERROR = 'error';
+  const OPERATION_ZAPIER = 'zapier';
 
   protected $callback;
   protected $sandbox = true;
@@ -29,7 +30,10 @@ class SimplePayment {
   }
 
   public function setEngine($engine) {
-    if ($engine != 'Custom' && !$this->sandbox) $this->validate_license($this->license, null, $engine);
+    if ($engine != 'Custom' && !$this->sandbox) {
+      $this->validate_license($this->license, null, $engine);
+      if (!isset($_SERVER['HTTPS']) || !$_SERVER['HTTPS']) throw new Exception('HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500);
+    }
     $class = __NAMESPACE__ . '\\Engines\\' . $engine;
     $this->engine = new $class(self::param(strtolower($engine)), $this, $this->sandbox);
   }
@@ -48,6 +52,10 @@ class SimplePayment {
 
   function process($params = []) {
     return($this->engine->process($params));
+  }
+
+  function status($params = []) {
+    return($this->engine->status($params));
   }
 
   function post_process($params = []) {

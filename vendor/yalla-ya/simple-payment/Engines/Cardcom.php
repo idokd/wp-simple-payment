@@ -35,7 +35,7 @@ class Cardcom extends Engine {
   protected $password = 'c1234567!';
 
   const LANGUAGES = [ 'he' => 'Hebrew', 'en' => 'English' ];
-  const CURRENCIES = [ 1 =>	'ILS', 2 =>	'USD', 36 =>	'AUD', 124 =>	'CAD', 208 =>	'DKK', 392 =>	'JPY', 554 =>	'NZD', 643 =>	'RUB', 756 =>	'CHF', 826 =>	'GBP', 840 =>	'USD' ];
+  const CURRENCIES = [ 'ILS' => 1, 'USD' => 2, 'AUD' => 36,	'CAD' => 124, 'DKK' => 208, 'JPY' => 392, 'NZD' => 554, 'RUB' => 643, 'CHF' => 756, 'GBP' => 826 ];
   const OPERATIONS = [ 1 => 'Charge', 2 => 'Charge & Token', 3 => 'Token (Charge Pending)', 4 => 'Suspended Deal' ];
   const DOC_TYPES = [ 1 => 'Invoice', 3 => 'Donation Receipt', 101 => 'Order Confirmation', 400 => 'Receipt' ];
   const FIELD_STATUS = [ 'require' => 'Shown & Required', 'show' => 'Shown', 'hide' => 'Hidden'];
@@ -44,17 +44,17 @@ class Cardcom extends Engine {
 
   public function __construct($params = null, $handler = null, $sandbox = true) {
     parent::__construct($params, $handler, $sandbox);
-    $sandbox = $this->sandbox ? : !($this->param('terminal') && $this->param('username'));
-    if (!$sandbox) {
-      $this->terminal = $this->param('terminal');
-      $this->username = $this->param('username');
-      $this->password = $this->param('password');
-    }
+    $this->sandbox = $this->sandbox ? : !($this->param('terminal') && $this->param('username'));
   }
 
   public function process($params) {
     header("Location: ".$params['url']);
     return(true);
+  }
+
+  public function status($params) {
+    parent::status($params);
+    return($this->save($params));
   }
 
   public function post_process($params) {
@@ -63,13 +63,28 @@ class Cardcom extends Engine {
     return($_REQUEST['ResponeCode'] == 0);
   }
 
+  protected function param_part($params, $name = 'terminal') {
+    $parts = explode(';', $this->param($name));
+    $part = $parts[0];
+    if (isset($params['payments']) && isset($parts[1]) && $params['payments'] && $params['payments'] != 'single') {
+      if (isset($parts[1])) $part = $parts[1];
+      if ($params['payments'] != 'installments' && issset($parts[2])) $part = isset($parts[2]) ? : $part;
+    }
+    return($part);
+  }
+
   public function pre_process($params) {
     $post = [];
-
     $post['APILevel'] = $this->api['version'];
-    $post['TerminalNumber'] = $this->terminal;
-    $post['UserName'] = $this->username;
-    // $post['Password'] = $this->password;
+    if (!$this->sandbox) {
+      $post['TerminalNumber'] = $this->param_part($params);
+      $post['UserName'] = $this->param_part($params, 'username');
+      // $post['Password'] = $this->param_part($params, 'password');
+    } else {
+      $post['TerminalNumber'] = $this->terminal;
+      $post['UserName'] = $this->username;
+      $post['Password'] = $this->password;
+    }
 
     $post['Operation'] = $this->param('operation');
 
@@ -86,18 +101,23 @@ class Cardcom extends Engine {
 
     $post['codepage'] = 65001; // Codepage fixed to enable hebrew
 
-    $currency = $this->param('currency_id'); // TODO: if currency set, convert to local id
-    if ($currency != '') $post['CoinID'] = $currency;
+    $currency = $this->param('currency'); // TODO: if currency set, convert to local id
+    if ($currency != '') {
+      if ($currency = self::CURRENCIES[$currency]) $post['CoinID'] = $currency;
+      else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
+    }
 
     $language = $this->param('language');
     if ($language != '') $post['Language'] = $language; // TODO: detect wordpress language
 
-    if (isset($params['payments']) && $params['payments'] == 'installments') {
-      $payments = $this->param('max_payments');
-      if ($payments != '') $post['MaxNumOfPayments'] = $payments;
-      $payments = $this->param('min_payments');
-      if ($payments != '') $post['MinNumOfPayments'] = $payments;
-      if ($payments != '') $post['DefaultNumOfPayments'] = isset($params['installments']) && $params['installments'] ? $params['installments'] : $this->param('default_payments');
+    if (isset($params['payments']) && $params['payments']) {
+      if ($params['payments'] == 'installments') {
+        $payments = $this->param('max_payments');
+        if ($payments != '') $post['MaxNumOfPayments'] = $payments;
+        $payments = $this->param('min_payments');
+        if ($payments != '') $post['MinNumOfPayments'] = $payments;
+        if ($payments != '') $post['DefaultNumOfPayments'] = isset($params['installments']) && $params['installments'] ? $params['installments'] : $this->param('default_payments');
+      }
     }
 
     $post['SuccessRedirectUrl'] = $this->url(SimplePayment::OPERATION_SUCCESS);
@@ -166,6 +186,8 @@ class Cardcom extends Engine {
     if ($this->param('department_id')) $post['InvoiceHead.DepartmentId'] = $this->param('department_id');
     if ($this->param('site_id')) $post['InvoiceHead.SiteUniqueId'] = $this->param('site_id');
 
+    if ($this->param('hide_user_id')) $post['HideCreditCardUserId'] = $this->param('hide_user_id') == 'true' ? 'true' : 'false';
+
     $post['InvoiceLines1.Description'] = $params['product'];
     $post['InvoiceLines1.Price'] = $params['amount'];
     $post['InvoiceLines1.Quantity'] = 1;
@@ -214,8 +236,6 @@ class Cardcom extends Engine {
     }
     return($status);
   }
-
-
 
   protected function record($request, $response) {
     $fields = [

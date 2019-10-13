@@ -7,7 +7,6 @@ $list->prepare_items();
 </style>
 <div class="wrap">
 	<h1 class="wp-heading-inline"><?php _e('Payments Transactions', 'simple-payment'); ?></h1>
-	<?php if (user_can( get_current_user_id(), 'manage_options')) { ?><a href="/wp-admin/options-general.php?page=sp" cclass="page-title-action">Configure</a><?php } ?>
 	<?php
 	if ( isset( $_REQUEST['s'] ) && strlen( $_REQUEST['s'] ) ) {
 		/* translators: %s: search keywords */
@@ -18,7 +17,7 @@ $list->prepare_items();
 	<?php $list->views(); ?>
 	<form method="post">
 		<?php
-		$list->search_box(__('Search', 'simple-payment'), 's');
+		//$list->search_box(__('Search', 'simple-payment'), 's');
 		$list->display(); ?>
 	</form>
 	<br class="clear">
