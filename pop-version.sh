@@ -21,9 +21,9 @@ increment_version ()
 
 VERSION=`increment_version $LAST_VERSION`
 echo "Poping version to: $VERSION"
-sed -i "s/Version:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Version: $VERSION/" simple-payment-plugin.php
-sed -i "s/Stable tag:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Stable tag: $VERSION/" readme.txt
+sed -i "" "s/Version:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Version: ${VERSION}/" simple-payment-plugin.php
+sed -i "" "s/Stable tag:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Stable tag: $VERSION/" readme.txt
 git add .
-get tag -a $VERSION
+git tag -a $VERSION
 git commit -m "$VERSION"
 git push origin $VERSION
