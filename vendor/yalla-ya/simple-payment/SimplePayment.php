@@ -74,6 +74,10 @@ class SimplePayment {
     return($this->engine->pre_process($params));
   }
 
+  function recur($params = []) {
+    return($this->engine->recur($params));
+  }
+
   function callback() {}
 
   function save($schema, $params) {

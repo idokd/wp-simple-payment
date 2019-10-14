@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '1.27';
+$sp_db_version = '2';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -29,8 +29,10 @@ function sp_install() {
     `engine` VARCHAR(50) DEFAULT NULL,
     `status` VARCHAR(50) DEFAULT NULL,
     `transaction_id` VARCHAR(50) DEFAULT NULL,
-    `url` VARCHAR(255) DEFAULT '' NOT NULL,
+    `url` VARCHAR(255) DEFAULT NULL,
+    `payments` VARCHAR(255) DEFAULT NULL,
     `parameters` TEXT DEFAULT NULL,
+    `currency` VARCHAR(5) DEFAULT NULL,
     `amount` DECIMAL(10,2),
     `concept` VARCHAR(250) DEFAULT NULL,
     `user_id` INT DEFAULT NULL,

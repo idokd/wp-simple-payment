@@ -5,10 +5,10 @@ Simple Payment enables a simple, fast and easy integration to process payments. 
 
 Tags: credit card, donation, membership, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce
 
-Requires at least: 4.0
-Requires PHP: 7.2
-Tested up to: 5.2
-Stable tag: 1.0.8
+Requires at least: 4.7
+Requires PHP: 7.0
+Tested up to: 5.2.3
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

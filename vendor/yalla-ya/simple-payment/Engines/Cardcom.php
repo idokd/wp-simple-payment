@@ -19,15 +19,15 @@ class Cardcom extends Engine {
     // POST
     'payment_request' => 'https://secure.cardcom.solutions/Interface/LowProfile.aspx',
     'indicator_request' => 'https://secure.cardcom.solutions/Interface/BillGoldGetLowProfileIndicator.aspx',
+    'payment_recur' => 'https://secure.cardcom.solutions/interface/ChargeToken.aspx',
     'recurring_request' => 'https://secure.cardcom.solutions/Interface/RecurringPayment.aspx',
-    'charge_token_request' => 'https://secure.cardcom.co.il/Interface/ChargeToken.aspx',
 
     // WebService
     'ws' => 'https://secure.cardcom.solutions/Interface/BillGoldService.asmx',
     'payment_action' => 'CreateLowProfileDeal',
     'indicator_action' => 'GetLowProfileIndicator',
     'recurring_action' => 'AddUpdateRecurringOrder',
-    'charge_token_action' => 'LowProfileChargeToken',
+    'recur_action' => 'LowProfileChargeToken',
   ];
 
   protected $terminal = 1000;
@@ -101,14 +101,14 @@ class Cardcom extends Engine {
 
     $post['codepage'] = 65001; // Codepage fixed to enable hebrew
 
-    $currency = $this->param('currency'); // TODO: if currency set, convert to local id
+    $currency = $this->param('currency');
     if ($currency != '') {
       if ($currency = self::CURRENCIES[$currency]) $post['CoinID'] = $currency;
       else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
     }
 
     $language = $this->param('language');
-    if ($language != '') $post['Language'] = $language; // TODO: detect wordpress language
+    if ($language != '') $post['Language'] = $language;
 
     if (isset($params['payments']) && $params['payments']) {
       if ($params['payments'] == 'installments') {
@@ -156,55 +156,11 @@ class Cardcom extends Engine {
         $post['ReqCardOwnerEmail'] = $field == 'require' ? 'true' : 'false';
         $post['ShowCardOwnerEmail'] = $field == 'show' || $field == 'require' ? 'true' : 'false';
     }
+    if ($this->param('hide_user_id')) $post['HideCreditCardUserId'] = $this->param('hide_user_id') == 'true' ? 'true' : 'false';
 
     if (isset($params['full_name']) && $params['full_name']) $post['InvoiceHead.CustName'] = $params['full_name'];
 
-    if ($language) $post['InvoiceHead.Languge'] = $language;
-    if ($currency) $post['InvoiceHead.CoinID'] = $currency;
-
-    if (isset($params['email']) && $params['email']) $post['InvoiceHead.Email'] = $params['email'];
-
-    if (isset($params['address']) && $params['address']) $post['InvoiceHead.CustAddresLine1'] = $params['address'];
-
-    if (isset($params['address2']) && $params['address2']) $post['InvoiceHead.CustAddresLine2'] = $params['address2'];
-
-    if (isset($params['city']) && $params['city']) $post['InvoiceHead.CustCity'] = $params['city'];
-
-    if (isset($params['phone']) && $params['phone']) $post['InvoiceHead.CustLinePH'] = $params['phone'];
-    if (isset($params['mobile']) && $params['mobile']) $post['InvoiceHead.CustMobilePH'] = $params['mobile'];
-
-    if (isset($params['tax_id']) && $params['tax_id']) $post['InvoiceHead.CompID'] = $params['tax_id'];
-
-    if (isset($params['comment']) && $params['comment']) $post['InvoiceHead.Comments'] = $params['comment'];
-
-    if ($this->param('email_invoice')) $post['InvoiceHead.SendByEmail'] = 'true';
-    if ($this->param('vat_free')) $post['InvoiceHead.ExtIsVatFree'] = 'true';
-
-    if ($this->param('auto_create_account')) $post['InvoiceHead.IsAutoCreateUpdateAccount'] = 'true';
-    if ($this->param('auto_load_account')) $post['InvoiceHead.IsLoadInfoFromAccountID'] = 'true';
-
-    if ($this->param('department_id')) $post['InvoiceHead.DepartmentId'] = $this->param('department_id');
-    if ($this->param('site_id')) $post['InvoiceHead.SiteUniqueId'] = $this->param('site_id');
-
-    if ($this->param('hide_user_id')) $post['HideCreditCardUserId'] = $this->param('hide_user_id') == 'true' ? 'true' : 'false';
-
-    $post['InvoiceLines1.Description'] = $params['product'];
-    $post['InvoiceLines1.Price'] = $params['amount'];
-    $post['InvoiceLines1.Quantity'] = 1;
-    $post['InvoiceLines1.IsPriceIncludeVAT'] = 'true'; // Must be true - API requirement
-    // TODO: support per item: $post['InvoiceLines1.IsVatFree'] = 'true';
-
-    if (isset($params['id']) && $params['id']) $post['InvoiceLines1.ProductID'] = $params['id'];
-/*
-    InvoiceHead.ManualInvoiceNumber - require special support from CardCom
-    AccountForeignKey 	- not needed at the moment, TODO: maybe use user_id from wordpress (string)
-    InvoiceHead.AccountID	 - not needed (int)
-    InvoiceHead.ValueDate, InvoiceHead.Date - not supported on this API
-
-   // TODO: Support Custom Fields
-   CustomFields.Field1 .. 25 */
-
-   // HideCreditCardUserId - TODO: for aborad clients
+    $post = array_merge($post, $this->document(array_merge($params, ['language' => $language, 'currency' => $currency])));
 
     // TODO: Analyze how to use those parameters
     // SumInStars
@@ -237,6 +193,90 @@ class Cardcom extends Engine {
     return($status);
   }
 
+  public function recur() {
+    $post = [];
+    if (!$this->sandbox) {
+      $post['terminalnumber'] = $this->param_part($params);
+      $post['username'] = $this->param_part($params, 'username');
+      // $post['TokenToCharge.UserPassword'] = $this->param_part($params, 'password');
+    } else {
+      $post['terminalnumber'] = $this->terminal;
+      $post['username'] = $this->username;
+      //$post['TokenToCharge.UserPassword'] = $this->password;
+    }
+    $post['TokenToCharge.SumToBill'] = $params['amount'];
+
+    $currency = $this->param('currency');
+    if ($currency != '') {
+      if ($currency = self::CURRENCIES[$currency]) $post['CoinID'] = $currency;
+      else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
+    }
+
+    $post['TokenToCharge.CoinID'] = $currency;
+
+    $language = $this->param('language');
+    if ($language != '') $post['Language'] = $language;
+
+    //  TokenToCharge.CardOwnerName
+    // TokenToCharge.Token, TokenToCharge.CardValidityMonth
+    // TokenToCharge.CardValidityYear
+    // TokenToCharge.IdentityNumber
+
+    $post['TokenToCharge.RefundInsteadOfCharge'] = 'false';
+    $post['TokenToCharge.IsAutoRecurringPayment'] = 'true';
+
+    if (isset($params['approval_number']) && $params['approval_number']) $post['TokenToCharge.ApprovalNumber'] = $params['approval_number'];
+
+
+    $post = array_merge($post, $this->document(array_merge($params, ['language' => $language, 'currency' => $currency])));
+
+    $status = $this->post($this->api['payment_recur'], $post);
+    parse_str($status, $status);
+    $this->record($post, $status);
+    // Not in use:
+    // TokenToCharge.Salt, TokenToCharge.SumInStars, TokenToCharge.NumOfPayments
+    // TokenToCharge.ExtendedParameters,  TokenToCharge.SapakMutav
+    //  TokenToCharge.TokenCompanyUserName,  TokenToCharge.TokenCompanyPassword
+    //  TokenToCharge.FirstPaymentSumAgorot, TokenToCharge.ConstPaymentAgorot
+    // TokenToCharge.JParameter
+    // TokenToCharge.UniqAsmachta
+    // TokenToCharge.AvsCity, TokenToCharge.AvsAddress, TokenToCharge.AvsZip
+  }
+
+  protected function document($params) {
+    $post = [];
+    if ($language) $post['InvoiceHead.Languge'] = $params['language'];
+    if ($currency) $post['InvoiceHead.CoinID'] = $params['currency'];
+    if (isset($params['email']) && $params['email']) $post['InvoiceHead.Email'] = $params['email'];
+    if (isset($params['address']) && $params['address']) $post['InvoiceHead.CustAddresLine1'] = $params['address'];
+    if (isset($params['address2']) && $params['address2']) $post['InvoiceHead.CustAddresLine2'] = $params['address2'];
+    if (isset($params['city']) && $params['city']) $post['InvoiceHead.CustCity'] = $params['city'];
+    if (isset($params['phone']) && $params['phone']) $post['InvoiceHead.CustLinePH'] = $params['phone'];
+    if (isset($params['mobile']) && $params['mobile']) $post['InvoiceHead.CustMobilePH'] = $params['mobile'];
+    if (isset($params['tax_id']) && $params['tax_id']) $post['InvoiceHead.CompID'] = $params['tax_id'];
+    if (isset($params['comment']) && $params['comment']) $post['InvoiceHead.Comments'] = $params['comment'];
+    if ($this->param('email_invoice')) $post['InvoiceHead.SendByEmail'] = 'true';
+    if ($this->param('vat_free')) $post['InvoiceHead.ExtIsVatFree'] = 'true';
+    if ($this->param('auto_create_account')) $post['InvoiceHead.IsAutoCreateUpdateAccount'] = 'true';
+    if ($this->param('auto_load_account')) $post['InvoiceHead.IsLoadInfoFromAccountID'] = 'true';
+    if ($this->param('department_id')) $post['InvoiceHead.DepartmentId'] = $this->param('department_id');
+    if ($this->param('site_id')) $post['InvoiceHead.SiteUniqueId'] = $this->param('site_id');
+    $post['InvoiceLines1.Description'] = $params['product'];
+    $post['InvoiceLines1.Price'] = $params['amount'];
+    $post['InvoiceLines1.Quantity'] = 1;
+    $post['InvoiceLines1.IsPriceIncludeVAT'] = 'true'; // Must be true - API requirement
+    // TODO: support per item: $post['InvoiceLines1.IsVatFree'] = 'true';
+    if (isset($params['id']) && $params['id']) $post['InvoiceLines1.ProductID'] = $params['id'];
+/*
+    InvoiceHead.ManualInvoiceNumber - require special support from CardCom
+    AccountForeignKey 	- not needed at the moment, TODO: maybe use user_id from wordpress (string)
+    InvoiceHead.AccountID	 - not needed (int)
+    InvoiceHead.ValueDate, InvoiceHead.Date - not supported on this API
+
+   // TODO: Support Custom Fields
+   CustomFields.Field1 .. 25 */
+    return($post);
+  }
   protected function record($request, $response) {
     $fields = [
         'terminal' => ['TerminalNumber', 'terminalnumber'],

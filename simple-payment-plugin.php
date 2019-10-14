@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
- * Version: 1.0.8
+ * Version: 1.0.9
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -524,6 +524,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     return($process);
   }
 
+  function recur($params = []) {
+    if (parent::recur($params)) {
+      do_action('sp_payment_recur', $params);
+      return(true);
+    }
+    return(false);
+  }
+
   function callback() {
     $info = parse_url($_SERVER["REQUEST_URI"]);
     $callback = parse_url($this->callback);
@@ -569,6 +577,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         case 'css':
           header('Content-Type: text/css');
           echo self::param('css');
+          die; break;
+        case 'recur':
+
           die; break;
     }
     if ($url) { echo '<html><head><script type="text/javascript"> parent.location.replace("'.$url.'"); </script></head><body></body</html>'; die(); }
@@ -638,8 +649,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $table_name = $wpdb->prefix . 'sp_transactions';
     $result = $wpdb->insert($table_name, [
         'engine' => $this->engine->name,
+        'currency' => $params['currency'] ? $params['currency'] : null,
         'amount' => $params['amount'],
         'concept' => $params['product'],
+        'payments' => $params['payments'],
         'parameters' => json_encode($params),
         'url' => $_SERVER["HTTP_REFERER"],
         'status' => self::TRANSACTION_NEW,
