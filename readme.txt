@@ -8,7 +8,7 @@ Tags: credit card, donation, membership, payment request, payment gateway, sales
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 5.2.3
-Stable tag: 1.0.9
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,7 +37,7 @@ PS: You'll need an [Simple Payment API key for advanced gateways](https://simple
 
 == Installation ==
 
-1. Upload the Simple Payment plugin to your site, Activate it, then enter your [Simple Payment API key](ttps://simple-payment.yalla-ya.com/get/).
+1. Upload the Simple Payment plugin to your site, Activate it, then enter your [Simple Payment API key](https://simple-payment.yalla-ya.com/get/).
 
 2. Select Payment Page where you will have the Payment Form integrated
 
@@ -55,7 +55,7 @@ Currently it supports PayPal & Cardcom, with another new payment gateway added e
 
 == Changelog ==
 
-Checkout changelog.txt file
+Checkout [changelog.txt](http://plugins.svn.wordpress.org/simple-payment/trunk/changelog.txt) file
 
 == Screenshots ==
 
@@ -66,8 +66,14 @@ Checkout changelog.txt file
 5. Payment Form example (our Legacy form) - we have bootstrap ready, donation etc.
 6. REMEMBER! Set the Payment Page so you can enjoy the plugin.
 
+== Demo Site ==
+You can access admin and checkout our site demo to see how the plugin works
+URL: [https://wordpress.yalla-ya.com/](https://wordpress.yalla-ya.com/)
+Username: admin
+Password: admin
+
 == Advanced Configuration: Theme Custom Payment Processing ==
 
-To write your own payment processing integration, to be plugin, read the information at this link: https://github.com/idokd/wp-simple-payment
+To write your own payment processing integration, to be plugin, read the information at this link: [https://github.com/idokd/wp-simple-payment](https://github.com/idokd/wp-simple-payment)
 
 you will require to write a simple php class that Pre Process, Process and Post Process the transaction with your your payment gateway.

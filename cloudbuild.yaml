@@ -13,8 +13,8 @@ steps:
 
 
 # Uses the docker build step to build an image
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA', '.']
+#- name: 'gcr.io/cloud-builders/docker'
+#  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA', '.']
 
 # image is pushed to Container Registry
 images:
