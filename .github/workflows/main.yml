@@ -1,0 +1,17 @@
+name: WordPress.org Plugin Deploy
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: WordPress Plugin Deploy
+      uses: 10up/action-wordpress-plugin-deploy@1.3.0
+      env:
+        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+        SLUG: simple-payment
