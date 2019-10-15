@@ -24,6 +24,6 @@ echo "Poping version to: $VERSION"
 sed -i "" "s/Version:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Version: ${VERSION}/" simple-payment-plugin.php
 sed -i "" "s/Stable tag:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Stable tag: $VERSION/" readme.txt
 git add .
-git tag -a $VERSION -m "$LAST_VERSION -> $VERSION"
 git commit -m "$VERSION"
+git tag -a $VERSION -m "$LAST_VERSION -> $VERSION"
 git push origin $VERSION
