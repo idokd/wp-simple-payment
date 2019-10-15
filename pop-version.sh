@@ -25,5 +25,6 @@ sed -i "" "s/Version:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Version: ${VERSION}/
 sed -i "" "s/Stable tag:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Stable tag: $VERSION/" readme.txt
 git add .
 git commit -m "$VERSION"
+git push
 git tag -a $VERSION -m "$LAST_VERSION -> $VERSION"
 git push origin $VERSION

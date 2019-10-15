@@ -17,5 +17,5 @@ steps:
 #  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA', '.']
 
 # image is pushed to Container Registry
-images:
-- 'gcr.io/$PROJECT_ID/$REPO_NAME'
+#images:
+#- 'gcr.io/$PROJECT_ID/$REPO_NAME'
