@@ -231,12 +231,12 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   public function prepare_items() {
-    $screen = get_current_screen();
-    $per_page = get_user_meta(get_current_user_id(), $screen->get_option('per_page', 'option'), true);
-
     $this->process_bulk_action();
 
-    $per_page     = $this->get_items_per_page( 'transactions_per_page', $per_page ? : $screen->get_option('per_page', 20));
+    $screen = get_current_screen();
+    $per_page = get_user_meta(get_current_user_id(), $screen->get_option('per_page', 'option'), true);
+    $per_page     = $this->get_items_per_page( 'per_page', $screen->get_option('per_page', 'default'));
+    $per_page = $per_page ? : 20;
     $current_page = $this->get_pagenum();
 
     $this->set_pagination_args([

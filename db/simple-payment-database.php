@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '2';
+$sp_db_version = '3';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -42,7 +42,11 @@ function sp_install() {
     `archived` TINYINT(1) NOT NULL DEFAULT 0,
     `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY `idx_id` (`id`)
+    UNIQUE KEY `idx_id` (`id`),
+      KEY `idx_engine` (`engine`),
+      KEY `idx_transaction` (`engine`,`transaction_id`),
+      KEY `idx_user` (`user_id`),
+      KEY `idx_archived` (`archived`)
   ) $charset_collate;
 
   ALTER TABLE $table_name  AUTO_INCREMENT = 1000;";
@@ -53,7 +57,7 @@ function sp_install() {
   $sql = "CREATE TABLE $table_name (
     `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
     `transaction_id` VARCHAR(50),
-    `code` TINYTEXT NOT NULL,
+    `code` TINYTEXT DEFAULT NULL,
     `terminal` MEDIUMINT(9) NOT NULL,
     `profile_code` VARCHAR(50) NOT NULL,
     `operation` INT NOT NULL,
@@ -68,7 +72,9 @@ function sp_install() {
     `response` TEXT DEFAULT NULL,
     `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY `idx_id` (`id`)
+    UNIQUE KEY `idx_id` (`id`),
+      KEY `idx_transaction` (`transaction_id`),
+
   ) $charset_collate;";
 
   dbDelta( $sql );
@@ -96,16 +102,19 @@ function sp_install_data() {
 
 
 function sp_uninstall() {
-  global $wpdb;
-  global $wp_rewrite;
+  global $wpdb, $wp_rewrite;
   if (!defined('WP_UNINSTALL_PLUGIN')) exit();
-
-  if (get_option('sp_uninstall_drop_table') == 'true') {
-    $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . "sp_transactions");
-    $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . "sp_cardcom");
+  $uninstall = get_option('sp_uninstall', 'all');
+  if ($uninstall == 'all' || $uninstall == 'tables') {
+    $tables = ['transactions', 'cardcom'];
+    foreach ($tables as $table) $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . "sp_".$table);
   }
-  delete_option('sp_uninstall_drop_table');
-  delete_option('sp_db_version');
-
+  if ($uninstall == 'all' || $uninstall == 'settings') {
+    $options = ['sp_uninstall_drop_table', 'sp_db_version', 'sp'];
+    foreach ($options as $option) {
+      delete_option($option);
+      delete_site_option($option);
+    }
+  }
   $wp_rewrite->flush_rules();
 }

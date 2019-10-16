@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
- * Version: 1.1.3
+ * Version: 1.1.4
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -62,7 +62,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function load() {
     add_action('plugins_loaded', [$this, 'load_textdomain']);
-    add_action('plugins_loaded', [$this, 'init']);
+    add_action('wp_loaded', [$this, 'init']);
 
     if (is_admin()) {
       register_activation_hook(__FILE__, [$this, 'activate']);
@@ -121,7 +121,11 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   function activate() {}
-  function deactivate() {}
+
+  function deactivate() {
+    global $wp_rewrite;
+    $wp_rewrite->flush_rules();
+  }
 
   function register_reading_setting() {
     register_setting(
@@ -487,6 +491,12 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     return($status);
   }
 
+  function status($params = []) {
+    $status = parent::status($params);
+    do_action('sp_payment_status', $params);
+    return($status);
+  }
+
   function post_process($params = []) {
     if (parent::post_process($params)) {
       $this->update($this->engine->transaction, [
@@ -542,10 +552,15 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $this->setEngine($engine);
     switch (strtolower(sanitize_text_field($_REQUEST['op']))) {
         case self::OPERATION_SUCCESS:
+          $rmop = false;
           $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
-          if (!$url) $url = $this->payment_page();
+          if (!$url) {
+            $url = $this->payment_page();
+            $rmop = true;
+          }
           if (!$url) $url = get_bloginfo('url');
           $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
+          if ($rmop) $url = remove_query_arg('op', $url);
           $this->post_process();
           break;
         case self::OPERATION_CANCEL:
@@ -646,10 +661,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   protected function payment($params) {
     global $wpdb;
     $user_id = get_current_user_id();
-    $table_name = $wpdb->prefix . 'sp_transactions';
-    $result = $wpdb->insert($table_name, [
+    $result = $wpdb->insert($wpdb->prefix.'sp_transactions', [
         'engine' => $this->engine->name,
-        'currency' => $params['currency'] ? $params['currency'] : null,
+        'currency' => $params['currency'] ? : null,
         'amount' => $params['amount'],
         'concept' => $params['product'],
         'payments' => $params['payments'],

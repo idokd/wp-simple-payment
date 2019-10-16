@@ -53,8 +53,9 @@ class Cardcom extends Engine {
   }
 
   public function status($params) {
+    $this->transation = $params['lowprofilecode'];
     parent::status($params);
-    return($this->save($params));
+    return($this->record([], $params) ? 'OK' : 'FAIL');
   }
 
   public function post_process($params) {
@@ -282,7 +283,7 @@ class Cardcom extends Engine {
         'terminal' => ['TerminalNumber', 'terminalnumber'],
         'profile_code' => ['LowProfileCode', 'lowprofilecode'],
         'transaction_id' => ['LowProfileCode', 'lowprofilecode'],
-        'code' => '',
+        'code' => 'response_code',
         'operation' => 'Operation',
         'response_code' => 'ResponseCode',
         'status_code' => 'Status',
