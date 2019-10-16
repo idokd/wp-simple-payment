@@ -3,6 +3,8 @@ namespace SimplePayment\Engines;
 
 use SimplePayment\SimplePayment;
 use Exception;
+use DateTime;
+use DateInterval;
 
 if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
@@ -53,9 +55,24 @@ class Cardcom extends Engine {
   }
 
   public function status($params) {
-    $this->transation = $params['lowprofilecode'];
     parent::status($params);
-    return($this->record([], $params) ? 'OK' : 'FAIL');
+    $this->transation = $params['lowprofilecode'];
+    $post = [];
+    if (!$this->sandbox) {
+      $post['terminalnumber'] = $this->param_part($params);
+      $post['username'] = $this->param_part($params, 'username');
+    } else {
+      $post['terminalnumber'] = $this->terminal;
+      $post['username'] = $this->username;
+    }
+    $post['lowprofilecode'] = $params['lowprofilecode'];
+    $status = $this->post($this->api['indicator_request'], $post);
+    parse_str($status, $status);
+    $this->record($params, $status);
+    if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
+      if ($this->param('reurring') == 'provider') $this->recur_by_provider($params);
+    }
+    return($status);
   }
 
   public function post_process($params) {
@@ -65,8 +82,16 @@ class Cardcom extends Engine {
   }
 
   protected function param_part($params, $name = 'terminal') {
+    $terminal = isset($params['terminal']) ? $params['terminal'] : null;
+    if (!$terminal) $terminal = isset($params['terminalnumber']) ? $params['terminalnumber'] : null;
+    $index = array_search($terminal, explode(';', $this->param('terminal')));
+    if ($index !== FALSE && $name == 'terminal') return($terminal);
+
     $parts = explode(';', $this->param($name));
     $part = $parts[0];
+
+    if ($index !== FALSE) return(count($parts) > $index ? $parts[$index] : $parts[count($parts) - 1]);
+
     if (isset($params['payments']) && isset($parts[1]) && $params['payments'] && $params['payments'] != 'single') {
       if (isset($parts[1])) $part = $parts[1];
       if ($params['payments'] != 'installments' && issset($parts[2])) $part = isset($parts[2]) ? : $part;
@@ -121,10 +146,10 @@ class Cardcom extends Engine {
       }
     }
 
-    $post['SuccessRedirectUrl'] = $this->url(SimplePayment::OPERATION_SUCCESS);
-    $post['ErrorRedirectUrl'] = $this->url(SimplePayment::OPERATION_ERROR);
-    $post['IndicatorUrl'] = $this->url(SimplePayment::OPERATION_STATUS);
-    $post['CancelUrl'] = $this->url(SimplePayment::OPERATION_CANCEL);
+    $post['SuccessRedirectUrl'] = $this->url(SimplePayment::OPERATION_SUCCESS, $params);
+    $post['ErrorRedirectUrl'] = $this->url(SimplePayment::OPERATION_ERROR, $params);
+    $post['IndicatorUrl'] = $this->url(SimplePayment::OPERATION_STATUS, $params);
+    $post['CancelUrl'] = $this->url(SimplePayment::OPERATION_CANCEL, $params);
     if ($this->param('css') != '') $post['CSSUrl'] = $this->callback.(strpos($this->callback, '?') ? '&' : '?').'op=css';
 
     $post['CancelType'] = $this->cancelType;
@@ -191,6 +216,92 @@ class Cardcom extends Engine {
     if (isset($status['ResponseCode']) && $status['ResponseCode'] != 0) {
       throw new Exception($status['Description'], $status['ResponseCode']);
     }
+    return($status);
+  }
+
+  public function recur_by_provider($params) {
+    $post = [];
+
+    if (!$this->sandbox) {
+      $post['TerminalNumber'] = $this->param_part($params);
+      $post['UserName'] = $this->param_part($params, 'username');
+      $terminals = $this->param('terminal');
+      $terminals = explode(';', $terminals);
+      if (count($terminals) >= 3) $post['RecurringPayments.ChargeInTerminal'] = $terminals[2];
+    } else {
+      $post['TerminalNumber'] = $this->terminal;
+      $post['UserName'] = $this->username;
+    }
+
+    $post['Operation'] = $this->param('reurring_operation');
+    $post['LowProfileDealGuid'] = isset($params['lowprofilecode']) ? $params['lowprofilecode'] : $params['transaction_id'];
+    
+    if ($this->param('department_id')) $post['RecurringPayments.DepartmentId'] = $this->param('department_id');
+    if ($this->param('site_id')) $post['Account.SiteUniqueId'] = $this->param('site_id');
+    
+    if (isset($params['payment_id']) && $params['payment_id']) $post['RecurringPayments.ReturnValue'] = $params['payment_id'];
+
+    $post['RecurringPayments.FlexItem.Price'] = $params['amount'];
+    $post['RecurringPayments.FlexItem.InvoiceDescription'] = isset($params['product']) ? $params['product'] : $params['concept'];
+    $post['RecurringPayments.InternalDecription'] = isset($params['product']) ? $params['product'] : $params['concept'];
+    
+    if (isset($params['card_holder_name']) && $params['card_holder_name']) {
+      $post['Account.ContactName'] = $params['card_holder_name'];
+    }
+    if (!isset($post['CardOwnerName']) && isset($params['full_name']) && $params['full_name']) {
+      $post['Account.ContactName'] = $params['full_name']; // card_holder
+    }
+
+    if (isset($params['first_name']) && $params['first_name']) $post['Account.FirstName'] = $params['first_name'];
+
+    if (isset($params['phone']) && $params['phone']) $post['Account.PhLine'] = $params['phone'];
+    if (isset($params['mobile']) && $params['mobile']) $post['Account.PhMobile'] = $params['mobile'];
+    if (isset($params['email']) && $params['email']) $post['Account.Email'] = $params['email'];
+
+    if (isset($params['address']) && $params['address']) $post['Account.Street1'] = $params['address'];
+    if (isset($params['address2']) && $params['address2']) $post['Account.Street2'] = $params['address2'];
+    if (isset($params['zipcode']) && $params['zipcode']) $post['Account.ZipCode'] = $params['zipcode'];
+    if (isset($params['city']) && $params['city']) $post['Account.City'] = $params['city'];
+
+    if (isset($params['comment']) && $params['comment']) $post['Account.Comments'] = $params['comment'];
+
+    if (isset($params['tax_id']) && $params['tax_id']) $post['Account.RegisteredBusinessNumber'] = $params['tax_id'];
+
+    if ($this->param('vat_free')) $post['Account.VatFree'] = 'true';
+
+    $language = $this->param('language');
+    if ($language != '') $post['Account.IsDocumentLangEnglish'] = $language == 'he' ? 'false' : 'true';
+
+    $currency = $this->param('currency');
+    if ($currency != '') {
+      if ($currency = self::CURRENCIES[$currency]) $post['RecurringPayments.FinalDebitCoinId'] = $currency;
+      else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
+    }
+
+    // month from now 28 days
+    $date = new DateTime();
+    $date->add(new DateInterval('P28D')); // P1D means a period of 28 day
+    $post['RecurringPayments.NextDateToBill'] = $date->format('d/m/Y');
+
+    $limit = $this->param('total_recurring');
+    $post['RecurringPayments.TotalNumOfBills'] = $limit ? : 999999;
+
+    $interval = $this->param('interval');
+    if ($interval) $post['TimeIntervalId'] = $interval;
+  
+    $docType = $this->param('doc_type');
+    if ($docType != '') $post['RecurringPayments.DocTypeToCreate'] = $docType;
+
+    $post['RecurringPayments.FlexItem.IsPriceIncludeVat'] = 'true'; // Must be true - API requirement
+
+    // Not in use:
+    //  Account.AccountId	, Account.CompanyName	
+    //  Account.DontCheckForDuplicate	RecurringPayments.RecurringId
+    // Account.ForeignAccountNumber	, RecurringPayments.IsActive	
+    // BankInfo.Bank	 BankInfo.Branch	BankInfo.AccountNumber	 BankInfo.Description	
+    $status = $this->post($this->api['recurring_request'], $post);
+    parse_str($status, $status);
+    $this->record($post, $status);
     return($status);
   }
 
@@ -281,15 +392,15 @@ class Cardcom extends Engine {
   protected function record($request, $response) {
     $fields = [
         'terminal' => ['TerminalNumber', 'terminalnumber'],
-        'profile_code' => ['LowProfileCode', 'lowprofilecode'],
-        'transaction_id' => ['LowProfileCode', 'lowprofilecode'],
+        'profile_code' => ['LowProfileCode', 'lowprofilecode', 'LowProfileDealGuid'],
+        'transaction_id' => ['LowProfileCode', 'lowprofilecode', 'LowProfileDealGuid'],
         'code' => 'response_code',
-        'operation' => 'Operation',
+        'operation' => ['Operation', 'Recurring0_RecurringId'],
         'response_code' => 'ResponseCode',
         'status_code' => 'Status',
         'deal_response' => 'DealResponse',
         'token_response' => 'TokenResponse',
-        'token' => 'Token',
+        'token' => ['Token', 'Recurring0_RecurringId'],
         'operation_response' => 'OperationResponse',
         'operation_description' => 'Description',
   ];

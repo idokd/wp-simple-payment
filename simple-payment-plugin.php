@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
- * Version: 1.1.4
+ * Version: 1.1.5
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -24,6 +24,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   protected $option_name = 'sp';
   protected $payment_page = null;
+  protected $table_name = 'sp_transactions';
 
   protected $test_shortcodes = [
     'button' => [
@@ -50,6 +51,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $option = get_option('sp') ? : [];
     parent::__construct(array_merge(array_merge($this->defaults, $params), $option));
     $this->license = get_option('sp_license');
+    $this->load();
   }
 
   public function setEngine($engine) {
@@ -117,6 +119,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   protected function payment_page() {
       if ($this->payment_page) $this->callback = get_page_link($this->payment_page);
       else $this->callback = self::param('callback_url');
+      if (!$this->callback) $this->callback = get_bloginfo('url');
       return($this->callback);
   }
 
@@ -492,7 +495,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   function status($params = []) {
-    $status = parent::status($params);
+    $data = [];
+    if (isset($params['payment_id'])) $data = $this->fetch($params['payment_id']);
+    $status = parent::status(array_merge($data, $params));
     do_action('sp_payment_status', $params);
     return($status);
   }
@@ -545,7 +550,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   function callback() {
     $info = parse_url($_SERVER["REQUEST_URI"]);
     $callback = parse_url($this->callback);
-    if ($info['path'] != $callback['path']) return;
+    if (isset($info['path']) && isset($callback['path']) && $info['path'] != $callback['path']) return;
     if (!isset($_REQUEST['op'])) return;
     $url = null;
     $engine = isset($_REQUEST['engine']) ? sanitize_text_field($_REQUEST['engine']) : self::param('engine');
@@ -670,6 +675,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'parameters' => json_encode($params),
         'url' => $_SERVER["HTTP_REFERER"],
         'status' => self::TRANSACTION_NEW,
+        'sandbox' => $this->sandbox,
         'user_id' => $user_id ? $user_id : null
     ]);
     return($result ? $wpdb->insert_id : false);
@@ -692,6 +698,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       ]);
       require(SPWP_PLUGIN_DIR.'/admin/transaction-list-table.php');
       $list = new Transaction_List();
+  }
+
+  public function fetch($id, $engine = null) {
+    global $wpdb;
+    $table_name = $wpdb->prefix.$this->table_name;
+    if (!$engine) {
+        $sql = "SELECT * FROM ".$table_name." WHERE `id` = %d LIMIT 1";
+        $sql = sprintf($sql, absint($id));
+    } else {
+        $sql = "SELECT * FROM ".$table_name." WHERE `engine` = '%s' `transaction_id` = %d LIMIT 1";
+        $sql = sprintf($sql, esc_sql($engine), esc_sql($id));
+    }
+    $result = $wpdb->get_results( $sql , 'ARRAY_A' );
+    return(count($result) ? $result[0] : null);
   }
 
   public function info() {
@@ -751,7 +771,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     }
 
     public static function archive($id = null) {
-      global $wpdb;
       self::update($id ? : $_REQUEST['transaction'], [
         'archived' => true
       ]);
@@ -769,4 +788,3 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 require_once('db/simple-payment-database.php');
 
 $plugin = new SimplePaymentPlugin();
-$plugin->load();

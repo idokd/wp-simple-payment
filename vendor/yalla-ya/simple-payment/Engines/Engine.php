@@ -83,9 +83,13 @@ class Engine {
       );
     }
 
-    public function url($type) {
+    public function url($type, $params = null) {
       $url = $this->callback;
-      return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='.$this->name);
+      $addition = [];
+      if ($params) {
+          if (isset($params['payment_id'])) $addition['payment_id'] = $params['payment_id'];
+      }
+      return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='.$this->name.($addition ? '&'.http_build_query($addition) : ''));
     }
 
     protected function post($url, $vars) {

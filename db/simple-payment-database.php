@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '3';
+$sp_db_version = '4';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -39,6 +39,7 @@ function sp_install() {
     `error_code` VARCHAR(255) DEFAULT NULL,
     `error_description` VARCHAR(255) DEFAULT NULL,
     `retries` TINYINT(1) NOT NULL DEFAULT 0,
+    `sandbox` TINYINT(1) NOT NULL DEFAULT 0,
     `archived` TINYINT(1) NOT NULL DEFAULT 0,
     `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
