@@ -399,7 +399,7 @@ class Cardcom extends Engine {
         'token_response' => 'TokenResponse',
         'token' => ['Token', 'Recurring0_RecurringId'],
         'operation_response' => ['OperationResponse','Status'],
-        'operation_description' => ['Description', ['OperationResponseText'],
+        'operation_description' => ['Description', 'OperationResponseText'],
   ];
   $params = [ 'request' => json_encode($request),
   'response' => json_encode($response) ];
