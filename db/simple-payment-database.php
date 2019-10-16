@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '4';
+$sp_db_version = '5';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -58,12 +58,9 @@ function sp_install() {
   $sql = "CREATE TABLE $table_name (
     `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
     `transaction_id` VARCHAR(50),
-    `code` TINYTEXT DEFAULT NULL,
     `terminal` MEDIUMINT(9) NOT NULL,
-    `profile_code` VARCHAR(50) NOT NULL,
     `operation` INT NOT NULL,
     `response_code` INT DEFAULT NULL,
-    `status_code` INT DEFAULT NULL,
     `deal_response` INT DEFAULT NULL,
     `token_response` INT DEFAULT NULL,
     `token` VARCHAR(50) DEFAULT NULL,
@@ -111,7 +108,7 @@ function sp_uninstall() {
     foreach ($tables as $table) $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . "sp_".$table);
   }
   if ($uninstall == 'all' || $uninstall == 'settings') {
-    $options = ['sp_uninstall_drop_table', 'sp_db_version', 'sp'];
+    $options = ['sp_uninstall_drop_table', 'sp_db_version', 'sp', 'sp_uninstall'];
     foreach ($options as $option) {
       delete_option($option);
       delete_site_option($option);

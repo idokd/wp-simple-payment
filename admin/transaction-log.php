@@ -1,10 +1,8 @@
 <?php
-add_thickbox();
+wp_enqueue_script( 'simple-payment-admin-js', plugin_dir_url( __FILE__ ).'script.js', [], false, true );
+wp_enqueue_style( 'simple-payment-admin-css', plugin_dir_url( __FILE__ ).'style.css', [], false);
 $list->prepare_items();
 ?>
-<style>
-.ttablenav .alignleft:nth-of-type(2n) { clear: both; }
-</style>
 <div class="wrap">
 	<h1 class="wp-heading-inline"><?php _e('Payments Transactions', 'simple-payment'); ?></h1>
 	<?php

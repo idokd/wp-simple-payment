@@ -20,6 +20,9 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     self::$table_name = $engine ? $wpdb->prefix.'sp_'.strtolower($engine) : $wpdb->prefix.self::$table_name;
 	}
 
+  protected function is_export() {
+    return(!empty($_GET['wlte_export']));
+  }
 
   protected function get_views() {
       if (self::$engine) return;
@@ -115,9 +118,8 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     _e( 'No transactions avaliable.', 'simple-payment' );
   }
 
-
   function column_id( $item ) {
-    if (self::$engine) return($item['id']);
+    if (self::$engine || $this->is_export()) return($item['id']);
     $archive_nonce = wp_create_nonce( 'sp_archive_transaction' );
     $title = '<strong>' . $item['id'] . '</strong>';
     $actions = [
@@ -141,7 +143,18 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 	}
 
   public function column_default($item, $column_name) {
-      return($item[$column_name]);
+    $value = $item[$column_name];
+    if ($this->is_export()) return($value);
+      if (strlen($value) > 40) {
+        add_thickbox();
+        $type = strpos($value, '://') !== FALSE ? 'url' : '';
+        $type = json_decode($value) && json_last_error() === JSON_ERROR_NONE ? 'json' : $type;
+        $id = 'tbox-'.$column_name.'-'.$item['id'];
+        $href = "#TB_inline?&width=600&height=550&inlineId=".$id;
+        $value = '<a href="'.$href.'" title="'.$column_name.'" class="thickbox">'.substr($value, 0, 30).'...</a>';
+        $value .= '<div id="'.$id.'" style="display:none;"><pre class="'.$type.'">'.$item[$column_name].'</pre></div>';
+      }
+      return($value);
   }
 
   public function column_user_id($item) {
@@ -151,6 +164,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   public function column_cb( $item ) {
+    if ($this->is_export()) return($item['id']);
 		return sprintf(
 			'<input type="checkbox" name="%1$s[]" value="%2$s" />',
 			'id',
@@ -174,8 +188,8 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       'concept' => __( 'Concept', 'simple-payment' ),
       'amount'    => __( 'Amount', 'simple-payment' ),
       'engine'    => __( 'Engine', 'simple-payment' ),
-      'payments'    => __( 'Payments', 'simple-payment' ),
       'status'    => __( 'Status', 'simple-payment' ),
+      'payments'    => __( 'Payments', 'simple-payment' ),
       'transaction_id'    => __( 'Transaction ID', 'simple-payment' ),
       'user_id'    => __( 'User', 'simple-payment' ),
       'url'    => __( 'URL', 'simple-payment' ),

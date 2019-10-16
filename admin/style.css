@@ -1,0 +1,8 @@
+.ttablenav .alignleft:nth-of-type(2n) { clear: both; }
+pre.json {}
+pre.json .string { color: green; }
+pre.json .number { color: darkorange; }
+pre.json .boolean { color: blue; }
+pre.json .null { color: magenta; }
+pre.json .key { color: red; }
+pre.url {word-wrap: }

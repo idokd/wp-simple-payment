@@ -227,7 +227,7 @@ class Cardcom extends Engine {
       $post['UserName'] = $this->param_part($params, 'username');
       $terminals = $this->param('terminal');
       $terminals = explode(';', $terminals);
-      if (count($terminals) >= 3) $post['RecurringPayments.ChargeInTerminal'] = $terminals[2];
+      if ($this->param('recurring_terminal')) $post['RecurringPayments.ChargeInTerminal'] = $this->param('recurring_terminal');
     } else {
       $post['TerminalNumber'] = $this->terminal;
       $post['UserName'] = $this->username;
@@ -283,10 +283,10 @@ class Cardcom extends Engine {
     $date->add(new DateInterval('P28D')); // P1D means a period of 28 day
     $post['RecurringPayments.NextDateToBill'] = $date->format('d/m/Y');
 
-    $limit = $this->param('total_recurring');
+    $limit = $this->param('recurring_total');
     $post['RecurringPayments.TotalNumOfBills'] = $limit ? : 999999;
 
-    $interval = $this->param('interval');
+    $interval = $this->param('recurring_interval');
     if ($interval) $post['TimeIntervalId'] = $interval;
   
     $docType = $this->param('doc_type');
@@ -392,17 +392,14 @@ class Cardcom extends Engine {
   protected function record($request, $response) {
     $fields = [
         'terminal' => ['TerminalNumber', 'terminalnumber'],
-        'profile_code' => ['LowProfileCode', 'lowprofilecode', 'LowProfileDealGuid'],
         'transaction_id' => ['LowProfileCode', 'lowprofilecode', 'LowProfileDealGuid'],
-        'code' => 'response_code',
         'operation' => ['Operation', 'Recurring0_RecurringId'],
-        'response_code' => 'ResponseCode',
-        'status_code' => 'Status',
+        'response_code' => ['ResponseCode', 'response_code'],
         'deal_response' => 'DealResponse',
         'token_response' => 'TokenResponse',
         'token' => ['Token', 'Recurring0_RecurringId'],
-        'operation_response' => 'OperationResponse',
-        'operation_description' => 'Description',
+        'operation_response' => ['OperationResponse','Status'],
+        'operation_description' => ['Description', ['OperationResponseText'],
   ];
   $params = [ 'request' => json_encode($request),
   'response' => json_encode($response) ];

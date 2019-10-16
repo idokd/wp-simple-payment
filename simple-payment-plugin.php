@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
- * Version: 1.1.5
+ * Version: 1.1.6
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -148,6 +148,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     );
   }
 
+  function sanitize_text_field($args) {
+    return(sanitize_text_field($args));
+  }
+  
   function setting_callback_function($args){
       $project_page_id = self::param('payment_page');
       $args = array(
@@ -290,6 +294,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           ['option' => $key, 'params' => $value, 'default' => NULL],
           array('label_for' => $key)
         );
+
+        if (isset($value['sanitize_callback'])) register_setting('sp', $key, ['sanitize_callback' => [$this, $value['sanitize_callback']], 'default' => []]);
+
     }
   }
 
@@ -431,9 +438,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   function setting_select_fn($key, $params = null) {
-  	$option = self::param($key);
+    $option = isset($params['legacy']) ? get_option($key) : self::param($key);
   	$items = $params['options'];
-    $field = $this->option_name.$this->param_name($key);
+    $field = isset($params['legacy']) ? $key : $this->option_name.$this->param_name($key);
   	echo "<select id='$key' name='{$field}'>";
     $auto = isset($params['auto']) && $params['auto'];
     if ($auto) echo "<option value=''>".($auto ? __('Auto', 'simple-payment') : '')."</option>";

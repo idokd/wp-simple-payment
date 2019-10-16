@@ -76,7 +76,14 @@ $sp_settings = [
     'type' => 'select',
     'options' => ['legacy' => __('Legacy', 'simple-payment'), 'bootstrap' => __('Bootstrap', 'simple-payment'), 'experimental' => __('Experimental', 'simple-payment')]],
 
-  'paypal.client_id' => [ // Redirect URL
+    'sp_uninstall' => [ //Mode
+      'title' => __('Upon Uninstall', 'simple-payment'),
+      'type' => 'select',
+      'legacy' => true,
+      'sanitize_callback' => 'sanitize_text_field',
+      'options' => ['none' => __('Keep Database & Settings', 'simple-payment'), 'settings' => __('Erase Settings', 'simple-payment'), 'tables' => __('Erase Database', 'simple-payment'), 'all' => __('Erase All Database & Settings', 'simple-payment')]],
+
+      'paypal.client_id' => [ // Redirect URL
     'title' => __('Client ID', 'simple-payment'),
     'section' => 'paypal_settings'],
   'paypal.client_secret' => [ // Redirect URL
@@ -228,6 +235,11 @@ $sp_settings = [
     'options' => [ 'disabled' => __('Disabled', 'simple-payment'), 'provider' => __('Provider', 'simple-payment')] // 'internal' => __('Internal', 'simple-payment')
   ],
 
+  'cardcom.reurring_terminal' => [
+    'title' => __('Repeated Recurring', 'simple-payment'),
+    'section' => 'cardcom_recurring',
+  ],
+
   'cardcom.reurring_operation' => [
     'title' => __('Recurring Operation', 'simple-payment'),
     'section' => 'cardcom_recurring',
@@ -235,12 +247,12 @@ $sp_settings = [
     'options' => $SPWP_CARCOM_RECURRING_OPERATIONS
   ],
 
-  'cardcom.total_recurring' => [
+  'cardcom.recurring_total' => [
     'title' => __('Repeated Recurring', 'simple-payment'),
     'section' => 'cardcom_recurring',
   ],
 
-  'cardcom.interval' => [
+  'cardcom.recurring_interval' => [
     'title' => __('Recurring Interval ID', 'simple-payment'),
     'section' => 'cardcom_recurring',
   ],
