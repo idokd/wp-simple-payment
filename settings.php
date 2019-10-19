@@ -1,4 +1,5 @@
 <?php
+global $SPWP_COUNTRIES;
 
 $SPWP_CARCOM_LANGUAGES = [ 'he' => __('Hebrew', 'simple-payment'), 'en' => __('English', 'simple-payment') ];
 $SPWP_CARCOM_OPERATIONS = [ 1 => __('Charge', 'simple-payment'), 2 => __('Charge & Token', 'simple-payment'), 3 => __('Token (Charge Pending)', 'simple-payment'), 4 => __('Suspended Deal', 'simple-payment') ];
@@ -24,6 +25,11 @@ $sp_sections = [
       'title' => __('General Settings', 'simple-payment'),
       'description' => __('Setup how Simple Payment should operate the payments below:', 'simple-payment'),
   ],
+  'installments' => [
+    'title' => __('Installments Settings', 'simple-payment'),
+    'description' => __('Setup how Simple Payment should operate installments and recurring payments:', 'simple-payment'),
+    'section' => 'sp'
+  ],
   'paypal_settings' => [
       'title' => __('PayPal Settings', 'simple-payment'),
       'description' => __('Setup how PayPal should operate the payment below:', 'simple-payment'),
@@ -48,14 +54,19 @@ $sp_sections = [
     'title' => __('Cardcom Recurring Payments', 'simple-payment'),
     'description' => __('Cardcom accepts recurring payments (monthly), required settings below', 'simple-payment'),
     'section' => 'cardcom'
-]
+  ],
+  'icount_settings' => [
+    'title' => __('iCount Gateway Settings', 'simple-payment'),
+    'description' => __('Setup your Simple Payment to accept iCount Payments', 'simple-payment'),
+    'section' => 'icount'
+  ]
 ];
 
 $sp_settings = [
   'engine' => [
     'title' => __('Engine', 'simple-payment'),
     'type' => 'select',
-    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
+    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'),  'iCount' => __('iCount', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
   'mode' => [ //Mode
     'title' => __('Mode', 'simple-payment'),
     'type' => 'radio',
@@ -74,8 +85,11 @@ $sp_settings = [
   'form_type' => [ //Mode
     'title' => __('Form Template', 'simple-payment'),
     'type' => 'select',
-    'options' => ['legacy' => __('Legacy', 'simple-payment'), 'bootstrap' => __('Bootstrap', 'simple-payment'), 'experimental' => __('Experimental', 'simple-payment')]],
-
+    'options' => ['legacy' => __('Legacy', 'simple-payment'), 'bootstrap' => __('Bootstrap', 'simple-payment'),  'bootstrap-basic' => __('Bootstrap Basic', 'simple-payment'), 'experimental' => __('Experimental', 'simple-payment')]],
+  'css' => [ 
+    'title' => __('CSS', 'simple-payment'),
+    'type' => 'textarea'
+  ],
     'sp_uninstall' => [ //Mode
       'title' => __('Upon Uninstall', 'simple-payment'),
       'type' => 'select',
@@ -83,12 +97,32 @@ $sp_settings = [
       'sanitize_callback' => 'sanitize_text_field',
       'options' => ['none' => __('Keep Database & Settings', 'simple-payment'), 'settings' => __('Erase Settings', 'simple-payment'), 'tables' => __('Erase Database', 'simple-payment'), 'all' => __('Erase All Database & Settings', 'simple-payment')]],
 
+      'installments_min' => [ 
+        'title' => __('Min # of Payments', 'simple-payment'),
+        'type' => 'select',
+        'min' => 1, 'max' => 36,
+        'section' => 'installments'
+      ],
+      'installments_max' => [
+        'title' => __('Max # of Payments', 'simple-payment'),
+        'type' => 'select',
+        'min' => 1, 'max' => 36,
+        'section' => 'installments'
+      ],
+      'installments_default' => [ 
+        'title' => __('Default # of Payments', 'simple-payment'),
+        'type' => 'select',
+        'min' => 1, 'max' => 36,
+        'section' => 'installments'
+      ],
+
       'paypal.client_id' => [ // Redirect URL
     'title' => __('Client ID', 'simple-payment'),
     'section' => 'paypal_settings'],
   'paypal.client_secret' => [ // Redirect URL
     'title' => __('Client Secret', 'simple-payment'),
-    'section' => 'paypal_settings'],
+    'section' => 'paypal_settings',
+    'type' => 'password'],
   'paypal.business' => [ // Redirect URL
     'title' => __('Business', 'simple-payment'),
     'section' => 'paypal_settings'],
@@ -106,7 +140,8 @@ $sp_settings = [
   ],
   'cardcom.password' => [
     'title' => __('API Password', 'simple-payment'),
-    'section' => 'cardcom_settings'
+    'section' => 'cardcom_settings',
+    'type' => 'password'
   ],
   'cardcom.operation' => [ //Operation
     'title' => __('Operation', 'simple-payment'),
@@ -257,4 +292,22 @@ $sp_settings = [
     'section' => 'cardcom_recurring',
   ],
   
+  'icount.business' => [
+    'title' => __('Business ID', 'simple-payment'),
+    'section' => 'icount_settings'
+  ],
+  'icount.username' => [
+    'title' => __('Username', 'simple-payment'),
+    'section' => 'icount_settings'
+  ],
+  'icount.password' => [
+    'title' => __('Password', 'simple-payment'),
+    'section' => 'icount_settings',
+    'type' => 'password'
+  ],
+  'icount.use_storage' => [
+    'title' => __('Use CC Storage', 'simple-payment'),
+    'type' => 'check',
+    'section' => 'icount_settings'
+  ],
 ];

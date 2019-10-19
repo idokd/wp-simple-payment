@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '5';
+$sp_db_version = '7';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -71,12 +71,27 @@ function sp_install() {
     `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `idx_id` (`id`),
-      KEY `idx_transaction` (`transaction_id`),
-
+      KEY `idx_transaction` (`transaction_id`)
   ) $charset_collate;";
 
   dbDelta( $sql );
 
+  $table_name = $wpdb->prefix . "sp_history";
+  $sql = "CREATE TABLE $table_name (
+    `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+    `transaction_id` VARCHAR(50),
+    `url` TEXT DEFAULT NULL,
+    `status` INT DEFAULT NULL,
+    `description` VARCHAR(50) DEFAULT NULL,
+    `request` TEXT DEFAULT NULL,
+    `response` TEXT DEFAULT NULL,
+    `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `idx_id` (`id`),
+      KEY `idx_transaction` (`transaction_id`)
+  ) $charset_collate;";
+
+  dbDelta( $sql );
   update_option( "sp_db_version", $sp_db_version );
 }
 
@@ -98,13 +113,12 @@ function sp_install_data() {
 	);*/
 }
 
-
 function sp_uninstall() {
   global $wpdb, $wp_rewrite;
   if (!defined('WP_UNINSTALL_PLUGIN')) exit();
   $uninstall = get_option('sp_uninstall', 'all');
   if ($uninstall == 'all' || $uninstall == 'tables') {
-    $tables = ['transactions', 'cardcom'];
+    $tables = ['transactions', 'payments', 'history', 'cardcom'];
     foreach ($tables as $table) $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . "sp_".$table);
   }
   if ($uninstall == 'all' || $uninstall == 'settings') {

@@ -5,4 +5,4 @@ pre.json .number { color: darkorange; }
 pre.json .boolean { color: blue; }
 pre.json .null { color: magenta; }
 pre.json .key { color: red; }
-pre.url {word-wrap: }
+pre.url { word-break: break-all; white-space: pre-wrap; }

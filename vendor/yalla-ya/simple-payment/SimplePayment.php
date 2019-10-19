@@ -18,6 +18,14 @@ class SimplePayment {
   const OPERATION_ERROR = 'error';
   const OPERATION_ZAPIER = 'zapier';
 
+  const TRANSACTION_ID = 'transaction_id'; const CURRENCY = 'currency'; const AMOUNT = 'amount'; 
+
+  const FIRST_NAME = 'first_name'; const LAST_NAME = 'last_name'; const FULL_NAME = 'full_name'; const PHONE = 'phone'; const MOBILE = 'mobile'; const EMAIL = 'email';
+  
+  const CARD_OWNER = 'card_owner';  const CARD_NUMBER = 'card_number'; const CARD_EXPIRY_MONTH = 'expiry_month'; const CARD_EXPIRY_YEAR = 'expiry_year'; const CARD_CVV = 'cvv';
+
+  const PAYMENTS = 'payments';  const TAX_ID = 'tax_id';
+
   protected $callback;
   protected $sandbox = true;
   protected $engine;
@@ -162,4 +170,17 @@ class SimplePayment {
     return($response);
   }
 
+  public static function tofloat($num) {
+    $dotPos = strrpos($num, '.');
+    $commaPos = strrpos($num, ',');
+    $sep = (($dotPos > $commaPos) && $dotPos) ? $dotPos :
+        ((($commaPos > $dotPos) && $commaPos) ? $commaPos : false);
+    if (!$sep) {
+        return floatval(preg_replace("/[^0-9]/", "", $num));
+    }
+    return floatval(
+        preg_replace("/[^0-9]/", "", substr($num, 0, $sep)) . '.' .
+        preg_replace("/[^0-9]/", "", substr($num, $sep+1, strlen($num)))
+    );
+}
 }

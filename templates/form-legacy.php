@@ -7,10 +7,12 @@
 // TODO: valdate 3 digits (or 4 in american express) cvv
 // TODO: show/hide depending if paypal or not.
 
-$phone_pattern= '^\d{4}-\d{3}-\d{4}$';
+$amount = number_format($amount, 2);
+$target = $SPWP->param('target');
+$target = $target ? ' target="'.$target.'"' : '';
 ?>
 <div class="col-md-8 order-md-1">
-  <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" method="post">
+<form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo $SPWP->payment_page(); ?>" method="post"<?php echo $target; ?>>
   <input type="hidden" name="op" value="purchase" />
   <input type="hidden" name="product" value="<?php echo $product; ?>" />
   <input type="hidden" name="amount" value="<?php echo $amount; ?>" />
@@ -74,7 +76,7 @@ $phone_pattern= '^\d{4}-\d{3}-\d{4}$';
       </div>
     </div>
     <hr class="mb-4">
-    <button class="btn btn-primary btn-lg btn-block" type="submit"><?php _e('Process Payment', 'simple-payment'); ?></button>
+    <button class="btn btn-primary btn-lg btn-block" type="submit"><?php echo sprintf(__('Process Payment [%s]', 'simple-payment'), $amount); ?></button>
   </form>
 </div>
 <script>

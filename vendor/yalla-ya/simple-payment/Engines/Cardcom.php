@@ -13,6 +13,7 @@ if (!defined("ABSPATH")) {
 class Cardcom extends Engine {
 
   public $name = 'Cardcom';
+  public $interactive = true;
   protected $cancelType = 2;
   // CancelType (0 - no cancel, 1 - back button, 2 - cancel url)
 
@@ -92,7 +93,7 @@ class Cardcom extends Engine {
 
     if ($index !== FALSE) return(count($parts) > $index ? $parts[$index] : $parts[count($parts) - 1]);
 
-    if (isset($params['payments']) && isset($parts[1]) && $params['payments'] && $params['payments'] != 'single') {
+    if (isset($params['payments']) && isset($parts[1]) && $params['payments'] && ($params['payments'] != 'single' || $params['payments'] != 1)) {
       if (isset($parts[1])) $part = $parts[1];
       if ($params['payments'] != 'installments' && issset($parts[2])) $part = isset($parts[2]) ? : $part;
     }
@@ -117,7 +118,7 @@ class Cardcom extends Engine {
     $post['ProductName'] = $params['product'];
     $post['SumToBill'] = $params['amount'];
 
-    if (isset($params['card_holder_name']) && $params['card_holder_name']) $post['CardOwnerName'] = $params['card_holder_name'];
+    if (isset($params[SimplePayment::CARD_OWNER]) && $params[SimplePayment::CARD_OWNER]) $post['CardOwnerName'] = $params[SimplePayment::CARD_OWNER];
     if (!isset($post['CardOwnerName']) && isset($params['full_name']) && $params['full_name']) $post['CardOwnerName'] = $params['full_name']; // card_holder
 
     if (isset($params['phone']) && $params['phone']) $post['CardOwnerPhone'] = $params['phone'];
@@ -245,8 +246,8 @@ class Cardcom extends Engine {
     $post['RecurringPayments.FlexItem.InvoiceDescription'] = isset($params['product']) ? $params['product'] : $params['concept'];
     $post['RecurringPayments.InternalDecription'] = isset($params['product']) ? $params['product'] : $params['concept'];
     
-    if (isset($params['card_holder_name']) && $params['card_holder_name']) {
-      $post['Account.ContactName'] = $params['card_holder_name'];
+    if (isset($params[SimplePayment::CARD_OWNER]) && $params[SimplePayment::CARD_OWNER]) {
+      $post['Account.ContactName'] = $params[SimplePayment::CARD_OWNER];
     }
     if (!isset($post['CardOwnerName']) && isset($params['full_name']) && $params['full_name']) {
       $post['Account.ContactName'] = $params['full_name']; // card_holder
@@ -357,6 +358,8 @@ class Cardcom extends Engine {
 
   protected function document($params) {
     $post = [];
+    $language = $this->param('language');
+    $currency = $this->param('currency');
     if ($language) $post['InvoiceHead.Languge'] = $params['language'];
     if ($currency) $post['InvoiceHead.CoinID'] = $params['currency'];
     if (isset($params['email']) && $params['email']) $post['InvoiceHead.Email'] = $params['email'];
@@ -389,7 +392,8 @@ class Cardcom extends Engine {
    CustomFields.Field1 .. 25 */
     return($post);
   }
-  protected function record($request, $response) {
+  
+  protected function record($request, $response, $fields = []) {
     $fields = [
         'terminal' => ['TerminalNumber', 'terminalnumber'],
         'transaction_id' => ['LowProfileCode', 'lowprofilecode', 'LowProfileDealGuid'],
@@ -400,25 +404,9 @@ class Cardcom extends Engine {
         'token' => ['Token', 'Recurring0_RecurringId'],
         'operation_response' => ['OperationResponse','Status'],
         'operation_description' => ['Description', 'OperationResponseText'],
-  ];
-  $params = [ 'request' => json_encode($request),
-  'response' => json_encode($response) ];
-  foreach ($fields as $field => $keys) {
-      if (!is_array($keys)) $keys = [ $keys ];
-      foreach ($keys as $key) {
-          if (isset($request[$key])) {
-              $params[$field] = $request[$key];
-              break;
-          }
-          if (isset($response[$key])) {
-              $params[$field] = $response[$key];
-              break;
-          }
-      }
-  }
+    ];
 // InternalDealNumber	, TokenExDate, CoinId, CardOwnerID, CardValidityYear, CardValidityMonth, TokenApprovalNumber, SuspendedDealResponseCode, SuspendedDealId, SuspendedDealGroup, InvoiceResponseCode, InvoiceNumber, InvoiceType, CallIndicatorResponse, ReturnValue, NumOfPayments, CardOwnerEmail, CardOwnerName, CardOwnerPhone, AccountId, ForeignAccountNumber, SiteUniqueId
-
-    return($this->save($params));
+    return(parent::record($request, $response, $fields));
   }
 
 }

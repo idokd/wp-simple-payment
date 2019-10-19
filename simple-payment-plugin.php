@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
- * Version: 1.1.7
+ * Version: 1.1.8
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -22,9 +22,18 @@ if (file_exists(SPWP_PLUGIN_DIR .'/vendor/leewillis77/WpListTableExportable/boot
 
 class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
+  const OP = 'op';
+  const TYPE_FORM = 'form'; const TYPE_BUTTON = 'button'; const TYPE_TEMPLATE = 'template'; 
+  
+  const OPERATION_CSS = 'css';
+  const OPERATION_PCSS = 'pcss';
+
   protected $option_name = 'sp';
   protected $payment_page = null;
-  protected $table_name = 'sp_transactions';
+  protected $paymnet_id = null;
+  static protected $table_name = 'sp_transactions';
+  static $engines = ['PayPal', 'Cardcom', 'iCount', 'Custom'];
+  static $interactives = ['Cardcom'];
 
   protected $test_shortcodes = [
     'button' => [
@@ -116,7 +125,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $this->callback = $this->payment_page();
   }
 
-  protected function payment_page() {
+  public function payment_page() {
       if ($this->payment_page) $this->callback = get_page_link($this->payment_page);
       else $this->callback = self::param('callback_url');
       if (!$this->callback) $this->callback = get_bloginfo('url');
@@ -227,6 +236,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             <a id="sp" href="options-general.php?page=sp" class="nav-tab <?php echo $tab == 'sp' ? 'nav-tab-active' : ''; ?>"><?php _e('General', 'simple-payment'); ?></a>
             <a id="paypal" href="options-general.php?page=sp&tab=paypal" class="nav-tab <?php echo $tab == 'paypal' ? 'nav-tab-active' : ''; ?>"><?php _e('PayPal', 'simple-payment'); ?></a>
             <a id="cardcom" href="options-general.php?page=sp&tab=cardcom" class="nav-tab <?php echo $tab == 'cardcom' ? 'nav-tab-active' : ''; ?>"><?php _e('Cardcom', 'simple-payment'); ?></a>
+            <a id="icount" href="options-general.php?page=sp&tab=icount" class="nav-tab <?php echo $tab == 'icount' ? 'nav-tab-active' : ''; ?>"><?php _e('iCount', 'simple-payment'); ?></a>
             <a id="license" href="options-general.php?page=sp&tab=license" class="nav-tab <?php echo $tab == 'license' ? 'nav-tab-active' : ''; ?>"><?php _e('License', 'simple-payment'); ?></a>
             <a id="shortcode" href="options-general.php?page=sp&tab=shortcode" class="nav-tab <?php echo $tab == 'shortcode' ? 'nav-tab-active' : ''; ?>"><?php _e('Shortcode', 'simple-payment'); ?></a>
             <a id="instructions" href="options-general.php?page=sp&tab=instructions" class="nav-tab <?php echo $tab == 'instructions' ? 'nav-tab-active' : ''; ?>"><?php _e('Instructions', 'simple-payment'); ?></a>
@@ -424,6 +434,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         case 'textarea':
           $this->setting_textarea_fn($options['option'], $options['params']);
           break;
+        case 'password':
+          $this->setting_password_fn($options['option'], $options['params']);
+          break;
         case 'string':
         default:
           $this->setting_text_fn($options['option'], $options['params']);
@@ -522,27 +535,23 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   function pre_process($params = []) {
     $method = isset($_REQUEST['method']) ? strtolower(sanitize_text_field($_REQUEST['method'])) : null;
-    $fields = ['engine', 'amount', 'product', 'concept', 'method', 'first_name', 'last_name', 'phone', 'mobile', 'address', 'address2', 'email', 'country', 'state', 'zipcode', 'payments', 'installments', 'cvv', 'expiration', 'card_number', 'currency', 'comment', 'city', 'tax_id', 'card_holder_name'];
+    $fields = ['engine', self::AMOUNT, 'product', 'concept', 'method', self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, 'address', 'address2', self::EMAIL, 'country', 'state', 'zipcode', self::PAYMENTS, 'installments', self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, 'comment', 'city', self::TAX_ID, self::CARD_OWNER];
 
     foreach ($fields as $field) if (isset($_REQUEST[$field]) && $_REQUEST[$field]) $params[$field] = sanitize_text_field($_REQUEST[$field]);
 
     if (!isset($params['concept']) && isset($params['product'])) $params['concept'] = $params['product'];
     if ($method) $params['method'] = $method;
-    if (!isset($_REQUEST['full_name']) && (isset($params['first_name']) || isset($params['last_name']))) $params['full_name'] = (isset($params['first_name']) ? $params['first_name'] : '').' '.(isset($params['last_name']) ? $params['last_name'] : '');
-    if (!isset($_REQUEST['card_holder']) && isset($_REQUEST['full_name'])) $params['card_holder'] = $params['full_name'];
+    if (!isset($_REQUEST[self::FULL_NAME]) && (isset($params[self::FIRST_NAME]) || isset($params[self::LAST_NAME]))) $params[self::FULL_NAME] = (isset($params[self::FIRST_NAME]) ? $params[self::FIRST_NAME] : '').' '.(isset($params[self::LAST_NAME]) ? $params[self::LAST_NAME] : '');
+    if (!isset($_REQUEST[self::CARD_OWNER]) && isset($_REQUEST[self::FULL_NAME])) $params[self::CARD_OWNER] = $params[self::FULL_NAME];
     $params['payment_id'] = $this->payment($params);
     try {
       $process = parent::pre_process($params);
-      do_action('sp_payment_pre_process', $params);
+      $this->update($params['payment_id'], ['status' => self::TRANSACTION_PENDING, 'transaction_id' => $this->engine->transaction]);
     } catch (Exception $e) {
-      $this->update($params['payment_id'], [
-        'status' => self::TRANSACTION_FAILED,
-        'error_code' => $e->getCode(),
-        'error_description' => $e->getMessage(),
-      ]);
-      return(false);
+      $this->update($params['payment_id'], ['status' => self::TRANSACTION_PENDING, 'transaction_id' => $this->engine->transaction]);
+      throw $e;
     }
-    $this->update($params['payment_id'], ['status' => self::TRANSACTION_PENDING, 'transaction_id' => $this->engine->transaction]);
+    do_action('sp_payment_pre_process', $params);
     return($process);
   }
 
@@ -558,11 +567,11 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $info = parse_url($_SERVER["REQUEST_URI"]);
     $callback = parse_url($this->callback);
     if (isset($info['path']) && isset($callback['path']) && $info['path'] != $callback['path']) return;
-    if (!isset($_REQUEST['op'])) return;
+    if (!isset($_REQUEST[self::OP])) return;
     $url = null;
     $engine = isset($_REQUEST['engine']) ? sanitize_text_field($_REQUEST['engine']) : self::param('engine');
     $this->setEngine($engine);
-    switch (strtolower(sanitize_text_field($_REQUEST['op']))) {
+    switch (strtolower(sanitize_text_field($_REQUEST[self::OP]))) {
         case self::OPERATION_SUCCESS:
           $rmop = false;
           $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
@@ -572,36 +581,59 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           }
           if (!$url) $url = get_bloginfo('url');
           $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
-          if ($rmop) $url = remove_query_arg('op', $url);
-          $this->post_process();
+          if ($rmop) $url = remove_query_arg(self::OP, $url);
+          try {
+            $this->post_process();
+          } catch (Exception $e) {
+            $url = $this->payment_page();
+            $status[self::OP] = 'fail';
+            $status['status'] = $e->getCode();
+            $status['message'] = $e->getMessage();
+            $url .= (strpos($url, '?') ? '&' : '?').http_build_query($status);
+            break;
+          } 
+          break;
+        case 'purchase':
+        case 'payment':
+        case 'redirect':
+          try {
+            if ($process = $this->pre_process()) {
+              $process = $this->process($process);
+              if ($process === true) die;
+              $this->post_process($process);
+            }
+            break;
+          } catch (Exception $e) {
+            $this->update($this->payment_id, [
+              'status' => self::TRANSACTION_FAILED,
+              'error_code' => $e->getCode(),
+              'error_description' => $e->getMessage(),
+            ]);
+            $status['status'] = $e->getCode();
+            $status['message'] = $e->getMessage();
+          }
+        case self::OPERATION_ERROR:
+          $url = $this->payment_page();
+          $status[self::OP] = 'fail';
+          $url .= (strpos($url, '?') ? '&' : '?').http_build_query($status);
+          break;
+        case self::OPERATION_STATUS:
+          $this->status($_REQUEST); 
+          die; break;
           break;
         case self::OPERATION_CANCEL:
           $url = $this->payment_page();
           $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
           break;
-        case 'purchase':
-        case 'payment':
-        case 'redirect':
-          if ($process = $this->pre_process()) {
-            $process = $this->process($process);
-            if ($process === true) die;
-            $this->post_process($process);
-            break;
-          }
-        case self::OPERATION_ERROR:
-          $url = $this->payment_page();
-          $status['op'] = 'fail';
-          $url .= (strpos($url, '?') ? '&' : '?').http_build_query($status);
-          break;
-        case self::OPERATION_STATUS:
-          $this->status($_REQUEST);
-          die; break;
-          break;
         case self::OPERATION_ZAPIER:
           echo 'OK';
           die; break;
           break;
-        case 'css':
+        case self::OPERATION_PCSS:
+          header('Content-Type: text/css');
+          echo self::param(strtolower($engine).'.css');
+          die; break;
+        case self::OPERATION_CSS:
           header('Content-Type: text/css');
           echo self::param('css');
           die; break;
@@ -619,7 +651,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             'product' => null,
             'fixed' => false,
             'title' => null,
-            'type' => 'form',
+            'type' => self::TYPE_FORM,
             'enable_query' => false,
             'target' => null,
             'engine' => null,
@@ -643,24 +675,25 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           'redirect_url' => $redirect_url,
       ];
       if ($enable_query) {
-        if (isset($_REQUEST['full_name'])) $params['full_name'] = sanitize_text_field($_REQUEST['full_name']);
-        if (isset($_REQUEST['phone'])) $params['phone'] = sanitize_text_field($_REQUEST['phone']);
-        if (isset($_REQUEST['email'])) $params['email'] = sanitize_email($_REQUEST['email']);
+        if (isset($_REQUEST[self::FULL_NAME])) $params[self::FULL_NAME] = sanitize_text_field($_REQUEST[self::FULL_NAME]);
+        if (isset($_REQUEST[self::PHONE])) $params[self::PHONE] = sanitize_text_field($_REQUEST[self::PHONE]);
+        if (isset($_REQUEST[self::EMAIL])) $params[self::EMAIL] = sanitize_email($_REQUEST[self::EMAIL]);
       }
       switch ($type) {
-          case 'button':
+          case self::TYPE_BUTTON:
             $url = $this->callback;
-            $params['op'] = 'redirect';
+            $params[self::OP] = 'redirect';
             return sprintf('<a class="btn" href="%1$s"'.($target ? ' target="'.$target.'"' : '').'>%2$s</a>',
                 $url.'?'.http_build_query($params),
                 esc_html( $title ? $title : 'Buy' ));
             break;
           default:
-          case 'form':
+          case self::TYPE_FORM:
               $template = 'form-'.$form;
               $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
               wp_enqueue_script( 'simple-payment-js', plugin_dir_url( __FILE__ ).'assets/js/simple-payment.js', [], $plugin['Version'], true );
-          case 'template':
+          case self::TYPE_TEMPLATE:
+            if (self::param('css')) wp_enqueue_style( 'simple-payment-css', $this->callback.'?'.http_build_query([self::OP => self::OPERATION_CSS]), [], md5(self::param('css')), 'all' );
             foreach ($params as $key => $value) set_query_var($key, $value);
             ob_start();
             if ($override_template = locate_template($template.'.php')) load_template($override_template);
@@ -673,24 +706,25 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   protected function payment($params) {
     global $wpdb;
     $user_id = get_current_user_id();
-    $result = $wpdb->insert($wpdb->prefix.'sp_transactions', [
+    $result = $wpdb->insert($wpdb->prefix.self::$table_name, [
         'engine' => $this->engine->name,
-        'currency' => $params['currency'] ? : null,
-        'amount' => $params['amount'],
+        'currency' => isset($params[self::CURRENCY]) && $params[self::CURRENCY] ? $params[self::CURRENCY] : null,
+        'amount' => self::tofloat($params[self::AMOUNT]),
         'concept' => $params['product'],
-        'payments' => $params['payments'],
+        'payments' => isset($params[self::PAYMENTS]) ? $params[self::PAYMENTS] : null,
         'parameters' => json_encode($params),
-        'url' => $_SERVER["HTTP_REFERER"],
+        'url' => $_SERVER['HTTP_REFERER'],
         'status' => self::TRANSACTION_NEW,
         'sandbox' => $this->sandbox,
         'user_id' => $user_id ? $user_id : null
     ]);
+    $this->payment_id = $wpdb->insert_id;
     return($result ? $wpdb->insert_id : false);
   }
 
   protected static function update($id, $params, $transaction_id = false) {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'sp_transactions';
+    $table_name = $wpdb->prefix.self::$table_name;
     if (!isset($params['modified'])) $params['modified'] = current_time('mysql');
     $result = $wpdb->update($table_name, $params, [($transaction_id ? 'transaction_id' : 'id') => $id]);
     if ($result === false) throw new Exception(__("Couldn't update transaction: ") . $wpdb->last_error);
@@ -709,7 +743,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function fetch($id, $engine = null) {
     global $wpdb;
-    $table_name = $wpdb->prefix.$this->table_name;
+    $table_name = $wpdb->prefix.self::$table_name;
     if (!$engine) {
         $sql = "SELECT * FROM ".$table_name." WHERE `id` = %d LIMIT 1";
         $sql = sprintf($sql, absint($id));
@@ -745,7 +779,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     require(SPWP_PLUGIN_DIR.'/admin/transaction-log.php');
   }
 
-
   /**
    * Check if Gutenberg is active
    *
@@ -754,26 +787,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
    * @return boolean
    */
     public function is_gutenberg_active() {
-      return function_exists( 'register_block_type' );
+      return function_exists('register_block_type');
     }
 
     /**
      * Load Simple Payment Text Domain.
      * This will load the translation textdomain depending on the file priorities.
      *      1. Global Languages /wp-content/languages/simple-payment/ folder
-     *      2. Local dorectory /wp-content/plugins/simple-payment/languages/ folder
+     *      2. Local directory /wp-content/plugins/simple-payment/languages/ folder
      *
      * @since  1.0.0
      * @return void
      */
     public function load_textdomain() {
-      /**
-       * Filters the languages directory path to use for AffiliateWP.
-       *
-       * @param string $lang_dir The languages directory path.
-       */
       $lang_dir = apply_filters( 'sp_languages_directory', SPWP_PLUGIN_DIR . '/languages/' );
-
       load_plugin_textdomain( 'simple-payment', $lang_dir, str_replace(WP_PLUGIN_DIR, '', $lang_dir) );
     }
 
@@ -784,8 +811,11 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       //wp_redirect( wp_get_referer() );
     }
 
-    public function save($tablename, $params, $id = null) {
+    public function save($params, $tablename = null, $id = null) {
       global $wpdb;
+      if ($tablename == 'Cardcom') $tablename = strtolower($tablename);
+      else $tablename = 'history';
+      // TODO: if id update instead of insert
       $result = $wpdb->insert($wpdb->prefix . 'sp_' . $tablename, $params);
       return($result != null ? $wpdb->insert_id : false);
     }
@@ -794,4 +824,5 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
 require_once('db/simple-payment-database.php');
 
-$plugin = new SimplePaymentPlugin();
+global $SPWP;
+$SPWP = new SimplePaymentPlugin();

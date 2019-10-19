@@ -2,21 +2,21 @@
 # This file is distributed under the same license as the Simple Payment plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 1.0.5\n"
+"Project-Id-Version: Simple Payment 1.1.7\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2019-10-10T15:37:38+00:00\n"
+"POT-Creation-Date: 2019-10-19T19:47:41+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: simple-payment\n"
 
 #. Plugin Name of the plugin
-#: simple-payment-plugin.php:151
-#: simple-payment-plugin.php:152
+#: simple-payment-plugin.php:192
+#: simple-payment-plugin.php:193
 msgid "Simple Payment"
 msgstr ""
 
@@ -36,727 +36,892 @@ msgstr ""
 msgid "https://github.com/idokd"
 msgstr ""
 
-#: admin/transaction-list-table.php:14
 #: admin/transaction-list-table.php:15
+#: admin/transaction-list-table.php:16
 msgid "Transaction"
 msgstr ""
 
-#: admin/transaction-list-table.php:25
+#: admin/transaction-list-table.php:30
 msgid "All"
 msgstr ""
 
-#: admin/transaction-list-table.php:26
+#: admin/transaction-list-table.php:31
 msgid "Success"
 msgstr ""
 
-#: admin/transaction-list-table.php:27
+#: admin/transaction-list-table.php:32
 msgid "Failed"
 msgstr ""
 
-#: admin/transaction-list-table.php:28
+#: admin/transaction-list-table.php:33
 msgid "Cancelled"
 msgstr ""
 
-#: admin/transaction-list-table.php:29
+#: admin/transaction-list-table.php:34
 msgid "Pending"
 msgstr ""
 
-#: admin/transaction-list-table.php:51
+#: admin/transaction-list-table.php:35
+msgid "Archived"
+msgstr ""
+
+#: admin/transaction-list-table.php:56
 msgid "All Engines"
 msgstr ""
 
-#: admin/transaction-list-table.php:103
+#: admin/transaction-list-table.php:118
 msgid "No transactions avaliable."
 msgstr ""
 
-#: admin/transaction-list-table.php:118
+#: admin/transaction-list-table.php:130
+#: admin/transaction-list-table.php:140
 msgid "Archive"
 msgstr ""
 
-#: admin/transaction-list-table.php:148
+#: admin/transaction-list-table.php:131
+msgid "Details"
+msgstr ""
+
+#: admin/transaction-list-table.php:187
 msgid "ID"
 msgstr ""
 
-#: admin/transaction-list-table.php:149
+#: admin/transaction-list-table.php:188
 msgid "Concept"
 msgstr ""
 
-#: admin/transaction-list-table.php:150
+#: admin/transaction-list-table.php:189
 msgid "Amount"
 msgstr ""
 
-#: admin/transaction-list-table.php:151
-#: settings.php:218
+#: admin/transaction-list-table.php:190
+#: settings.php:67
 msgid "Engine"
 msgstr ""
 
-#: admin/transaction-list-table.php:152
+#: admin/transaction-list-table.php:191
 msgid "Status"
 msgstr ""
 
-#: admin/transaction-list-table.php:153
-msgid "Transaction ID"
-msgstr ""
-
-#: admin/transaction-list-table.php:154
-msgid "User"
-msgstr ""
-
-#: admin/transaction-list-table.php:155
-msgid "URL"
-msgstr ""
-
-#: admin/transaction-list-table.php:156
-msgid "Parameters"
-msgstr ""
-
-#: admin/transaction-list-table.php:157
-msgid "Error"
-msgstr ""
-
-#: admin/transaction-list-table.php:158
-msgid "Modified"
-msgstr ""
-
-#: admin/transaction-list-table.php:159
-msgid "Created"
-msgstr ""
-
-#: admin/transactions.php:10
-msgid "Payments Transactions"
-msgstr ""
-
-#: admin/transactions.php:27
-msgid "Search"
-msgstr ""
-
-#: settings.php:3
-msgid "Hebrew"
-msgstr ""
-
-#: settings.php:3
-msgid "English"
-msgstr ""
-
-#: settings.php:4
-msgid "Charge"
-msgstr ""
-
-#: settings.php:4
-msgid "Charge & Token"
-msgstr ""
-
-#: settings.php:4
-msgid "Token (Charge Pending)"
-msgstr ""
-
-#: settings.php:4
-msgid "Suspended Deal"
-msgstr ""
-
-#: settings.php:5
-msgid "Invoice"
-msgstr ""
-
-#: settings.php:5
-msgid "Donation Receipt"
-msgstr ""
-
-#: settings.php:5
-msgid "Order Confirmation"
-msgstr ""
-
-#: settings.php:5
-msgid "Receipt"
-msgstr ""
-
-#: settings.php:6
-msgid "Shown & Required"
-msgstr ""
-
-#: settings.php:6
-msgid "Shown"
-msgstr ""
-
-#: settings.php:6
-msgid "Hidden"
-msgstr ""
-
-#: settings.php:7
-msgid "Normal"
-msgstr ""
-
-#: settings.php:7
-msgid "Credit"
-msgstr ""
-
-#: settings.php:8
-msgid "No Invoice"
-msgstr ""
-
-#: settings.php:8
-msgid "Forward (Do not show)"
-msgstr ""
-
-#: settings.php:186
-msgid "Licensing Information"
-msgstr ""
-
-#: settings.php:187
-msgid "Obtain a license <a href=\"mailto:ido@yalla-ya.com\" target=\"_blank\">here</a> to use in production mode"
-msgstr ""
-
-#: settings.php:191
-msgid "General Settings"
-msgstr ""
-
-#: settings.php:192
-msgid "Setup how Simple Payment should operate the payments below:"
-msgstr ""
-
-#: settings.php:195
-msgid "PayPal Settings"
-msgstr ""
-
-#: settings.php:196
-msgid "Setup how PayPal should operate the payment below:"
-msgstr ""
-
-#: settings.php:200
-msgid "Cardcom Operation"
-msgstr ""
-
-#: settings.php:201
-msgid "Setup how Cardcom should operate the payment below:"
-msgstr ""
-
-#: settings.php:205
-msgid "Cardcom Page Display Information"
-msgstr ""
-
-#: settings.php:206
-msgid "Configure the Cardcom Page, which data should be displayed"
-msgstr ""
-
-#: settings.php:210
-msgid "Cardcom Document Processing"
-msgstr ""
-
-#: settings.php:211
-msgid "Cardcom can create a document "
-msgstr ""
-
-#: settings.php:220
-#: simple-payment-plugin.php:180
-#: templates/form-bootstrap.php:150
-#: templates/form-donation.php:157
-#: templates/form-legacy.php:40
-msgid "PayPal"
-msgstr ""
-
-#: settings.php:220
-#: simple-payment-plugin.php:181
-msgid "Cardcom"
-msgstr ""
-
-#: settings.php:220
-msgid "Custom"
-msgstr ""
-
-#: settings.php:222
-msgid "Mode"
-msgstr ""
-
-#: settings.php:224
-msgid "Live"
-msgstr ""
-
-#: settings.php:224
-msgid "Sandbox"
-msgstr ""
-
-#: settings.php:226
-msgid "Currency"
-msgstr ""
-
-#: settings.php:230
-#: simple-payment-plugin.php:115
-#: simple-payment-plugin.php:144
-msgid "Payment Page"
-msgstr ""
-
-#: settings.php:233
-msgid "Callback URL"
-msgstr ""
-
-#: settings.php:235
-msgid "Redirect URL"
-msgstr ""
-
-#: settings.php:237
-msgid "Form Template"
-msgstr ""
-
-#: settings.php:239
-msgid "Legacy"
-msgstr ""
-
-#: settings.php:239
-msgid "Bootstrap"
-msgstr ""
-
-#: settings.php:239
-msgid "Experimental"
-msgstr ""
-
-#: settings.php:242
-msgid "Client ID"
-msgstr ""
-
-#: settings.php:245
-msgid "Client Secret"
-msgstr ""
-
-#: settings.php:248
-msgid "Business"
-msgstr ""
-
-#: settings.php:251
-msgid "Hosted Button ID"
-msgstr ""
-
-#: settings.php:255
-msgid "Terminal ID"
-msgstr ""
-
-#: settings.php:259
-msgid "Username"
-msgstr ""
-
-#: settings.php:263
-msgid "API Password"
-msgstr ""
-
-#: settings.php:267
-msgid "Operation"
-msgstr ""
-
-#: settings.php:273
-msgid "Force Language Interface"
-msgstr ""
-
-#: settings.php:280
-msgid "Credit Type"
-msgstr ""
-
-#: settings.php:288
-msgid "Name field settings"
-msgstr ""
-
-#: settings.php:294
-msgid "Phone field settings"
-msgstr ""
-
-#: settings.php:300
-msgid "Email field settings"
-msgstr ""
-
-#: settings.php:307
-msgid "Invoice Processing"
-msgstr ""
-
-#: settings.php:314
-msgid "Document Type Upon Success"
-msgstr ""
-
-#: settings.php:322
-msgid "Auto Create/Update Account"
-msgstr ""
-
-#: settings.php:327
-msgid "Load Account Info to Invoice"
-msgstr ""
-
-#: settings.php:332
-msgid "Show Invoice Information"
-msgstr ""
-
-#: settings.php:337
-msgid "Min # of Payments"
-msgstr ""
-
-#: settings.php:343
-msgid "Max # of Payments"
-msgstr ""
-
-#: settings.php:349
-msgid "Default # of Payments"
-msgstr ""
-
-#: settings.php:356
-msgid "CSS"
-msgstr ""
-
-#: settings.php:362
-msgid "Prices Globally VAT Free"
-msgstr ""
-
-#: settings.php:367
-msgid "Email Invoice to Client"
-msgstr ""
-
-#: settings.php:372
-msgid "Site ID"
-msgstr ""
-
-#: settings.php:376
-msgid "Department ID"
-msgstr ""
-
-#: settings.php:378
-msgid "Numeric ID"
-msgstr ""
-
-#: simple-payment-plugin.php:159
-#: simple-payment-plugin.php:160
+#: admin/transaction-list-table.php:192
+#: simple-payment-plugin.php:200
+#: simple-payment-plugin.php:201
 msgid "Payments"
 msgstr ""
 
-#: simple-payment-plugin.php:177
+#: admin/transaction-list-table.php:193
+msgid "Transaction ID"
+msgstr ""
+
+#: admin/transaction-list-table.php:194
+msgid "User"
+msgstr ""
+
+#: admin/transaction-list-table.php:195
+msgid "URL"
+msgstr ""
+
+#: admin/transaction-list-table.php:196
+msgid "Parameters"
+msgstr ""
+
+#: admin/transaction-list-table.php:197
+msgid "Error"
+msgstr ""
+
+#: admin/transaction-list-table.php:198
+#: settings.php:73
+msgid "Sandbox"
+msgstr ""
+
+#: admin/transaction-list-table.php:199
+msgid "Modified"
+msgstr ""
+
+#: admin/transaction-list-table.php:200
+msgid "Created"
+msgstr ""
+
+#: admin/transaction-log.php:7
+#: admin/transactions.php:8
+msgid "Payments Transactions"
+msgstr ""
+
+#: admin/transactions.php:20
+msgid "Search"
+msgstr ""
+
+#: settings.php:4
+msgid "Hebrew"
+msgstr ""
+
+#: settings.php:4
+msgid "English"
+msgstr ""
+
+#: settings.php:5
+msgid "Charge"
+msgstr ""
+
+#: settings.php:5
+msgid "Charge & Token"
+msgstr ""
+
+#: settings.php:5
+msgid "Token (Charge Pending)"
+msgstr ""
+
+#: settings.php:5
+msgid "Suspended Deal"
+msgstr ""
+
+#: settings.php:6
+msgid "Invoice"
+msgstr ""
+
+#: settings.php:6
+msgid "Donation Receipt"
+msgstr ""
+
+#: settings.php:6
+msgid "Order Confirmation"
+msgstr ""
+
+#: settings.php:6
+msgid "Receipt"
+msgstr ""
+
+#: settings.php:7
+msgid "Shown & Required"
+msgstr ""
+
+#: settings.php:7
+msgid "Shown"
+msgstr ""
+
+#: settings.php:7
+msgid "Hidden"
+msgstr ""
+
+#: settings.php:8
+msgid "Normal"
+msgstr ""
+
+#: settings.php:8
+msgid "Credit"
+msgstr ""
+
+#: settings.php:9
+msgid "No Invoice"
+msgstr ""
+
+#: settings.php:9
+msgid "Forward (Do not show)"
+msgstr ""
+
+#: settings.php:11
+msgid "New and Update"
+msgstr ""
+
+#: settings.php:11
+msgid "Only Update"
+msgstr ""
+
+#: settings.php:20
+msgid "Licensing Information"
+msgstr ""
+
+#: settings.php:21
+msgid "Obtain a license <a href=\"mailto:ido@yalla-ya.com\" target=\"_blank\">here</a> to use in production mode"
+msgstr ""
+
+#: settings.php:25
+msgid "General Settings"
+msgstr ""
+
+#: settings.php:26
+msgid "Setup how Simple Payment should operate the payments below:"
+msgstr ""
+
+#: settings.php:29
+msgid "Installments Settings"
+msgstr ""
+
+#: settings.php:30
+msgid "Setup how Simple Payment should operate installments and recurring payments:"
+msgstr ""
+
+#: settings.php:34
+msgid "PayPal Settings"
+msgstr ""
+
+#: settings.php:35
+msgid "Setup how PayPal should operate the payment below:"
+msgstr ""
+
+#: settings.php:39
+msgid "Cardcom Operation"
+msgstr ""
+
+#: settings.php:40
+msgid "Setup how Cardcom should operate the payment below:"
+msgstr ""
+
+#: settings.php:44
+msgid "Cardcom Page Display Information"
+msgstr ""
+
+#: settings.php:45
+msgid "Configure the Cardcom Page, which data should be displayed"
+msgstr ""
+
+#: settings.php:49
+msgid "Cardcom Document Processing"
+msgstr ""
+
+#: settings.php:50
+msgid "Cardcom can create a document "
+msgstr ""
+
+#: settings.php:54
+msgid "Cardcom Recurring Payments"
+msgstr ""
+
+#: settings.php:55
+msgid "Cardcom accepts recurring payments (monthly), required settings below"
+msgstr ""
+
+#: settings.php:59
+msgid "iCount Gateway Settings"
+msgstr ""
+
+#: settings.php:60
+msgid "Setup your Simple Payment to accept iCount Payments"
+msgstr ""
+
+#: settings.php:69
+#: simple-payment-plugin.php:237
+#: templates/form-bootstrap.php:151
+#: templates/form-donation.php:163
+#: templates/form-experimental.php:151
+#: templates/form-legacy.php:42
+msgid "PayPal"
+msgstr ""
+
+#: settings.php:69
+#: simple-payment-plugin.php:238
+msgid "Cardcom"
+msgstr ""
+
+#: settings.php:69
+#: simple-payment-plugin.php:239
+msgid "iCount"
+msgstr ""
+
+#: settings.php:69
+msgid "Custom"
+msgstr ""
+
+#: settings.php:71
+msgid "Mode"
+msgstr ""
+
+#: settings.php:73
+msgid "Live"
+msgstr ""
+
+#: settings.php:75
+msgid "Currency"
+msgstr ""
+
+#: settings.php:79
+#: simple-payment-plugin.php:152
+#: simple-payment-plugin.php:185
+msgid "Payment Page"
+msgstr ""
+
+#: settings.php:82
+msgid "Callback URL"
+msgstr ""
+
+#: settings.php:84
+msgid "Redirect URL"
+msgstr ""
+
+#: settings.php:86
+msgid "Form Template"
+msgstr ""
+
+#: settings.php:88
+msgid "Legacy"
+msgstr ""
+
+#: settings.php:88
+msgid "Bootstrap"
+msgstr ""
+
+#: settings.php:88
+msgid "Bootstrap Basic"
+msgstr ""
+
+#: settings.php:88
+msgid "Experimental"
+msgstr ""
+
+#: settings.php:90
+#: settings.php:240
+msgid "CSS"
+msgstr ""
+
+#: settings.php:94
+msgid "Upon Uninstall"
+msgstr ""
+
+#: settings.php:98
+msgid "Keep Database & Settings"
+msgstr ""
+
+#: settings.php:98
+msgid "Erase Settings"
+msgstr ""
+
+#: settings.php:98
+msgid "Erase Database"
+msgstr ""
+
+#: settings.php:98
+msgid "Erase All Database & Settings"
+msgstr ""
+
+#: settings.php:101
+#: settings.php:221
+msgid "Min # of Payments"
+msgstr ""
+
+#: settings.php:107
+#: settings.php:227
+msgid "Max # of Payments"
+msgstr ""
+
+#: settings.php:113
+#: settings.php:233
+msgid "Default # of Payments"
+msgstr ""
+
+#: settings.php:120
+msgid "Client ID"
+msgstr ""
+
+#: settings.php:123
+msgid "Client Secret"
+msgstr ""
+
+#: settings.php:127
+msgid "Business"
+msgstr ""
+
+#: settings.php:130
+msgid "Hosted Button ID"
+msgstr ""
+
+#: settings.php:134
+msgid "Terminal ID"
+msgstr ""
+
+#: settings.php:138
+#: settings.php:300
+msgid "Username"
+msgstr ""
+
+#: settings.php:142
+msgid "API Password"
+msgstr ""
+
+#: settings.php:147
+msgid "Operation"
+msgstr ""
+
+#: settings.php:153
+msgid "Force Language Interface"
+msgstr ""
+
+#: settings.php:160
+msgid "Credit Type"
+msgstr ""
+
+#: settings.php:168
+msgid "Name field settings"
+msgstr ""
+
+#: settings.php:174
+msgid "Phone field settings"
+msgstr ""
+
+#: settings.php:180
+msgid "Email field settings"
+msgstr ""
+
+#: settings.php:186
+msgid "Hide Credit Card User ID"
+msgstr ""
+
+#: settings.php:191
+msgid "Invoice Processing"
+msgstr ""
+
+#: settings.php:198
+msgid "Document Type Upon Success"
+msgstr ""
+
+#: settings.php:206
+msgid "Auto Create/Update Account"
+msgstr ""
+
+#: settings.php:211
+msgid "Load Account Info to Invoice"
+msgstr ""
+
+#: settings.php:216
+msgid "Show Invoice Information"
+msgstr ""
+
+#: settings.php:246
+msgid "Prices Globally VAT Free"
+msgstr ""
+
+#: settings.php:251
+msgid "Email Invoice to Client"
+msgstr ""
+
+#: settings.php:256
+msgid "Site ID"
+msgstr ""
+
+#: settings.php:260
+msgid "Department ID"
+msgstr ""
+
+#: settings.php:262
+msgid "Numeric ID"
+msgstr ""
+
+#: settings.php:267
+msgid "Enable Recurring Payments"
+msgstr ""
+
+#: settings.php:270
+msgid "Disabled"
+msgstr ""
+
+#: settings.php:270
+msgid "Provider"
+msgstr ""
+
+#: settings.php:274
+#: settings.php:286
+msgid "Repeated Recurring"
+msgstr ""
+
+#: settings.php:279
+msgid "Recurring Operation"
+msgstr ""
+
+#: settings.php:291
+msgid "Recurring Interval ID"
+msgstr ""
+
+#: settings.php:296
+msgid "Business ID"
+msgstr ""
+
+#: settings.php:304
+msgid "Password"
+msgstr ""
+
+#: settings.php:309
+msgid "Use CC Storage"
+msgstr ""
+
+#: simple-payment-plugin.php:211
+msgid "Transaction Details"
+msgstr ""
+
+#: simple-payment-plugin.php:234
 msgid "Simple Payment Settings"
 msgstr ""
 
-#: simple-payment-plugin.php:179
+#: simple-payment-plugin.php:236
 msgid "General"
 msgstr ""
 
-#: simple-payment-plugin.php:182
+#: simple-payment-plugin.php:240
 msgid "License"
 msgstr ""
 
-#: simple-payment-plugin.php:183
+#: simple-payment-plugin.php:241
 msgid "Shortcode"
 msgstr ""
 
-#: simple-payment-plugin.php:184
+#: simple-payment-plugin.php:242
 msgid "Instructions"
 msgstr ""
 
-#: simple-payment-plugin.php:214
+#: simple-payment-plugin.php:272
 msgid "License Key"
 msgstr ""
 
-#: simple-payment-plugin.php:290
+#: simple-payment-plugin.php:351
 msgid "License key is required"
 msgstr ""
 
-#: simple-payment-plugin.php:313
+#: simple-payment-plugin.php:374
 msgid "License is not valid on the current domain"
 msgstr ""
 
-#: simple-payment-plugin.php:321
+#: simple-payment-plugin.php:382
 msgid "License has not been activated"
 msgstr ""
 
-#: simple-payment-plugin.php:326
+#: simple-payment-plugin.php:387
 msgid "License key was not found"
 msgstr ""
 
-#: simple-payment-plugin.php:330
+#: simple-payment-plugin.php:391
 msgid "Unhandled error:"
 msgstr ""
 
-#: simple-payment-plugin.php:395
+#: simple-payment-plugin.php:459
 msgid "Auto"
 msgstr ""
 
-#: templates/form-bootstrap.php:19
-msgid "Purchase Information"
-msgstr ""
-
-#: templates/form-bootstrap.php:24
-#: templates/form-donation.php:31
-msgid "Billing Information"
-msgstr ""
-
-#: templates/form-bootstrap.php:27
-#: templates/form-donation.php:34
-msgid "First name"
-msgstr ""
-
-#: templates/form-bootstrap.php:30
-#: templates/form-donation.php:37
-msgid "Valid first name is required."
-msgstr ""
-
-#: templates/form-bootstrap.php:34
-#: templates/form-donation.php:41
-msgid "Last name"
-msgstr ""
-
-#: templates/form-bootstrap.php:37
-#: templates/form-donation.php:44
-msgid "Valid last name is required."
-msgstr ""
-
-#: templates/form-bootstrap.php:44
-#: templates/form-donation.php:51
-msgid "Phone"
-msgstr ""
-
-#: templates/form-bootstrap.php:47
-#: templates/form-donation.php:54
-msgid "Valid phone is required."
-msgstr ""
-
-#: templates/form-bootstrap.php:51
-#: templates/form-donation.php:58
-msgid "Mobile"
-msgstr ""
-
-#: templates/form-bootstrap.php:54
-#: templates/form-donation.php:61
-msgid "Valid mobile is required."
-msgstr ""
-
-#: templates/form-bootstrap.php:60
-#: templates/form-donation.php:67
-#: templates/form-legacy.php:20
-msgid "Email"
-msgstr ""
-
-#: templates/form-bootstrap.php:61
-#: templates/form-donation.php:68
-#: templates/form-legacy.php:21
-msgid "you@example.com"
-msgstr ""
-
-#: templates/form-bootstrap.php:63
-#: templates/form-donation.php:70
-#: templates/form-legacy.php:23
-msgid "Please enter a valid email address."
-msgstr ""
-
-#: templates/form-bootstrap.php:68
-#: templates/form-donation.php:75
-msgid "Address"
-msgstr ""
-
-#: templates/form-bootstrap.php:69
-#: templates/form-donation.php:76
-msgid "1234 Main St."
-msgstr ""
-
-#: templates/form-bootstrap.php:71
-#: templates/form-donation.php:78
-msgid "Please enter your address."
-msgstr ""
-
-#: templates/form-bootstrap.php:76
-#: templates/form-donation.php:83
-msgid "Address 2"
-msgstr ""
-
-#: templates/form-bootstrap.php:76
-#: templates/form-donation.php:83
-msgid "(Optional)"
-msgstr ""
-
-#: templates/form-bootstrap.php:77
-#: templates/form-donation.php:84
-msgid "Apartment or suite"
-msgstr ""
-
-#: templates/form-bootstrap.php:81
-#: templates/form-donation.php:88
-msgid "City"
-msgstr ""
-
-#: templates/form-bootstrap.php:84
-#: templates/form-donation.php:91
-msgid "Please enter your city."
-msgstr ""
-
-#: templates/form-bootstrap.php:90
-#: templates/form-donation.php:97
-msgid "Country"
-msgstr ""
-
-#: templates/form-bootstrap.php:92
-#: templates/form-bootstrap.php:188
-#: templates/form-donation.php:99
-#: templates/form-donation.php:195
-msgid "Choose"
-msgstr ""
-
-#: templates/form-bootstrap.php:93
-#: templates/form-donation.php:100
-msgid "United States"
-msgstr ""
-
-#: templates/form-bootstrap.php:96
-#: templates/form-donation.php:103
-msgid "Please select a valid country."
-msgstr ""
-
-#: templates/form-bootstrap.php:100
-#: templates/form-donation.php:107
-msgid "State"
-msgstr ""
-
-#: templates/form-bootstrap.php:103
-#: templates/form-donation.php:110
-msgid "State required."
-msgstr ""
-
-#: templates/form-bootstrap.php:107
-#: templates/form-donation.php:114
-msgid "Zip Code"
-msgstr ""
-
-#: templates/form-bootstrap.php:110
-#: templates/form-donation.php:117
-msgid "Zip code required."
-msgstr ""
-
-#: templates/form-bootstrap.php:116
-#: templates/form-bootstrap.php:117
-#: templates/form-donation.php:123
-#: templates/form-donation.php:124
-msgid "Tax ID"
-msgstr ""
-
-#: templates/form-bootstrap.php:119
-#: templates/form-donation.php:126
-msgid "Valid tax id is required."
-msgstr ""
-
-#: templates/form-bootstrap.php:124
-#: templates/form-donation.php:131
-msgid "Comment"
-msgstr ""
-
-#: templates/form-bootstrap.php:127
-#: templates/form-donation.php:134
-msgid "Please enter your comment for invoicing or shipping."
-msgstr ""
-
-#: templates/form-bootstrap.php:137
-#: templates/form-legacy.php:27
+#: templates/form-bootstrap-basic.php:24
+#: templates/form-bootstrap.php:138
+#: templates/form-donation.php:150
+#: templates/form-experimental.php:138
+#: templates/form-legacy.php:29
 msgid "Payment"
 msgstr ""
 
-#: templates/form-bootstrap.php:142
-#: templates/form-donation.php:149
-#: templates/form-legacy.php:32
+#: templates/form-bootstrap-basic.php:28
+#: templates/form-bootstrap.php:143
+#: templates/form-donation.php:155
+#: templates/form-experimental.php:143
+#: templates/form-legacy.php:34
 msgid "Credit card"
 msgstr ""
 
-#: templates/form-bootstrap.php:146
-#: templates/form-donation.php:153
-#: templates/form-legacy.php:36
+#: templates/form-bootstrap-basic.php:32
+#: templates/form-bootstrap.php:147
+#: templates/form-donation.php:159
+#: templates/form-experimental.php:147
+#: templates/form-legacy.php:38
 msgid "Debit card"
 msgstr ""
 
-#: templates/form-bootstrap.php:155
-#: templates/form-donation.php:162
-#: templates/form-legacy.php:45
+#: templates/form-bootstrap-basic.php:37
+#: templates/form-bootstrap.php:156
+#: templates/form-donation.php:168
+#: templates/form-experimental.php:156
+#: templates/form-legacy.php:47
 msgid "Name on card"
 msgstr ""
 
-#: templates/form-bootstrap.php:157
-#: templates/form-donation.php:164
-#: templates/form-legacy.php:47
+#: templates/form-bootstrap-basic.php:39
+#: templates/form-bootstrap.php:158
+#: templates/form-donation.php:170
+#: templates/form-experimental.php:158
+#: templates/form-legacy.php:49
 msgid "Full name as displayed on card"
 msgstr ""
 
-#: templates/form-bootstrap.php:159
-#: templates/form-donation.php:166
-#: templates/form-legacy.php:49
+#: templates/form-bootstrap-basic.php:41
+#: templates/form-bootstrap.php:160
+#: templates/form-donation.php:172
+#: templates/form-experimental.php:160
+#: templates/form-legacy.php:51
 msgid "Name on card is required."
 msgstr ""
 
-#: templates/form-bootstrap.php:163
-#: templates/form-donation.php:170
-#: templates/form-legacy.php:53
+#: templates/form-bootstrap-basic.php:45
+#: templates/form-bootstrap.php:164
+#: templates/form-donation.php:176
+#: templates/form-experimental.php:164
+#: templates/form-legacy.php:55
 msgid "Credit card number"
 msgstr ""
 
-#: templates/form-bootstrap.php:166
-#: templates/form-donation.php:173
-#: templates/form-legacy.php:56
+#: templates/form-bootstrap-basic.php:48
+#: templates/form-bootstrap.php:167
+#: templates/form-donation.php:179
+#: templates/form-experimental.php:167
+#: templates/form-legacy.php:58
 msgid "Credit card number is required."
 msgstr ""
 
-#: templates/form-bootstrap.php:172
-#: templates/form-donation.php:179
-#: templates/form-legacy.php:62
+#: templates/form-bootstrap-basic.php:54
+#: templates/form-bootstrap.php:173
+#: templates/form-donation.php:185
+#: templates/form-experimental.php:173
+#: templates/form-legacy.php:64
 msgid "Expiration"
 msgstr ""
 
-#: templates/form-bootstrap.php:175
-#: templates/form-donation.php:182
-#: templates/form-legacy.php:65
-msgid "Expiration date required."
+#: templates/form-bootstrap-basic.php:61
+#: templates/form-bootstrap-basic.php:70
+#: templates/form-bootstrap-basic.php:77
+#: templates/form-bootstrap.php:180
+#: templates/form-bootstrap.php:189
+#: templates/form-bootstrap.php:196
+#: templates/form-donation.php:192
+#: templates/form-donation.php:201
+#: templates/form-donation.php:208
+#: templates/form-experimental.php:180
+#: templates/form-experimental.php:189
+#: templates/form-experimental.php:196
+msgid "Required."
 msgstr ""
 
-#: templates/form-bootstrap.php:179
-#: templates/form-donation.php:186
-#: templates/form-legacy.php:69
+#: templates/form-bootstrap-basic.php:74
+#: templates/form-bootstrap.php:193
+#: templates/form-donation.php:205
+#: templates/form-experimental.php:193
+#: templates/form-legacy.php:71
 msgid "CVV"
 msgstr ""
 
-#: templates/form-bootstrap.php:182
-#: templates/form-donation.php:189
-#: templates/form-legacy.php:72
-msgid "Security code required."
-msgstr ""
-
-#: templates/form-bootstrap.php:186
-#: templates/form-donation.php:193
+#: templates/form-bootstrap-basic.php:82
+#: templates/form-bootstrap.php:201
+#: templates/form-donation.php:213
+#: templates/form-experimental.php:201
 msgid "Installments"
 msgstr ""
 
-#: templates/form-bootstrap.php:189
-#: templates/form-donation.php:196
-msgid "Single Payment"
-msgstr ""
-
-#: templates/form-bootstrap.php:194
-#: templates/form-donation.php:201
+#: templates/form-bootstrap-basic.php:87
+#: templates/form-bootstrap.php:206
+#: templates/form-donation.php:218
+#: templates/form-experimental.php:207
 msgid "Number of Installments is required."
 msgstr ""
 
-#: templates/form-bootstrap.php:199
-#: templates/form-donation.php:206
-#: templates/form-legacy.php:77
-msgid "Process Payment"
+#: templates/form-bootstrap-basic.php:92
+#: templates/form-bootstrap.php:211
+#: templates/form-experimental.php:212
+#: templates/form-legacy.php:79
+msgid "Process Payment [%s]"
 msgstr ""
 
-#: templates/form-donation.php:12
-msgid "For"
+#: templates/form-bootstrap.php:25
+#: templates/form-donation.php:37
+#: templates/form-experimental.php:25
+msgid "Billing Information"
 msgstr ""
 
-#: templates/form-donation.php:13
-msgid "General Donation"
+#: templates/form-bootstrap.php:28
+#: templates/form-donation.php:40
+#: templates/form-experimental.php:28
+msgid "First name"
 msgstr ""
 
-#: templates/form-donation.php:14
-msgid "Direct Debit"
+#: templates/form-bootstrap.php:31
+#: templates/form-donation.php:43
+#: templates/form-experimental.php:31
+msgid "Valid first name is required."
 msgstr ""
 
-#: templates/form-donation.php:15
-msgid "Number of Installments "
+#: templates/form-bootstrap.php:35
+#: templates/form-donation.php:47
+#: templates/form-experimental.php:35
+msgid "Last name"
 msgstr ""
 
-#: templates/form-donation.php:16
-msgid "Number of Payments"
+#: templates/form-bootstrap.php:38
+#: templates/form-donation.php:50
+#: templates/form-experimental.php:38
+msgid "Valid last name is required."
 msgstr ""
 
-#: templates/form-donation.php:26
+#: templates/form-bootstrap.php:45
+#: templates/form-donation.php:57
+#: templates/form-experimental.php:45
+msgid "Phone"
+msgstr ""
+
+#: templates/form-bootstrap.php:48
+#: templates/form-donation.php:60
+#: templates/form-experimental.php:48
+msgid "Valid phone is required."
+msgstr ""
+
+#: templates/form-bootstrap.php:52
+#: templates/form-donation.php:64
+#: templates/form-experimental.php:52
+msgid "Mobile"
+msgstr ""
+
+#: templates/form-bootstrap.php:55
+#: templates/form-donation.php:67
+#: templates/form-experimental.php:55
+msgid "Valid mobile is required."
+msgstr ""
+
+#: templates/form-bootstrap.php:61
+#: templates/form-donation.php:73
+#: templates/form-experimental.php:61
+#: templates/form-legacy.php:22
+msgid "Email"
+msgstr ""
+
+#: templates/form-bootstrap.php:62
+#: templates/form-donation.php:74
+#: templates/form-experimental.php:62
+#: templates/form-legacy.php:23
+msgid "you@example.com"
+msgstr ""
+
+#: templates/form-bootstrap.php:64
+#: templates/form-donation.php:76
+#: templates/form-experimental.php:64
+#: templates/form-legacy.php:25
+msgid "Please enter a valid email address."
+msgstr ""
+
+#: templates/form-bootstrap.php:69
+#: templates/form-donation.php:81
+#: templates/form-experimental.php:69
+msgid "Address"
+msgstr ""
+
+#: templates/form-bootstrap.php:70
+#: templates/form-donation.php:82
+#: templates/form-experimental.php:70
+msgid "1234 Main St."
+msgstr ""
+
+#: templates/form-bootstrap.php:72
+#: templates/form-donation.php:84
+#: templates/form-experimental.php:72
+msgid "Please enter your address."
+msgstr ""
+
+#: templates/form-bootstrap.php:77
+#: templates/form-donation.php:89
+#: templates/form-experimental.php:77
+msgid "Address 2"
+msgstr ""
+
+#: templates/form-bootstrap.php:77
+#: templates/form-donation.php:89
+#: templates/form-experimental.php:77
+msgid "(Optional)"
+msgstr ""
+
+#: templates/form-bootstrap.php:78
+#: templates/form-donation.php:90
+#: templates/form-experimental.php:78
+msgid "Apartment or suite"
+msgstr ""
+
+#: templates/form-bootstrap.php:82
+#: templates/form-donation.php:94
+#: templates/form-experimental.php:82
+msgid "City"
+msgstr ""
+
+#: templates/form-bootstrap.php:85
+#: templates/form-donation.php:97
+#: templates/form-experimental.php:85
+msgid "Please enter your city."
+msgstr ""
+
+#: templates/form-bootstrap.php:91
+#: templates/form-donation.php:103
+#: templates/form-experimental.php:91
+msgid "Country"
+msgstr ""
+
+#: templates/form-bootstrap.php:93
+#: templates/form-donation.php:105
+#: templates/form-experimental.php:93
+msgid "Choose"
+msgstr ""
+
+#: templates/form-bootstrap.php:97
+#: templates/form-donation.php:109
+#: templates/form-experimental.php:97
+msgid "Please select a valid country."
+msgstr ""
+
+#: templates/form-bootstrap.php:101
+#: templates/form-donation.php:113
+#: templates/form-experimental.php:101
+msgid "State"
+msgstr ""
+
+#: templates/form-bootstrap.php:104
+#: templates/form-donation.php:116
+#: templates/form-experimental.php:104
+msgid "State required."
+msgstr ""
+
+#: templates/form-bootstrap.php:108
+#: templates/form-donation.php:120
+#: templates/form-experimental.php:108
+msgid "Zip Code"
+msgstr ""
+
+#: templates/form-bootstrap.php:111
+#: templates/form-donation.php:123
+#: templates/form-experimental.php:111
+msgid "Zip code required."
+msgstr ""
+
+#: templates/form-bootstrap.php:117
+#: templates/form-bootstrap.php:118
+#: templates/form-donation.php:129
+#: templates/form-donation.php:130
+#: templates/form-experimental.php:117
+#: templates/form-experimental.php:118
+msgid "Tax ID"
+msgstr ""
+
+#: templates/form-bootstrap.php:120
+#: templates/form-donation.php:132
+#: templates/form-experimental.php:120
+msgid "Valid tax id is required."
+msgstr ""
+
+#: templates/form-bootstrap.php:125
+#: templates/form-donation.php:137
+#: templates/form-experimental.php:125
+msgid "Comment"
+msgstr ""
+
+#: templates/form-bootstrap.php:128
+#: templates/form-donation.php:140
+#: templates/form-experimental.php:128
+msgid "Please enter your comment for invoicing or shipping."
+msgstr ""
+
+#: templates/form-donation.php:23
 msgid "Donation Information"
 msgstr ""
 
-#: templates/form-donation.php:144
-msgid "Donation"
+#: templates/form-donation.php:27
+msgid "Donation Concept"
+msgstr ""
+
+#: templates/form-donation.php:223
+msgid "Process Payment"
+msgstr ""
+
+#: templates/form-experimental.php:203
+msgid "Monthly Recurring"
+msgstr ""
+
+#: templates/form-legacy.php:67
+msgid "Expiration date required."
+msgstr ""
+
+#: templates/form-legacy.php:74
+msgid "Security code required."
 msgstr ""

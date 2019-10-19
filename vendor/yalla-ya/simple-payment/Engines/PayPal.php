@@ -49,9 +49,12 @@ class PayPal extends Engine {
   }
 
   public function post_process($params) {
-    $this->transaction = $_REQUEST['paymentId'];
     //&paymentId=PAYID-LWNTCSI09697453H2945450G&token=EC-8A964303H1112514L&PayerID=DA5RML92QXCAE
-    $this->record($params, $_REQUEST);
+
+    $this->transaction = $_REQUEST['paymentId'];
+    //$token = $_REQUEST['token'];
+    //$payer = $_REQUEST['PayerID'];
+    $this->save(['request' => $params]);
     return(true);
   }
 
@@ -76,6 +79,8 @@ class PayPal extends Engine {
 
   public function pre_process($params) {
     // no_shipping, lc, image_url
+
+    // TODO : add additional known fields if known
     $amount = $params['amount'];
     $currency = $this->param('currency');
     $concept = $params['concept'];
@@ -96,6 +101,7 @@ class PayPal extends Engine {
       $redirectUrls = new RedirectUrls();
       $redirectUrls->setReturnUrl($this->url(SimplePayment::OPERATION_SUCCESS))
         ->setCancelUrl($this->url(SimplePayment::OPERATION_CANCEL));
+        // TODO add status usrl
       $payment = new Payment();
       $payment->setIntent("sale")
           ->setPayer($payer)
@@ -123,7 +129,7 @@ class PayPal extends Engine {
     $post['rm'] = '2';
     $post['url'] = $this->api['sandbox']['post'];
     $params['post'] = $post;
-    $this->record($params, []);
+    $this->save(['url' => $post['url'], 'request' => $params]);
     return($params);
   }
 
@@ -131,14 +137,8 @@ class PayPal extends Engine {
     $this->callback = $url;
   }
 
-  protected function record($request, $response) {
-    return($this->save(array('request' => $request, 'response' => $response)));
-  }
-
   protected function save($params) {
-      return(true);
-      // Do not log
-      // return($this->handler->save(strtolower($this->name), $params));
+      return(parent::save($params));
   }
 
   function getApiContext($clientId, $clientSecret) {
@@ -156,4 +156,5 @@ class PayPal extends Engine {
       ]);
     return($apiContext);
   }
+
 }

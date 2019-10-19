@@ -12,6 +12,7 @@ class Engine {
   public $name = 'Base';
   public $transaction = null;
   public $handler;
+  public $interactive;
   protected $callback;
   protected static $params;
   protected $sandbox;
@@ -47,9 +48,6 @@ class Engine {
   }
 
   public function pre_process($params) {
-    $request = [];
-    $response = [];
-    $this->record($request, $response);
     return($params);
   }
 
@@ -57,12 +55,29 @@ class Engine {
     $this->callback = $url;
   }
 
-  protected function record($request, $response) {
-    return($this->save(array('request' => $request, 'response' => $response)));
+  protected function record($request, $response, $fields = []) {
+    $params = [];
+    foreach ($fields as $field => $keys) {
+      if (!is_array($keys)) $keys = [ $keys ];
+      foreach ($keys as $key) {
+          if (isset($request[$key])) {
+              $params[$field] = $request[$key];
+              break;
+          }
+          if (isset($response[$key])) {
+              $params[$field] = $response[$key];
+              break;
+          }
+      }
+    }
+    $params['request'] = json_encode($request);
+    $params['response'] = json_encode($response);
+    return($this->save($params));
   }
 
   protected function save($params) {
-      return($this->handler->save(strtolower($this->name), $params));
+    if (!isset($params['transaction_id'])) $params['transaction_id'] = $this->transaction;
+    return($this->handler->save($params, $this->name));
   }
 
   public static function uuid() {

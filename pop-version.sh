@@ -19,7 +19,11 @@ increment_version ()
   echo -e "${new// /.}"
 }
 
+echo "Updating language file..."
+GIT_ROOT=`git rev-parse --show-toplevel`
+wp i18n make-pot $GIT_ROOT "$GIT_ROOT/languages/simple-payment.pot"
 VERSION=`increment_version $LAST_VERSION`
+
 echo "Poping version to: $VERSION"
 sed -i "" "s/Version:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Version: ${VERSION}/" simple-payment-plugin.php
 sed -i "" "s/Stable tag:[[:blank:]]*\([[:digit:]]*\.*\)\{1,4\}/Stable tag: $VERSION/" readme.txt
