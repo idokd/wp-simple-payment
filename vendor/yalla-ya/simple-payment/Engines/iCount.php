@@ -21,104 +21,135 @@ class iCount extends Engine {
     ];
 
     public function process($params) {
-      $post = $params;
+      $post = $this->basics($params);
       if ($this->sandbox) $post['is_test'] = true;
       $post['currency_code'] = $this->param(SimplePayment::CURRENCY); // currency_code (cuurency_id / currency
       $post['is_credit'] = false;
+      $post['sum'] = $params[SimplePayment::AMOUNT];
+      if (isset($params[SimplePayment::PAYMENTS]) && is_numeric($params[SimplePayment::PAYMENTS])) $post['num_of_payments'] = $params[SimplePayment::PAYMENTS];
+
       $status = $this->post($this->api['bill'], $post);
       $response = json_decode($status, true);
       $this->save([
         'transaction_id' => $this->transaction,
         'url' => $this->api['bill'],
         'status' => $response['status'],
-        'description' => $response['error_description'],
+        'description' => isset($response['error_description']) ? $response['error_description'] : null,
         'request' => json_encode($post),
         'response' => json_encode($response)
       ]);
       if (!$response['status']) {
-        throw new Exception($response['error_description'], intval($response['status']));
+       throw new Exception($response['error_description'], intval($response['status']));
       }
-
-      // num_of_payments/ sum
-     // cc_token_id
-     // cc_number, cc_type,  cc_cvv, cc_validity, cc_holder_id, cc_holder_name
-
-      // Process the transaction, for example
-      // - Call payment gateway API
-      // - Redirect to the payment gateway url with params
-
-      // Use: $this->url(SimplePayment::OPERATION_SUCCESS) to obtain success response
-      // Throw Exception if transaction Failed
-      // return true if handaled internally, false if to keep processing
-
-      // confirmation_code, cc_type, success , error_details, error_description , reason, status
-      return(false);
+      
+      $params['currency_code'] = $response['currency_code'];
+      $params['confirmation_code'] = $response['confirmation_code'];
+      $params['cc_card_type'] = $response['cc_card_type'];
+      $params['cc_type'] = $response['cc_type'];
+      return($params);
     }
 
     public function post_process($params) {
       parent::post_process($params);
+      $doctype = $this->param('doc_type');
+      if (!$doctype || $doctype == 'none') return($params);
       // Process the result of the transactions save
-      // doctype invrec
-      // paydate, duedate, currency_code
-      // tax_exempt, vat_percent
-      // totalsum
-      // totalwithvat, paid, totalpaid
-      // cc
-      // autoinvoice_cc
-      // doc_title
-      // sanity_string
-      // doc_lang
-      // send_email
-      // "items" => Array(
-    /*Array(
-      "description" => "First item",
-      "unitprice" => 50,
-      "quantity" => 1,
-      ),*/
-      return(true);
+      $post = $this->basics($params, false);
+      $post['doc_title'] = $params[SimplePayment::PRODUCT];
+      $post['doctype'] = $doctype;
+      //$post['doc_lang'] = '';
+
+      //vat_percent, tax_exempt
+      $post['currency_code'] = $params['currency_code'];
+      $amount = $params[SimplePayment::AMOUNT];
+      // Amount to be in ILS only
+      //$post['totalsum'] = $amount;
+     // $post['totalwithvat'] = $amount;
+      //$post['totalpaid'] = $amount;
+      //$post['paid'] = $amount;
+      $post['items'][] = ['description' => $params[SimplePayment::PRODUCT],'unitprice' => $amount, 'quantity' => 1];
+      /*
+      $date = new DateTime();
+      $post['paydate'] =  $date->format('Y-m-y');
+      $post['duedate'] =  $date->format('Y-m-y');
+      */
+
+      if ($this->param('auto_invoice')) $post['autoinvoice_cc'] = $this->param('auto_invoice');
+      if ($this->param('email_document')) $post['send_email'] = $this->param('email_document');
+
+      $post['sanity_string'] = $this->transaction;
+      $status = $this->post($this->api['document'], $post);
+      $response = json_decode($status, true);
+      $this->save([
+        'transaction_id' => $this->transaction,
+        'url' => $this->api['bill'],
+        'status' => $response['status'],
+        'description' => isset($response['error_description']) ? $response['error_description'] : null,
+        'request' => json_encode($post),
+        'response' => json_encode($response)
+      ]);
+      if (!$response['status']) {
+       throw new Exception($response['error_description'], intval($response['status']));
+      }
+      return($response);
+    }
+
+    public function basics($params, $cc = true) {
+      $post = [];
+      $post['cid'] = $this->param('business');
+      $post['user'] = $this->param('username');
+      $post['pass'] = $this->param('password');
+      $post['client_name'] = isset($params[SimplePayment::FULL_NAME]) ? $params[SimplePayment::FULL_NAME] : $params[SimplePayment::CARD_OWNER];
+      if (isset($params[SimplePayment::TAX_ID])) $post['vat_id'] = $params[SimplePayment::TAX_ID];
+      // custom_client_id
+      if (isset($params['cc_type'])) $post['cc_type'] = $params['cc_type']; // else maybe= $params[SimplePayment::CARD_TYPE]
+      if (isset($params[SimplePayment::EMAIL])) $post['email'] = $params[SimplePayment::EMAIL]; 
+
+      if ($cc) {
+        if (isset($params['cc_token_id'])) $post['cc_token_id'] = $params['cc_token_id'];
+        else {
+          $post['cc_number'] = $params[SimplePayment::CARD_NUMBER];
+          $post['cc_cvv'] = $params[SimplePayment::CARD_CVV];
+          $post['cc_validity'] = $params[SimplePayment::CARD_EXPIRY_YEAR].'-'.$params[SimplePayment::CARD_EXPIRY_MONTH];
+          $post['cc_holder_name'] = $params[SimplePayment::CARD_OWNER];
+          if (isset($params[SimplePayment::CARD_OWNER_ID])) $post['cc_holder_id'] = $params[SimplePayment::CARD_OWNER_ID];
+        }
+      } else {
+        $post['cc'] = [
+            'cc_type' => $params['cc_type'],
+            'card_number' => substr($params[SimplePayment::CARD_NUMBER], -4),
+            'exp_year' => $params[SimplePayment::CARD_EXPIRY_YEAR],
+            'exp_month' => $params[SimplePayment::CARD_EXPIRY_MONTH],
+            'holder_id' => isset($params[SimplePayment::CARD_OWNER_ID]) ? $params[SimplePayment::CARD_OWNER_ID] : null,
+            'holder_name' => $params[SimplePayment::CARD_OWNER],
+            'confirmation_code' => $params['confirmation_code'],
+        ];
+      }
+      return($post);
     }
 
     public function pre_process($params) {
       $this->transaction = $this->uuid();
       parent::pre_process($params);
       $params[SimplePayment::TRANSACTION_ID] = $this->transaction;
-      $post = [];
-      $post['cid'] = $this->param('business');
-      $post['user'] = $this->param('username');
-      $post['pass'] = $this->param('password');
-  
-      $post['client_name'] = isset($params[SimplePayment::FULL_NAME]) ? $params[SimplePayment::FULL_NAME] : $params[SimplePayment::CARD_OWNER];
-      if (isset($params[SimplePayment::TAX_ID])) $post['vat_id'] = $params[SimplePayment::TAX_ID];
-      // custom_client_id
-      //$params['cc_type'] = $params[SimplePayment::CARD_TYPE]
-      // custom_client_id,  , email  , cc_holder_id
-
+      $post = $this->basics($params);
       if ($this->param('use_storage')) {
-        $post['cc_number'] = $params[SimplePayment::CARD_NUMBER];
-        $post['cc_cvv'] = $params[SimplePayment::CARD_CVV];
-        $post['cc_validity'] = $params[SimplePayment::CARD_EXPIRY_YEAR].'-'.$params[SimplePayment::CARD_EXPIRY_MONTH];
-        $post['cc_holder_name'] = $params[SimplePayment::CARD_OWNER];
         $status = $this->post($this->api['store'], $post);
         $response = json_decode($status, true);
         $this->save([
           'transaction_id' => $this->transaction,
           'url' => $this->api['store'],
           'status' => $response['status'],
-          'description' => $response['error_description'],
+          'description' => isset($response['error_description']) ? $response['error_description'] : null,
           'request' => json_encode($post),
           'response' => json_encode($response)
         ]);
         if (!$response['status']) {
           throw new Exception($response['error_description'], intval($response['status']));
         }
-        $post['cc_token_id'] = $response['api']['cc_token_id'];
-      } else {
-        $post['cc_number'] = $params[SimplePayment::CARD_NUMBER];
-        $post['cc_cvv'] = $params[SimplePayment::CARD_CVV];
-        $post['cc_validity'] = $params[SimplePayment::CARD_EXPIRY_YEAR].'-'.$params[SimplePayment::CARD_EXPIRY_MONTH];
-        $post['cc_holder_name'] = $params[SimplePayment::CARD_OWNER];
+        $params['cc_token_id'] = $response['api']['cc_token_id'];
       }
-      return($post);
+      return($params);
     }
 
 }

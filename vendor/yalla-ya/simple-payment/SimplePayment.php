@@ -6,6 +6,7 @@ use Exception;
 
 class SimplePayment {
 
+  const VERSION = 1.0;
   const TRANSACTION_NEW = 'created';
   const TRANSACTION_PENDING = 'pending';
   const TRANSACTION_SUCCESS = 'success';
@@ -18,11 +19,11 @@ class SimplePayment {
   const OPERATION_ERROR = 'error';
   const OPERATION_ZAPIER = 'zapier';
 
-  const TRANSACTION_ID = 'transaction_id'; const CURRENCY = 'currency'; const AMOUNT = 'amount'; 
+  const TRANSACTION_ID = 'transaction_id'; const CURRENCY = 'currency'; const AMOUNT = 'amount'; const PRODUCT = 'product'; 
 
   const FIRST_NAME = 'first_name'; const LAST_NAME = 'last_name'; const FULL_NAME = 'full_name'; const PHONE = 'phone'; const MOBILE = 'mobile'; const EMAIL = 'email';
   
-  const CARD_OWNER = 'card_owner';  const CARD_NUMBER = 'card_number'; const CARD_EXPIRY_MONTH = 'expiry_month'; const CARD_EXPIRY_YEAR = 'expiry_year'; const CARD_CVV = 'cvv';
+  const CARD_OWNER = 'card_owner';  const CARD_NUMBER = 'card_number'; const CARD_EXPIRY_MONTH = 'expiry_month'; const CARD_EXPIRY_YEAR = 'expiry_year'; const CARD_CVV = 'cvv'; const CARD_OWNER_ID = 'card_owner_id'; 
 
   const PAYMENTS = 'payments';  const TAX_ID = 'tax_id';
 

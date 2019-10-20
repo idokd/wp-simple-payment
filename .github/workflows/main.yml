@@ -1,4 +1,4 @@
-name: WordPress.org Plugin Deploy
+name: M - WordPress.org Plugin Deploy 
 
 on: [push]
 

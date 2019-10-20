@@ -209,9 +209,12 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       'amount' => array( 'amount', false ),
       'engine' => array( 'engine', false ),
       'status' => array( 'status', false ),
+      'url' => array( 'url', false ),
       'transaction_id' => array( 'transaction_id', false ),
       'user_id' => array( 'user_id', false ),
       'error_code' => array( 'error_code', false ),
+      'parameters' => array( 'parameters', false ),
+      'sandbox' => array( 'sandbox', false ),
       'modified' => array( 'modified', false ),
       'created' => array( 'created', false ),
     );

@@ -21,6 +21,7 @@ $target = $target ? ' target="'.$target.'"' : '';
   <input type="hidden" name="amount" value="<?php echo $amount; ?>" />
   <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
 
+  <?php if (isset($_REQUEST['message']) && $message = $_REQUEST['message']) { ?><div class="alert alert-warning" role="alert"><?php echo $message; ?></div><?php } ?>
     <h4 class="mb-3"><?php _e('Payment', 'simple-payment'); ?></h4>
     <div class="d-block my-3">
       <div class="custom-control custom-radio">

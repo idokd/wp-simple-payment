@@ -2,21 +2,21 @@
 # This file is distributed under the same license as the Simple Payment plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 1.1.8\n"
+"Project-Id-Version: Simple Payment 1.1.9\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2019-10-20T10:58:08+00:00\n"
+"POT-Creation-Date: 2019-10-20T14:05:26+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: simple-payment\n"
 
 #. Plugin Name of the plugin
-#: simple-payment-plugin.php:196
-#: simple-payment-plugin.php:197
+#: simple-payment-plugin.php:199
+#: simple-payment-plugin.php:200
 msgid "Simple Payment"
 msgstr ""
 
@@ -104,8 +104,8 @@ msgid "Status"
 msgstr ""
 
 #: admin/transaction-list-table.php:192
-#: simple-payment-plugin.php:204
-#: simple-payment-plugin.php:205
+#: simple-payment-plugin.php:207
+#: simple-payment-plugin.php:208
 msgid "Payments"
 msgstr ""
 
@@ -176,6 +176,7 @@ msgid "Suspended Deal"
 msgstr ""
 
 #: settings.php:6
+#: settings.php:316
 msgid "Invoice"
 msgstr ""
 
@@ -188,6 +189,7 @@ msgid "Order Confirmation"
 msgstr ""
 
 #: settings.php:6
+#: settings.php:316
 msgid "Receipt"
 msgstr ""
 
@@ -300,21 +302,21 @@ msgid "Setup your Simple Payment to accept iCount Payments"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:241
-#: templates/form-bootstrap.php:151
-#: templates/form-donation.php:163
-#: templates/form-experimental.php:151
-#: templates/form-legacy.php:42
+#: simple-payment-plugin.php:244
+#: templates/form-bootstrap.php:152
+#: templates/form-donation.php:164
+#: templates/form-experimental.php:152
+#: templates/form-legacy.php:43
 msgid "PayPal"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:242
+#: simple-payment-plugin.php:245
 msgid "Cardcom"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:243
+#: simple-payment-plugin.php:246
 msgid "iCount"
 msgstr ""
 
@@ -335,8 +337,8 @@ msgid "Currency"
 msgstr ""
 
 #: settings.php:79
-#: simple-payment-plugin.php:156
-#: simple-payment-plugin.php:189
+#: simple-payment-plugin.php:159
+#: simple-payment-plugin.php:192
 msgid "Payment Page"
 msgstr ""
 
@@ -470,6 +472,7 @@ msgid "Invoice Processing"
 msgstr ""
 
 #: settings.php:198
+#: settings.php:314
 msgid "Document Type Upon Success"
 msgstr ""
 
@@ -542,386 +545,414 @@ msgstr ""
 msgid "Use CC Storage"
 msgstr ""
 
-#: simple-payment-plugin.php:215
+#: settings.php:316
+msgid "None"
+msgstr ""
+
+#: settings.php:316
+msgid "Invoice / Receipt"
+msgstr ""
+
+#: settings.php:316
+msgid "Deal"
+msgstr ""
+
+#: settings.php:316
+msgid "Offer"
+msgstr ""
+
+#: settings.php:316
+msgid "Order"
+msgstr ""
+
+#: settings.php:320
+msgid "Auto invoice on installments"
+msgstr ""
+
+#: settings.php:325
+msgid "Email Document to Client"
+msgstr ""
+
+#: simple-payment-plugin.php:218
 msgid "Transaction Details"
 msgstr ""
 
-#: simple-payment-plugin.php:238
+#: simple-payment-plugin.php:241
 msgid "Simple Payment Settings"
 msgstr ""
 
-#: simple-payment-plugin.php:240
+#: simple-payment-plugin.php:243
 msgid "General"
 msgstr ""
 
-#: simple-payment-plugin.php:244
+#: simple-payment-plugin.php:247
 msgid "License"
 msgstr ""
 
-#: simple-payment-plugin.php:245
+#: simple-payment-plugin.php:248
 msgid "Shortcode"
 msgstr ""
 
-#: simple-payment-plugin.php:246
+#: simple-payment-plugin.php:249
 msgid "Instructions"
 msgstr ""
 
-#: simple-payment-plugin.php:276
+#: simple-payment-plugin.php:279
 msgid "License Key"
 msgstr ""
 
-#: simple-payment-plugin.php:355
+#: simple-payment-plugin.php:358
 msgid "License key is required"
 msgstr ""
 
-#: simple-payment-plugin.php:378
+#: simple-payment-plugin.php:381
 msgid "License is not valid on the current domain"
 msgstr ""
 
-#: simple-payment-plugin.php:386
+#: simple-payment-plugin.php:389
 msgid "License has not been activated"
 msgstr ""
 
-#: simple-payment-plugin.php:391
+#: simple-payment-plugin.php:394
 msgid "License key was not found"
 msgstr ""
 
-#: simple-payment-plugin.php:395
+#: simple-payment-plugin.php:398
 msgid "Unhandled error:"
 msgstr ""
 
-#: simple-payment-plugin.php:463
+#: simple-payment-plugin.php:466
 msgid "Auto"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:24
-#: templates/form-bootstrap.php:138
-#: templates/form-donation.php:150
-#: templates/form-experimental.php:138
-#: templates/form-legacy.php:29
+#: templates/form-bootstrap-basic.php:25
+#: templates/form-bootstrap.php:139
+#: templates/form-donation.php:151
+#: templates/form-experimental.php:139
+#: templates/form-legacy.php:30
 msgid "Payment"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:28
-#: templates/form-bootstrap.php:143
-#: templates/form-donation.php:155
-#: templates/form-experimental.php:143
-#: templates/form-legacy.php:34
+#: templates/form-bootstrap-basic.php:29
+#: templates/form-bootstrap.php:144
+#: templates/form-donation.php:156
+#: templates/form-experimental.php:144
+#: templates/form-legacy.php:35
 msgid "Credit card"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:32
-#: templates/form-bootstrap.php:147
-#: templates/form-donation.php:159
-#: templates/form-experimental.php:147
-#: templates/form-legacy.php:38
+#: templates/form-bootstrap-basic.php:33
+#: templates/form-bootstrap.php:148
+#: templates/form-donation.php:160
+#: templates/form-experimental.php:148
+#: templates/form-legacy.php:39
 msgid "Debit card"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:37
-#: templates/form-bootstrap.php:156
-#: templates/form-donation.php:168
-#: templates/form-experimental.php:156
-#: templates/form-legacy.php:47
+#: templates/form-bootstrap-basic.php:38
+#: templates/form-bootstrap.php:157
+#: templates/form-donation.php:169
+#: templates/form-experimental.php:157
+#: templates/form-legacy.php:48
 msgid "Name on card"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:39
-#: templates/form-bootstrap.php:158
-#: templates/form-donation.php:170
-#: templates/form-experimental.php:158
-#: templates/form-legacy.php:49
+#: templates/form-bootstrap-basic.php:40
+#: templates/form-bootstrap.php:159
+#: templates/form-donation.php:171
+#: templates/form-experimental.php:159
+#: templates/form-legacy.php:50
 msgid "Full name as displayed on card"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:41
-#: templates/form-bootstrap.php:160
-#: templates/form-donation.php:172
-#: templates/form-experimental.php:160
-#: templates/form-legacy.php:51
+#: templates/form-bootstrap-basic.php:42
+#: templates/form-bootstrap.php:161
+#: templates/form-donation.php:173
+#: templates/form-experimental.php:161
+#: templates/form-legacy.php:52
 msgid "Name on card is required."
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:45
-#: templates/form-bootstrap.php:164
-#: templates/form-donation.php:176
-#: templates/form-experimental.php:164
-#: templates/form-legacy.php:55
+#: templates/form-bootstrap-basic.php:46
+#: templates/form-bootstrap.php:165
+#: templates/form-donation.php:177
+#: templates/form-experimental.php:165
+#: templates/form-legacy.php:56
 msgid "Credit card number"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:48
-#: templates/form-bootstrap.php:167
-#: templates/form-donation.php:179
-#: templates/form-experimental.php:167
-#: templates/form-legacy.php:58
+#: templates/form-bootstrap-basic.php:49
+#: templates/form-bootstrap.php:168
+#: templates/form-donation.php:180
+#: templates/form-experimental.php:168
+#: templates/form-legacy.php:59
 msgid "Credit card number is required."
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:54
-#: templates/form-bootstrap.php:173
-#: templates/form-donation.php:185
-#: templates/form-experimental.php:173
-#: templates/form-legacy.php:64
+#: templates/form-bootstrap-basic.php:55
+#: templates/form-bootstrap.php:174
+#: templates/form-donation.php:186
+#: templates/form-experimental.php:174
+#: templates/form-legacy.php:65
 msgid "Expiration"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:61
-#: templates/form-bootstrap-basic.php:70
-#: templates/form-bootstrap-basic.php:77
-#: templates/form-bootstrap.php:180
-#: templates/form-bootstrap.php:189
-#: templates/form-bootstrap.php:196
-#: templates/form-donation.php:192
-#: templates/form-donation.php:201
-#: templates/form-donation.php:208
-#: templates/form-experimental.php:180
-#: templates/form-experimental.php:189
-#: templates/form-experimental.php:196
+#: templates/form-bootstrap-basic.php:62
+#: templates/form-bootstrap-basic.php:71
+#: templates/form-bootstrap-basic.php:78
+#: templates/form-bootstrap.php:181
+#: templates/form-bootstrap.php:190
+#: templates/form-bootstrap.php:197
+#: templates/form-donation.php:193
+#: templates/form-donation.php:202
+#: templates/form-donation.php:209
+#: templates/form-experimental.php:181
+#: templates/form-experimental.php:190
+#: templates/form-experimental.php:197
 msgid "Required."
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:74
-#: templates/form-bootstrap.php:193
-#: templates/form-donation.php:205
-#: templates/form-experimental.php:193
-#: templates/form-legacy.php:71
+#: templates/form-bootstrap-basic.php:75
+#: templates/form-bootstrap.php:194
+#: templates/form-donation.php:206
+#: templates/form-experimental.php:194
+#: templates/form-legacy.php:72
 msgid "CVV"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:82
-#: templates/form-bootstrap.php:201
-#: templates/form-donation.php:213
-#: templates/form-experimental.php:201
+#: templates/form-bootstrap-basic.php:83
+#: templates/form-bootstrap.php:202
+#: templates/form-donation.php:214
+#: templates/form-experimental.php:202
 msgid "Installments"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:87
-#: templates/form-bootstrap.php:206
-#: templates/form-donation.php:218
-#: templates/form-experimental.php:207
+#: templates/form-bootstrap-basic.php:88
+#: templates/form-bootstrap.php:207
+#: templates/form-donation.php:219
+#: templates/form-experimental.php:208
 msgid "Number of Installments is required."
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:92
-#: templates/form-bootstrap.php:211
-#: templates/form-experimental.php:212
-#: templates/form-legacy.php:79
+#: templates/form-bootstrap-basic.php:93
+#: templates/form-bootstrap.php:212
+#: templates/form-experimental.php:213
+#: templates/form-legacy.php:80
 msgid "Process Payment [%s]"
 msgstr ""
 
-#: templates/form-bootstrap.php:25
-#: templates/form-donation.php:37
-#: templates/form-experimental.php:25
+#: templates/form-bootstrap.php:26
+#: templates/form-donation.php:38
+#: templates/form-experimental.php:26
 msgid "Billing Information"
 msgstr ""
 
-#: templates/form-bootstrap.php:28
-#: templates/form-donation.php:40
-#: templates/form-experimental.php:28
+#: templates/form-bootstrap.php:29
+#: templates/form-donation.php:41
+#: templates/form-experimental.php:29
 msgid "First name"
 msgstr ""
 
-#: templates/form-bootstrap.php:31
-#: templates/form-donation.php:43
-#: templates/form-experimental.php:31
+#: templates/form-bootstrap.php:32
+#: templates/form-donation.php:44
+#: templates/form-experimental.php:32
 msgid "Valid first name is required."
 msgstr ""
 
-#: templates/form-bootstrap.php:35
-#: templates/form-donation.php:47
-#: templates/form-experimental.php:35
+#: templates/form-bootstrap.php:36
+#: templates/form-donation.php:48
+#: templates/form-experimental.php:36
 msgid "Last name"
 msgstr ""
 
-#: templates/form-bootstrap.php:38
-#: templates/form-donation.php:50
-#: templates/form-experimental.php:38
+#: templates/form-bootstrap.php:39
+#: templates/form-donation.php:51
+#: templates/form-experimental.php:39
 msgid "Valid last name is required."
 msgstr ""
 
-#: templates/form-bootstrap.php:45
-#: templates/form-donation.php:57
-#: templates/form-experimental.php:45
+#: templates/form-bootstrap.php:46
+#: templates/form-donation.php:58
+#: templates/form-experimental.php:46
 msgid "Phone"
 msgstr ""
 
-#: templates/form-bootstrap.php:48
-#: templates/form-donation.php:60
-#: templates/form-experimental.php:48
+#: templates/form-bootstrap.php:49
+#: templates/form-donation.php:61
+#: templates/form-experimental.php:49
 msgid "Valid phone is required."
 msgstr ""
 
-#: templates/form-bootstrap.php:52
-#: templates/form-donation.php:64
-#: templates/form-experimental.php:52
+#: templates/form-bootstrap.php:53
+#: templates/form-donation.php:65
+#: templates/form-experimental.php:53
 msgid "Mobile"
 msgstr ""
 
-#: templates/form-bootstrap.php:55
-#: templates/form-donation.php:67
-#: templates/form-experimental.php:55
+#: templates/form-bootstrap.php:56
+#: templates/form-donation.php:68
+#: templates/form-experimental.php:56
 msgid "Valid mobile is required."
-msgstr ""
-
-#: templates/form-bootstrap.php:61
-#: templates/form-donation.php:73
-#: templates/form-experimental.php:61
-#: templates/form-legacy.php:22
-msgid "Email"
 msgstr ""
 
 #: templates/form-bootstrap.php:62
 #: templates/form-donation.php:74
 #: templates/form-experimental.php:62
 #: templates/form-legacy.php:23
+msgid "Email"
+msgstr ""
+
+#: templates/form-bootstrap.php:63
+#: templates/form-donation.php:75
+#: templates/form-experimental.php:63
+#: templates/form-legacy.php:24
 msgid "you@example.com"
 msgstr ""
 
-#: templates/form-bootstrap.php:64
-#: templates/form-donation.php:76
-#: templates/form-experimental.php:64
-#: templates/form-legacy.php:25
+#: templates/form-bootstrap.php:65
+#: templates/form-donation.php:77
+#: templates/form-experimental.php:65
+#: templates/form-legacy.php:26
 msgid "Please enter a valid email address."
-msgstr ""
-
-#: templates/form-bootstrap.php:69
-#: templates/form-donation.php:81
-#: templates/form-experimental.php:69
-msgid "Address"
 msgstr ""
 
 #: templates/form-bootstrap.php:70
 #: templates/form-donation.php:82
 #: templates/form-experimental.php:70
+msgid "Address"
+msgstr ""
+
+#: templates/form-bootstrap.php:71
+#: templates/form-donation.php:83
+#: templates/form-experimental.php:71
 msgid "1234 Main St."
 msgstr ""
 
-#: templates/form-bootstrap.php:72
-#: templates/form-donation.php:84
-#: templates/form-experimental.php:72
+#: templates/form-bootstrap.php:73
+#: templates/form-donation.php:85
+#: templates/form-experimental.php:73
 msgid "Please enter your address."
-msgstr ""
-
-#: templates/form-bootstrap.php:77
-#: templates/form-donation.php:89
-#: templates/form-experimental.php:77
-msgid "Address 2"
-msgstr ""
-
-#: templates/form-bootstrap.php:77
-#: templates/form-donation.php:89
-#: templates/form-experimental.php:77
-msgid "(Optional)"
 msgstr ""
 
 #: templates/form-bootstrap.php:78
 #: templates/form-donation.php:90
 #: templates/form-experimental.php:78
+msgid "Address 2"
+msgstr ""
+
+#: templates/form-bootstrap.php:78
+#: templates/form-donation.php:90
+#: templates/form-experimental.php:78
+msgid "(Optional)"
+msgstr ""
+
+#: templates/form-bootstrap.php:79
+#: templates/form-donation.php:91
+#: templates/form-experimental.php:79
 msgid "Apartment or suite"
 msgstr ""
 
-#: templates/form-bootstrap.php:82
-#: templates/form-donation.php:94
-#: templates/form-experimental.php:82
+#: templates/form-bootstrap.php:83
+#: templates/form-donation.php:95
+#: templates/form-experimental.php:83
 msgid "City"
 msgstr ""
 
-#: templates/form-bootstrap.php:85
-#: templates/form-donation.php:97
-#: templates/form-experimental.php:85
+#: templates/form-bootstrap.php:86
+#: templates/form-donation.php:98
+#: templates/form-experimental.php:86
 msgid "Please enter your city."
 msgstr ""
 
-#: templates/form-bootstrap.php:91
-#: templates/form-donation.php:103
-#: templates/form-experimental.php:91
+#: templates/form-bootstrap.php:92
+#: templates/form-donation.php:104
+#: templates/form-experimental.php:92
 msgid "Country"
 msgstr ""
 
-#: templates/form-bootstrap.php:93
-#: templates/form-donation.php:105
-#: templates/form-experimental.php:93
+#: templates/form-bootstrap.php:94
+#: templates/form-donation.php:106
+#: templates/form-experimental.php:94
 msgid "Choose"
 msgstr ""
 
-#: templates/form-bootstrap.php:97
-#: templates/form-donation.php:109
-#: templates/form-experimental.php:97
+#: templates/form-bootstrap.php:98
+#: templates/form-donation.php:110
+#: templates/form-experimental.php:98
 msgid "Please select a valid country."
 msgstr ""
 
-#: templates/form-bootstrap.php:101
-#: templates/form-donation.php:113
-#: templates/form-experimental.php:101
+#: templates/form-bootstrap.php:102
+#: templates/form-donation.php:114
+#: templates/form-experimental.php:102
 msgid "State"
 msgstr ""
 
-#: templates/form-bootstrap.php:104
-#: templates/form-donation.php:116
-#: templates/form-experimental.php:104
+#: templates/form-bootstrap.php:105
+#: templates/form-donation.php:117
+#: templates/form-experimental.php:105
 msgid "State required."
 msgstr ""
 
-#: templates/form-bootstrap.php:108
-#: templates/form-donation.php:120
-#: templates/form-experimental.php:108
+#: templates/form-bootstrap.php:109
+#: templates/form-donation.php:121
+#: templates/form-experimental.php:109
 msgid "Zip Code"
 msgstr ""
 
-#: templates/form-bootstrap.php:111
-#: templates/form-donation.php:123
-#: templates/form-experimental.php:111
+#: templates/form-bootstrap.php:112
+#: templates/form-donation.php:124
+#: templates/form-experimental.php:112
 msgid "Zip code required."
 msgstr ""
 
-#: templates/form-bootstrap.php:117
 #: templates/form-bootstrap.php:118
-#: templates/form-donation.php:129
+#: templates/form-bootstrap.php:119
 #: templates/form-donation.php:130
-#: templates/form-experimental.php:117
+#: templates/form-donation.php:131
 #: templates/form-experimental.php:118
+#: templates/form-experimental.php:119
 msgid "Tax ID"
 msgstr ""
 
-#: templates/form-bootstrap.php:120
-#: templates/form-donation.php:132
-#: templates/form-experimental.php:120
+#: templates/form-bootstrap.php:121
+#: templates/form-donation.php:133
+#: templates/form-experimental.php:121
 msgid "Valid tax id is required."
 msgstr ""
 
-#: templates/form-bootstrap.php:125
-#: templates/form-donation.php:137
-#: templates/form-experimental.php:125
+#: templates/form-bootstrap.php:126
+#: templates/form-donation.php:138
+#: templates/form-experimental.php:126
 msgid "Comment"
 msgstr ""
 
-#: templates/form-bootstrap.php:128
-#: templates/form-donation.php:140
-#: templates/form-experimental.php:128
+#: templates/form-bootstrap.php:129
+#: templates/form-donation.php:141
+#: templates/form-experimental.php:129
 msgid "Please enter your comment for invoicing or shipping."
 msgstr ""
 
-#: templates/form-donation.php:23
+#: templates/form-donation.php:24
 msgid "Donation Information"
 msgstr ""
 
-#: templates/form-donation.php:27
+#: templates/form-donation.php:28
 msgid "Donation Concept"
 msgstr ""
 
-#: templates/form-donation.php:223
+#: templates/form-donation.php:224
 msgid "Process Payment"
 msgstr ""
 
-#: templates/form-experimental.php:203
+#: templates/form-experimental.php:204
 msgid "Monthly Recurring"
 msgstr ""
 
-#: templates/form-legacy.php:67
+#: templates/form-legacy.php:68
 msgid "Expiration date required."
 msgstr ""
 
-#: templates/form-legacy.php:74
+#: templates/form-legacy.php:75
 msgid "Security code required."
 msgstr ""

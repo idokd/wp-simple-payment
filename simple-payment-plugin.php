@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
- * Version: 1.1.9
+ * Version: 1.2.0
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -28,6 +28,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   const OPERATION_CSS = 'css';
   const OPERATION_PCSS = 'pcss';
 
+  public $version;
   protected $option_name = 'sp';
   protected $payment_page = null;
   protected $paymnet_id = null;
@@ -62,6 +63,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $option = get_option('sp') ? : [];
     parent::__construct(array_merge(array_merge($this->defaults, $params), $option));
     $this->license = get_option('sp_license');
+    $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
+    $this->version = $plugin['Version'];
     $this->load();
   }
 
@@ -542,7 +545,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $fields = ['engine', self::AMOUNT, 'product', 'concept', 'method', self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, 'address', 'address2', self::EMAIL, 'country', 'state', 'zipcode', self::PAYMENTS, 'installments', self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, 'comment', 'city', self::TAX_ID, self::CARD_OWNER];
     foreach ($fields as $field) if (isset($_REQUEST[$field]) && $_REQUEST[$field]) $params[$field] = sanitize_text_field($_REQUEST[$field]);
     
-    $secrets = [ self::CARD_NUMBER, self::CARD_CVV, self::CARD_OWNER ];
+    $secrets = [ self::CARD_NUMBER, self::CARD_CVV ];
     foreach ($secrets as $field) $this->secrets[$field] = $params[$field];
 
     if (!isset($params['concept']) && isset($params['product'])) $params['concept'] = $params['product'];
@@ -607,6 +610,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
               $process = $this->process($process);
               if ($process === true) die;
               $this->post_process($process);
+              $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
+              if (!$url) {
+                $url = $this->payment_page();
+                $rmop = true;
+              }
+              if (!$url) $url = get_bloginfo('url');
+              if ($rmop) $url = remove_query_arg(self::OP, $url);
             }
             break;
           } catch (Exception $e) {
@@ -632,7 +642,17 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
           break;
         case self::OPERATION_ZAPIER:
-          echo 'OK';
+          $zapier = [
+            'site' => get_bloginfo('url'), 
+            'version' => self::VERSION,
+            'platform' => 'Wordpress',
+            'license' => $this->license,
+            'initiator' => get_class($this),
+            'platform_version' => get_bloginfo('version'), 
+            'plugin_versoin' => $this->version
+          ];
+          header('application/json;');
+          print json_encode($zapier);
           die; break;
           break;
         case self::OPERATION_PCSS:
@@ -802,20 +822,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.1.9File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.2.0File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.1.9filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.2.0filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.1.9File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.2.0File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',
@@ -871,7 +891,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             }
             break;
           case self::CARD_CVV:
-            $value = str_replace($secret, 'XXX', $value);
+            $value = preg_replace('/([^\d])('.$secret.')([^\d.])/', '\1'.str_repeat('X', strlen($secret)).'\3', $value);
             break;
           default:
             $value = str_replace($secret, 'xxx', $value, $cnt);
