@@ -11,8 +11,8 @@ $phone_pattern= '^\d{4}-\d{3}-\d{4}$';
 // TODO: valdate 3 digits (or 4 in american express) cvv and further credit card format
 // TODO: enable masks on fields (phone, mobile, credit card)
 // TODO: Consider adding credit card type
-$amount = number_format($amount, 2);
-$target = $SPWP->param('target');
+$amount = number_format((float) $amount, 2);
+$target = isset($target) ? $target : $SPWP->param('target');
 $target = $target ? ' target="'.$target.'"' : '';
 ?>
 <div class="col-md-8 order-md-1">

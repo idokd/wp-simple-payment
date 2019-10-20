@@ -2,21 +2,21 @@
 # This file is distributed under the same license as the Simple Payment plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 1.1.7\n"
+"Project-Id-Version: Simple Payment 1.1.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2019-10-19T19:47:41+00:00\n"
+"POT-Creation-Date: 2019-10-20T10:58:08+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: simple-payment\n"
 
 #. Plugin Name of the plugin
-#: simple-payment-plugin.php:192
-#: simple-payment-plugin.php:193
+#: simple-payment-plugin.php:196
+#: simple-payment-plugin.php:197
 msgid "Simple Payment"
 msgstr ""
 
@@ -104,8 +104,8 @@ msgid "Status"
 msgstr ""
 
 #: admin/transaction-list-table.php:192
-#: simple-payment-plugin.php:200
-#: simple-payment-plugin.php:201
+#: simple-payment-plugin.php:204
+#: simple-payment-plugin.php:205
 msgid "Payments"
 msgstr ""
 
@@ -300,7 +300,7 @@ msgid "Setup your Simple Payment to accept iCount Payments"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:237
+#: simple-payment-plugin.php:241
 #: templates/form-bootstrap.php:151
 #: templates/form-donation.php:163
 #: templates/form-experimental.php:151
@@ -309,12 +309,12 @@ msgid "PayPal"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:238
+#: simple-payment-plugin.php:242
 msgid "Cardcom"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:239
+#: simple-payment-plugin.php:243
 msgid "iCount"
 msgstr ""
 
@@ -335,8 +335,8 @@ msgid "Currency"
 msgstr ""
 
 #: settings.php:79
-#: simple-payment-plugin.php:152
-#: simple-payment-plugin.php:185
+#: simple-payment-plugin.php:156
+#: simple-payment-plugin.php:189
 msgid "Payment Page"
 msgstr ""
 
@@ -542,55 +542,55 @@ msgstr ""
 msgid "Use CC Storage"
 msgstr ""
 
-#: simple-payment-plugin.php:211
+#: simple-payment-plugin.php:215
 msgid "Transaction Details"
 msgstr ""
 
-#: simple-payment-plugin.php:234
+#: simple-payment-plugin.php:238
 msgid "Simple Payment Settings"
 msgstr ""
 
-#: simple-payment-plugin.php:236
+#: simple-payment-plugin.php:240
 msgid "General"
 msgstr ""
 
-#: simple-payment-plugin.php:240
+#: simple-payment-plugin.php:244
 msgid "License"
 msgstr ""
 
-#: simple-payment-plugin.php:241
+#: simple-payment-plugin.php:245
 msgid "Shortcode"
 msgstr ""
 
-#: simple-payment-plugin.php:242
+#: simple-payment-plugin.php:246
 msgid "Instructions"
 msgstr ""
 
-#: simple-payment-plugin.php:272
+#: simple-payment-plugin.php:276
 msgid "License Key"
 msgstr ""
 
-#: simple-payment-plugin.php:351
+#: simple-payment-plugin.php:355
 msgid "License key is required"
 msgstr ""
 
-#: simple-payment-plugin.php:374
+#: simple-payment-plugin.php:378
 msgid "License is not valid on the current domain"
 msgstr ""
 
-#: simple-payment-plugin.php:382
+#: simple-payment-plugin.php:386
 msgid "License has not been activated"
 msgstr ""
 
-#: simple-payment-plugin.php:387
+#: simple-payment-plugin.php:391
 msgid "License key was not found"
 msgstr ""
 
-#: simple-payment-plugin.php:391
+#: simple-payment-plugin.php:395
 msgid "Unhandled error:"
 msgstr ""
 
-#: simple-payment-plugin.php:459
+#: simple-payment-plugin.php:463
 msgid "Auto"
 msgstr ""
 

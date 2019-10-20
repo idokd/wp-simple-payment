@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
- * Version: 1.1.8
+ * Version: 1.1.9
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -34,6 +34,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   static protected $table_name = 'sp_transactions';
   static $engines = ['PayPal', 'Cardcom', 'iCount', 'Custom'];
   static $interactives = ['Cardcom'];
+
+  protected $secrets = [];
 
   protected $test_shortcodes = [
     'button' => [
@@ -73,6 +75,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function load() {
     add_action('plugins_loaded', [$this, 'load_textdomain']);
+    if (self::is_gutenberg_active()) add_action('init', [$this, 'gutenberg_assets']);
+
     add_action('wp_loaded', [$this, 'init']);
 
     if (is_admin()) {
@@ -536,8 +540,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   function pre_process($params = []) {
     $method = isset($_REQUEST['method']) ? strtolower(sanitize_text_field($_REQUEST['method'])) : null;
     $fields = ['engine', self::AMOUNT, 'product', 'concept', 'method', self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, 'address', 'address2', self::EMAIL, 'country', 'state', 'zipcode', self::PAYMENTS, 'installments', self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, 'comment', 'city', self::TAX_ID, self::CARD_OWNER];
-
     foreach ($fields as $field) if (isset($_REQUEST[$field]) && $_REQUEST[$field]) $params[$field] = sanitize_text_field($_REQUEST[$field]);
+    
+    $secrets = [ self::CARD_NUMBER, self::CARD_CVV, self::CARD_OWNER ];
+    foreach ($secrets as $field) $this->secrets[$field] = $params[$field];
 
     if (!isset($params['concept']) && isset($params['product'])) $params['concept'] = $params['product'];
     if ($method) $params['method'] = $method;
@@ -672,6 +678,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           'product' => $product,
           'engine' => $engine ? $engine : self::param('engine'),
           'method' => $method,
+          'target' => $target,
           'redirect_url' => $redirect_url,
       ];
       if ($enable_query) {
@@ -712,8 +719,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'amount' => self::tofloat($params[self::AMOUNT]),
         'concept' => $params['product'],
         'payments' => isset($params[self::PAYMENTS]) ? $params[self::PAYMENTS] : null,
-        'parameters' => json_encode($params),
-        'url' => $_SERVER['HTTP_REFERER'],
+        'parameters' => $this->sanitize_pci_dss(json_encode($params)),
+        'url' => $this->sanitize_pci_dss($_SERVER['HTTP_REFERER']),
         'status' => self::TRANSACTION_NEW,
         'sandbox' => $this->sandbox,
         'user_id' => $user_id ? $user_id : null
@@ -786,8 +793,46 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
    *
    * @return boolean
    */
-    public function is_gutenberg_active() {
+    public static function is_gutenberg_active() {
       return function_exists('register_block_type');
+    }
+
+    function gutenberg_assets() { // phpcs:ignore
+      wp_register_style(
+        'simple-payment-gb-style-css', 
+        plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
+        array( 'wp-editor' ), 
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.1.9File modification time.
+      );
+      wp_register_script(
+        'simple-payment-gb-block-js',
+        plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
+        array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.1.9filemtime — Gets file modification time.
+        true 
+      );
+      wp_register_style(
+        'simple-payment-gb-editor-css', 
+        plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
+        array( 'wp-edit-blocks' ), 
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.1.9File modification time.
+      );
+      wp_localize_script(
+        'simple-payment-gb-block-js',
+        'spGlobal', // Array containing dynamic data for a JS Global.
+        [
+          'pluginDirPath' => plugin_dir_path( __DIR__ ),
+          'pluginDirUrl'  => plugin_dir_url( __DIR__ ),
+          // Add more data here that you want to access from `cgbGlobal` object.
+        ]
+      );
+      register_block_type(
+        'simple-payment/block-simple-payment', array(
+          'style'         => 'simple-payment-gb-style-css',
+          'editor_script' => 'simple-payment-gb-block-js',
+          'editor_style'  => 'simple-payment-gb-editor-css',
+        )
+      );
     }
 
     /**
@@ -811,15 +856,40 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       //wp_redirect( wp_get_referer() );
     }
 
+    public function sanitize_pci_dss($value) {
+      $count = 0;
+      foreach ($this->secrets as $key => $secret) {
+        switch ($key) {
+          case self::CARD_NUMBER:
+            $first = substr($secret, 0, 4);
+            $last = substr($secret, - 4);
+            if ($cnt = preg_match_all('/('.$first.'.*)('.$last.')/', $value, $matches, PREG_SET_ORDER)) {
+              foreach ($matches as $match) {
+                $santized = preg_replace('/\d/', 'X', $match[1]).$match[2];
+                $value = str_replace($match[0], $santized, $value);
+              }
+            }
+            break;
+          case self::CARD_CVV:
+            $value = str_replace($secret, 'XXX', $value);
+            break;
+          default:
+            $value = str_replace($secret, 'xxx', $value, $cnt);
+        }
+        $count += $cnt;
+      }
+      return($value);
+    }
+
     public function save($params, $tablename = null, $id = null) {
       global $wpdb;
       if ($tablename == 'Cardcom') $tablename = strtolower($tablename);
       else $tablename = 'history';
+      foreach ($params as $field => $value) $params[$field] = $this->sanitize_pci_dss($value);
       // TODO: if id update instead of insert
       $result = $wpdb->insert($wpdb->prefix . 'sp_' . $tablename, $params);
       return($result != null ? $wpdb->insert_id : false);
     }
-
 }
 
 require_once('db/simple-payment-database.php');

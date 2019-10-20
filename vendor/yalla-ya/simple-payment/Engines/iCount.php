@@ -17,6 +17,7 @@ class iCount extends Engine {
     public $api = [
       'bill' => 'https://api.icount.co.il/api/v3.php/cc/bill',
       'store' => 'https://api.icount.co.il/api/v3.php/cc_storage/store',
+      'document' => 'https://api.icount.co.il/api/v3.php/doc/create'
     ];
 
     public function process($params) {
@@ -57,7 +58,23 @@ class iCount extends Engine {
     public function post_process($params) {
       parent::post_process($params);
       // Process the result of the transactions save
-
+      // doctype invrec
+      // paydate, duedate, currency_code
+      // tax_exempt, vat_percent
+      // totalsum
+      // totalwithvat, paid, totalpaid
+      // cc
+      // autoinvoice_cc
+      // doc_title
+      // sanity_string
+      // doc_lang
+      // send_email
+      // "items" => Array(
+    /*Array(
+      "description" => "First item",
+      "unitprice" => 50,
+      "quantity" => 1,
+      ),*/
       return(true);
     }
 

@@ -7,8 +7,8 @@
 // TODO: valdate 3 digits (or 4 in american express) cvv
 // TODO: show/hide depending if paypal or not.
 
-$amount = number_format($amount, 2);
-$target = $SPWP->param('target');
+$amount = number_format((float) $amount, 2);
+$target = isset($target) ? $target : $SPWP->param('target');
 $target = $target ? ' target="'.$target.'"' : '';
 ?>
 <div class="col-md-8 order-md-1">

@@ -3,12 +3,12 @@ Contributors: idokd
 
 Simple Payment enables a simple, fast and easy integration to process payments. Convert any Post/Page to a product - easy and powerful tool
 
-Tags: credit card, donation, membership, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce
+Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce
 
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 5.2.3
-Stable tag: 1.1.8
+Stable tag: 1.1.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +22,7 @@ Simple Payment works with many payment processing, and enables you to add you cu
 
 Major features in Simple Payment include:
 
+* PCI-DSS Data Protection Ready (All sensitive are masked in database)
 * Convert Any Post / Page to a Service/ Product
 * Automatically takes Post/Page Title as Product Name
 * Simple integrate Buy Button everywhere
@@ -32,6 +33,7 @@ Major features in Simple Payment include:
 * Enable Multiple Payment Engines
 * Transactions / Payments Log with Filtering
 * Export Transactions to CSV
+* Support for Gutenberg Editor
 
 PS: You'll need an [Simple Payment API key for advanced gateways](https://simple-payment.yalla-ya.com/get/) to use it.  Keys are available for personal blogs; single domain, multiple domains, businesses and commercial sites.
 
@@ -51,7 +53,7 @@ PS: You'll need an [Simple Payment API key for advanced gateways](https://simple
 
 = Which Payment Gateway this plugin support? =
 
-Currently it supports PayPal & Cardcom, with another new payment gateway added every month.
+Currently it supports PayPal, Cardcom, iCount, with another new payment gateway added every month.
 
 == Changelog ==
 
