@@ -1,19 +1,15 @@
 === Simple Payment ===
 Contributors: idokd
-
-Simple Payment enables a simple, fast and easy integration to process payments. Convert any Post/Page to a product - easy and powerful tool
-
+Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor
-
-Requires PHP: 5.4
 Requires at least: 4.6
 Tested up to: 5.2.4
-Stable tag: 1.2.2
-Donate link: https://simple-payment.yalla-ya.com/get
+Stable tag: 1.2.3
+Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-
+Simple Payment enables a simple, fast and easy integration to process payments. Convert any Post/Page to a product - easy and powerful tool
 
 == Description ==
 

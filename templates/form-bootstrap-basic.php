@@ -79,7 +79,7 @@ $target = $target ? ' target="'.$target.'"' : '';
         </div>
       </div>
       <div class="col-md-4 mb-3">
-        <?php if (isset($installments_min) && $installments_min && isset($installments_max) && $installments_max) { ?>
+        <?php if (isset($installments_min) && $installments_min && isset($installments_max) && $installments_max && $installments_max > 1) { ?>
         <label for="payments"><?php _e('Installments', 'simple-payment'); ?></label>
         <select class="custom-select d-block w-100" id="payments" name="<?php echo $SPWP::PAYMENTS; ?>" required="">
           <?php for ($installment = $installments_min; $installment <= $installments_max; $installment++) echo '<option'.(isset($installments) && $installment == $installments ? ' selected' : '').'>'.$installment.'</option>'; ?>
