@@ -1,8 +1,7 @@
 name: WordPress.org Plugin Deploy 
 
 on: [push]
-    tags:
-    - "*"
+
 jobs:
   tag:
     name: New tag

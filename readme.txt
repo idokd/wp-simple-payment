@@ -8,7 +8,7 @@ Tags: credit card, donation, membership, checkout, payment request, payment gate
 Requires PHP: 5.4
 Requires at least: 4.6
 Tested up to: 5.2.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 Donate link: https://simple-payment.yalla-ya.com/get
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
