@@ -16,7 +16,8 @@
     ],
     "require": {
         "leewillis77/WpListTableExportable": "dev-master",
-        "paypal/rest-api-sdk-php": "^1.14"
+        "paypal/rest-api-sdk-php": "^1.14",
+        "razorpay/razorpay": "2.*"
     },
     "autoload": {
        "psr-4": {

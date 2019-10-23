@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: This is a Simple Payment to work with Cardom
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -29,6 +29,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   const OPERATION_PCSS = 'pcss';
 
   public $version;
+  public static $instance;
   protected $option_name = 'sp';
   protected $payment_page = null;
   protected $paymnet_id = null;
@@ -66,6 +67,11 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
     $this->version = $plugin['Version'];
     $this->load();
+  }
+
+  public static function instance($params = []) {
+      if (!self::$instance) self::$instance = new self($params);
+      return(self::$instance);
   }
 
   public function setEngine($engine) {
@@ -822,20 +828,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.2.0File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.2.1File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.2.0filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.2.1filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.2.0File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.2.1File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',
@@ -915,4 +921,4 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 require_once('db/simple-payment-database.php');
 
 global $SPWP;
-$SPWP = new SimplePaymentPlugin();
+$SPWP = SimplePaymentPlugin::instance();

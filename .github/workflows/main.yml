@@ -1,10 +1,11 @@
-name: M - WordPress.org Plugin Deploy 
+name: WordPress.org Plugin Deploy 
 
 on: [push]
-
+    tags:
+    - "*"
 jobs:
-  build:
-
+  tag:
+    name: New tag
     runs-on: ubuntu-latest
     
     steps:

@@ -3,12 +3,13 @@ Contributors: idokd
 
 Simple Payment enables a simple, fast and easy integration to process payments. Convert any Post/Page to a product - easy and powerful tool
 
-Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce
+Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor
 
-Requires at least: 4.7
-Requires PHP: 7.0
-Tested up to: 5.2.3
-Stable tag: 1.2.0
+Requires PHP: 5.4
+Requires at least: 4.6
+Tested up to: 5.2.4
+Stable tag: 1.2.1
+Donate link: https://simple-payment.yalla-ya.com/get
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +23,9 @@ Simple Payment works with many payment processing, and enables you to add you cu
 
 Major features in Simple Payment include:
 
+* Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount)
+* Selection of Payment Forms to choose from (Basic, Bootstrap, Legacy, Donation)
+* Donation Form for free entry amount
 * PCI-DSS Data Protection Ready (All sensitive are masked in database)
 * Convert Any Post / Page to a Service/ Product
 * Automatically takes Post/Page Title as Product Name
@@ -55,6 +59,16 @@ PS: You'll need an [Simple Payment API key for advanced gateways](https://simple
 
 Currently it supports PayPal, Cardcom, iCount, with another new payment gateway added every month.
 
+== Feedback and Support ==
+
+I would be happy to receive your feedback to improve this plugin.
+
+Please let me know through [support forums](https://wordpress.org/support/plugin/simple-payment/) if you like it and please be sure to leave a review..
+
+Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.org/support/users/idokd/) or even visit [Github](https://github.com/idokd/wp-simple-payment) of Simple Payment where you can find all the development code of this plugin.
+
+I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
+
 == Changelog ==
 
 Checkout [changelog.txt](http://plugins.svn.wordpress.org/simple-payment/trunk/changelog.txt) file
@@ -67,6 +81,11 @@ Checkout [changelog.txt](http://plugins.svn.wordpress.org/simple-payment/trunk/c
 4. Track each transaction, keep record of parameters sent and responds.
 5. Payment Form example (our Legacy form) - we have bootstrap ready, donation etc.
 6. REMEMBER! Set the Payment Page so you can enjoy the plugin.
+7. Gutenberg Editor support - easy configuration for your multiple payment forms.
+8. Tranaction Log
+9. Extended configuration
+10. PCI-DSS ready, masking data directly in database
+
 
 == Demo Site ==
 You can access admin and checkout our site demo to see how the plugin works

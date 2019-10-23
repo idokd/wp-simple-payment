@@ -1,4 +1,6 @@
 <?php
+$SPWP = SimplePaymentPlugin::instance();
+
 //var $product, $price, $id, $fixed;
 
 // TODO: fill country selectbox (maybe also states)
