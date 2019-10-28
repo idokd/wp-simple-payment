@@ -69,7 +69,17 @@ class Cardcom extends Engine {
     $post['lowprofilecode'] = $params['lowprofilecode'];
     $status = $this->post($this->api['indicator_request'], $post);
     parse_str($status, $status);
-    $this->record($params, $status);
+    //$this->record($params, $status);
+    $response = $status;
+    $this->save([
+      'transaction_id' => $this->transaction,
+      'url' => $this->api['indicator_request'],
+      'status' => isset($response['ResponseCode']) ? $response['ResponseCode'] : $response['response_code'],
+      'description' => isset($response['Description']) ? $response['Description'] : null,
+      'request' => json_encode($post),
+      'response' => json_encode($response)
+    ]);
+
     if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
       if ($this->param('reurring') == 'provider') $this->recur_by_provider($params);
     }
@@ -78,7 +88,16 @@ class Cardcom extends Engine {
 
   public function post_process($params) {
     $this->transaction = $_REQUEST['lowprofilecode'];
-    $this->record($params, $_REQUEST);
+    //$this->record($params, $_REQUEST);
+    $response = $_REQUEST;
+    $this->save([
+      'transaction_id' => $this->transaction,
+      'url' => ':post_process',
+      'status' => isset($response['ResponseCode']) ? $response['ResponseCode'] : $response['response_code'],
+      'description' => isset($response['Description']) ? $response['Description'] : null,
+      'request' => json_encode($params),
+      'response' => json_encode($response)
+    ]);
     return($_REQUEST['ResponeCode'] == 0);
   }
 
@@ -212,7 +231,17 @@ class Cardcom extends Engine {
     $status = $this->post($this->api['payment_request'], $post);
     parse_str($status, $status);
     $status['url'] = $this->param('method') == 'paypal' ? $status['PayPalUrl'] : $status['url'];
-    $this->record($post, $status);
+    //$this->record($post, $status);
+    $this->transaction = $status['LowProfileCode'];
+    $response = $status;
+    $this->save([
+      'transaction_id' => $this->transaction,
+      'url' => $this->api['payment_request'],
+      'status' => isset($response['ResponseCode']) ? $response['ResponseCode'] : $response['response_code'],
+      'description' => isset($response['Description']) ? $response['Description'] : null,
+      'request' => json_encode($post),
+      'response' => json_encode($response)
+    ]);
     if (isset($status['LowProfileCode']) && $status['LowProfileCode']) $this->transaction = $status['LowProfileCode'];
     if (isset($status['ResponseCode']) && $status['ResponseCode'] != 0) {
       throw new Exception($status['Description'], $status['ResponseCode']);
@@ -302,7 +331,16 @@ class Cardcom extends Engine {
     // BankInfo.Bank	 BankInfo.Branch	BankInfo.AccountNumber	 BankInfo.Description	
     $status = $this->post($this->api['recurring_request'], $post);
     parse_str($status, $status);
-    $this->record($post, $status);
+    //$this->record($post, $status);
+    $response = $status;
+    $this->save([
+      'transaction_id' => $this->transaction,
+      'url' => $this->api['recurring_request'],
+      'status' => isset($response['ResponseCode']) ? $response['ResponseCode'] : $response['response_code'],
+      'description' => isset($response['Description']) ? $response['Description'] : null,
+      'request' => json_encode($post),
+      'response' => json_encode($response)
+    ]);
     return($status);
   }
 
@@ -345,7 +383,16 @@ class Cardcom extends Engine {
 
     $status = $this->post($this->api['payment_recur'], $post);
     parse_str($status, $status);
-    $this->record($post, $status);
+    //$this->record($post, $status);
+    $response = $status;
+    $this->save([
+      'transaction_id' => $this->transaction,
+      'url' => $this->api['payment_recur'],
+      'status' => isset($response['ResponseCode']) ? $response['ResponseCode'] : $response['response_code'],
+      'description' => isset($response['Description']) ? $response['Description'] : null,
+      'request' => json_encode($post),
+      'response' => json_encode($response)
+    ]);
     // Not in use:
     // TokenToCharge.Salt, TokenToCharge.SumInStars, TokenToCharge.NumOfPayments
     // TokenToCharge.ExtendedParameters,  TokenToCharge.SapakMutav

@@ -17,7 +17,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 			'ajax'     => false
 		] );
     self::$engine = $engine;
-    self::$table_name = $engine ? $wpdb->prefix.'sp_'.strtolower($engine == 'Cardcom' ? 'Cardcom' : 'history') : $wpdb->prefix.self::$table_name;
+    self::$table_name = $engine ? $wpdb->prefix.'sp_'.strtolower('history') : $wpdb->prefix.self::$table_name;
 	}
 
   protected function is_export() {

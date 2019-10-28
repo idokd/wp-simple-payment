@@ -1,76 +1,76 @@
 <div class="form-pay">
 
-  <div class="pay-item">
-    <label>
-        <span class="rtl he">פרטי כרטיס אשראי</span>
-        <span class="ltr en">Credit Card Information</span>
-    </label>
-    <div class="pay-group pay">
-      <div class="pay-sub-item card-num-item">
-        <label>
-            <span class="rtl he">מספר כרטיס</span>
-            <span class="ltr en">Credit Card Number</span>
-        </label>
-        <input type="text" data-bind="value:cardNumber.value, disable:cardNumber.disabled" id="txtCardNumber">
-      </div>
-      <div class="pay-sub-item cvv-item">
-        <label>
-            <span class="rtl he">3 ספרות</span>
-            <span class="ltr en">CVV</span>
-            <a class="WhatIsCvvLightBox" target="_blank" title="what is cvv?" data-bind="attr: { href: '/Images/visamasterpic.gif' , title:cvv.label } ">CVV</a>
-        </label>
-        <input maxlength="4" data-bind="hide:cvv.hide,value:cvv.value" id="txtCvv">
-      </div>
-      <div class="pay-sub-item date-item">
+    <div class="pay-item">
+      <label>
+          <span class="rtl he">פרטי כרטיס אשראי</span>
+          <span class="ltr en">Credit Card Information</span>
+      </label>
+      <div class="pay-group pay">
+        <div class="pay-sub-item card-num-item">
+          <label>
+              <span class="rtl he">מספר כרטיס</span>
+              <span class="ltr en">Credit Card Number</span>
+          </label>
+          <input type="text" data-bind="value:cardNumber.value, disable:cardNumber.disabled" id="txtCardNumber">
+        </div>
+        <div class="pay-sub-item cvv-item">
+          <label>
+              <span class="rtl he">3 ספרות</span>
+              <span class="ltr en">CVV</span>
+              <a class="WhatIsCvvLightBox" target="_blank" title="what is cvv?" data-bind="attr: { href: '/Images/visamasterpic.gif' , title:cvv.label } ">CVV</a>
+          </label>
+          <input maxlength="4" data-bind="hide:cvv.hide,value:cvv.value" id="txtCvv">
+        </div>
+        <div class="pay-sub-item date-item">
+           <label>
+              <span class="rtl he">תוקף כרטיס</span>
+              <span class="ltr en">Credit Card Number</span>
+          </label>
+          <select id="validityYear" class="mini" name="validityYear" data-bind="options: expirationYear.selectValues, value: expirationYear.value, disable: expirationYear.disabled"></select> /
+          <select id="validityMonth" class="tiny" name="validityMonth" data-bind="value: expirationMonth.value, disable: expirationMonth.disabled">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+        </div>
+  
+        <div class="pay-sub-item card-name" data-bind="hide:cardOwnerName.hide">
          <label>
-            <span class="rtl he">תוקף כרטיס</span>
-            <span class="ltr en">Credit Card Number</span>
-        </label>
-        <select id="validityYear" class="mini" name="validityYear" data-bind="options: expirationYear.selectValues, value: expirationYear.value, disable: expirationYear.disabled"></select> /
-        <select id="validityMonth" class="tiny" name="validityMonth" data-bind="value: expirationMonth.value, disable: expirationMonth.disabled">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-          <option value="11">11</option>
-          <option value="12">12</option>
-        </select>
+              <span class="rtl he">שם בעל הכרטיס</span>
+              <span class="ltr en">Credit Card Owner</span>
+          </label>
+          <input type="text" maxlength="20" data-bind="value:cardOwnerName.value" id="txtCardOwnerName">
+        </div>
       </div>
-
-      <div class="pay-sub-item card-name" >
-       <label>
-            <span class="rtl he">שם בעל הכרטיס</span>
-            <span class="ltr en">Credit Card Owner</span>
-        </label>
-        <input type="text" maxlength="20" data-bind="value:cardOwnerName.value,hide:cardOwnerName.hide" id="txtCardOwnerName">
+  
+      <div class="pay-sub-item id-item" data-bind="hide:numberOfPayments.hide, css:numberOfPayments.CssValid">
+           <label data-bind="text:numberOfPayments.label" for="numberOfPaymentsselect"></label>
+             <select class="tiny" data-bind="options: numberOfPayments.selectValues, value: numberOfPayments.value" id="numberOfPaymentsselect"></select>
+           <span class="summaryTotal" data-bind="text: summaryTotalText, hide: hideNumberOfPayments"></span>
+      </div>
+  
+      <div class="pay-sub-item id-item" data-bind="hide:cardOwnerID.hide, css:cardOwnerID.CssValid">
+        <label data-bind="text:cardOwnerID.label" for="txtCardOwnerID"></label>
+        <input type="text" maxlength="20" data-bind="value:cardOwnerID.value" id="txtCardOwnerID">
       </div>
     </div>
-
-    <div class="pay-sub-item id-item" data-bind="hide:numberOfPayments.hide, css:numberOfPayments.CssValid">
-         <label data-bind="text:numberOfPayments.label" for="numberOfPaymentsselect"></label>
-           <select class="tiny" data-bind="options: numberOfPayments.selectValues, value: numberOfPayments.value" id="numberOfPaymentsselect"></select>
-         <span class="summaryTotal" data-bind="text: summaryTotalText, hide: hideNumberOfPayments"></span>
+  
+    <div class="pay-item logo-images">
+      <input type="button" class="btn" value="בצע &gt;" data-bind="value: buttonText, enable: !loadMode(), click: sendData " />
     </div>
-
-    <div class="pay-sub-item id-item" data-bind="hide:cardOwnerID.hide, css:cardOwnerID.CssValid">
-      <label data-bind="text:cardOwnerID.label" for="txtCardOwnerID"></label>
-      <input type="text" maxlength="20" data-bind="value:cardOwnerID.value" id="txtCardOwnerID">
+  
+    <div class="pay-item">
+      <div class="pay-desc rtl he">סליקה בטוחה ומאובטחת דרך קארדקום</div>
+      <div class="pay-desc ltr en">Credit Card Procesing by Cardcom</div>
     </div>
+  
   </div>
-
-  <div class="pay-item logo-images">
-    <input type="button" class="btn" value="בצע &gt;" data-bind="value: buttonText, enable: !loadMode(), click: sendData " />
-  </div>
-
-  <div class="pay-item">
-    <div class="pay-desc rtl he">סליקה בטוחה ומאובטחת דרך קארדקום</div>
-    <div class="pay-desc ltr en">All rights reserved to CardCom LTD</div>
-  </div>
-
-</div>

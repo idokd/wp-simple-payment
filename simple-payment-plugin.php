@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.2.6
+ * Version: 1.2.7
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -552,7 +552,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     foreach ($fields as $field) if (isset($_REQUEST[$field]) && $_REQUEST[$field]) $params[$field] = sanitize_text_field($_REQUEST[$field]);
     
     $secrets = [ self::CARD_NUMBER, self::CARD_CVV ];
-    foreach ($secrets as $field) $this->secrets[$field] = $params[$field];
+    foreach ($secrets as $field) if (isset($params[$field])) $this->secrets[$field] = $params[$field];
 
     if (!isset($params['language'])) {
       $parts = explode('-', get_bloginfo('language'));
@@ -845,20 +845,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.2.6File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.2.7File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.2.6filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.2.7filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.2.6File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.2.7File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',
@@ -902,6 +902,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     public function sanitize_pci_dss($value) {
       $count = 0;
       foreach ($this->secrets as $key => $secret) {
+        if (!$secret) continue;
         switch ($key) {
           case self::CARD_NUMBER:
             $first = substr($secret, 0, 4);
@@ -926,8 +927,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
     public function save($params, $tablename = null, $id = null) {
       global $wpdb;
-      if ($tablename == 'Cardcom') $tablename = strtolower($tablename);
-      else $tablename = 'history';
+      $tablename = 'history';
       foreach ($params as $field => $value) $params[$field] = $this->sanitize_pci_dss($value);
       // TODO: if id update instead of insert
       $result = $wpdb->insert($wpdb->prefix . 'sp_' . $tablename, $params);
