@@ -134,7 +134,7 @@ class Cardcom extends Engine {
       else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
     }
 
-    $language = $this->param('language');
+    $language = isset($params['language']) ? $params['language'] : $this->param('language');
     if ($language != '') $post['Language'] = $language;
 
     if (isset($params['payments']) && $params['payments']) {
@@ -270,7 +270,7 @@ class Cardcom extends Engine {
 
     if ($this->param('vat_free')) $post['Account.VatFree'] = 'true';
 
-    $language = $this->param('language');
+    $language = isset($params['language']) ? $params['language'] : $this->param('language');
     if ($language != '') $post['Account.IsDocumentLangEnglish'] = $language == 'he' ? 'false' : 'true';
 
     $currency = $this->param('currency');
@@ -409,4 +409,5 @@ class Cardcom extends Engine {
     return(parent::record($request, $response, $fields));
   }
 
+  
 }

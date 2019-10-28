@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '7';
+$sp_db_version = '8';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -120,6 +120,11 @@ function sp_uninstall() {
   if ($uninstall == 'all' || $uninstall == 'tables') {
     $tables = ['transactions', 'payments', 'history', 'cardcom'];
     foreach ($tables as $table) $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . "sp_".$table);
+    $options = ['sp_db_version'];
+    foreach ($options as $option) {
+      delete_option($option);
+      delete_site_option($option);
+    }
   }
   if ($uninstall == 'all' || $uninstall == 'settings') {
     $options = ['sp_uninstall_drop_table', 'sp_db_version', 'sp', 'sp_uninstall'];

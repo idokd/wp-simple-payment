@@ -108,8 +108,9 @@ class SimplePayment {
   }
 
   private function validate_license($license, $domain = null, $engine = null) {
+    if (!$license) throw new Exception('NO_LICENSE', 401);
     if ($domain == null) $domain = $_SERVER['SERVER_NAME'];
-    if (is_object($license)) $license = json_decode(json_encode($license), true); $license;
+    if (is_object($license)) $license = json_decode(json_encode($license), true);
     $meta = isset($license['meta']['valid']) ? $license['meta'] : $license;
     if (!isset($meta['valid']) || !$meta['valid']) throw new Exception(isset($meta['constant']) ? $meta['constant'] : 'INVALID', 401);
     $metadata = isset($license['data']['attributes']['metadata']) ? $license['data']['attributes']['metadata'] : $license['meta'];
