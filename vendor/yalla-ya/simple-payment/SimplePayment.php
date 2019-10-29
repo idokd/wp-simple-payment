@@ -112,6 +112,7 @@ class SimplePayment {
   private function validate_license($license, $domain = null, $engine = null) {
     if (!$license) throw new Exception('NO_LICENSE', 401);
     if ($domain == null) $domain = $_SERVER['SERVER_NAME'];
+		$domain = preg_replace('/(^www\\.)?(.*)/', '${2}', $domain, -1);
     if (is_object($license)) $license = json_decode(json_encode($license), true);
     $meta = isset($license['meta']['valid']) ? $license['meta'] : $license;
     if (!isset($meta['valid']) || !$meta['valid']) throw new Exception(isset($meta['constant']) ? $meta['constant'] : 'INVALID', 401);
@@ -141,21 +142,17 @@ class SimplePayment {
 
   private function fetch_license($key, $domain) {
     $res = $this->post('https://licensing.yalla-ya.com/validate', [
-      'headers' => [
-        'Content-Type' => 'application/json',
-        'Accept' => 'application/json',
-      ],
-      'body' => json_encode([
+      'body' => [
           'fingerprint' => $domain,
           'key' => $key
-      ])
+      ]
     ]);
     return(json_decode($res));
   }
 
   protected function post($url, $post) {
     $curl = curl_init($url);
-    if (isset($post['body']) && is_array($post['body'])) $payload = $post['body'];
+    if (isset($post['body']) && is_array($post['body'])) $payload = http_build_query($post['body'], null, '&');
     else $payload = $post['body'];
     $options = [
       CURLOPT_POST => TRUE,
