@@ -27,6 +27,8 @@ class SimplePayment {
 
   const PAYMENTS = 'payments';  const TAX_ID = 'tax_id';
 
+  const LANGUAGE = 'language';
+  
   protected $callback;
   protected $sandbox = true;
   protected $engine;

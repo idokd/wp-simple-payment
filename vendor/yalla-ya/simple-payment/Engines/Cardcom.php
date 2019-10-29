@@ -70,6 +70,7 @@ class Cardcom extends Engine {
     $status = $this->post($this->api['indicator_request'], $post);
     parse_str($status, $status);
     //$this->record($params, $status);
+    $this->transaction = $params['lowprofilecode'];
     $response = $status;
     $this->save([
       'transaction_id' => $this->transaction,
@@ -202,7 +203,8 @@ class Cardcom extends Engine {
         $post['ReqCardOwnerEmail'] = $field == 'require' ? 'true' : 'false';
         $post['ShowCardOwnerEmail'] = $field == 'show' || $field == 'require' ? 'true' : 'false';
     }
-    if ($this->param('hide_user_id')) $post['HideCreditCardUserId'] = $this->param('hide_user_id') == 'true' ? 'true' : 'false';
+    
+    if ((!isset($params['payments']) || $params['payments'] != "monthly") && $this->param('hide_user_id')) $post['HideCreditCardUserId'] = $this->param('hide_user_id') == 'true' ? 'true' : 'false';
 
     if (isset($params['full_name']) && $params['full_name']) $post['InvoiceHead.CustName'] = $params['full_name'];
 

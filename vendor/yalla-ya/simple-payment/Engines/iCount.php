@@ -57,7 +57,7 @@ class iCount extends Engine {
       $post = $this->basics($params, false);
       $post['doc_title'] = $params[SimplePayment::PRODUCT];
       $post['doctype'] = $doctype;
-      //$post['doc_lang'] = '';
+      if (isset($params[SimplePayment::LANGUAGE])) $post['lang'] = $params[SimplePayment::LANGUAGE];
 
       //vat_percent, tax_exempt
       $post['currency_code'] = $params['currency_code'];
