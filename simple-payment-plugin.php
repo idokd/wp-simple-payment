@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.3.6
+ * Version: 1.3.7
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -592,7 +592,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   function pre_process($params = []) {
-    $params = apply_filters('sp_payment_pre_process', $params);
 
     $method = isset($_REQUEST['method']) ? strtolower(sanitize_text_field($_REQUEST['method'])) : null;
     $fields = ['engine', self::AMOUNT, 'product', 'concept', 'method', self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, 'address', 'address2', self::EMAIL, 'country', 'state', 'zipcode', self::PAYMENTS, 'installments', self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, 'comment', 'city', self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, 'language'];
@@ -611,6 +610,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     if (!isset($_REQUEST[self::CARD_OWNER]) && isset($_REQUEST[self::FULL_NAME])) $params[self::CARD_OWNER] = $params[self::FULL_NAME];
     $params['payment_id'] = $this->payment($params);
     try {
+      $params = apply_filters('sp_payment_pre_process', $params);
       $process = parent::pre_process($params);
       $this->update($params['payment_id'], ['status' => self::TRANSACTION_PENDING, 'transaction_id' => $this->engine->transaction]);
     } catch (Exception $e) {
@@ -928,20 +928,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.3.6File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.3.7File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.3.6filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.3.7filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.3.6File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.3.7File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',
