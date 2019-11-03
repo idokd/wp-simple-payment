@@ -33,8 +33,8 @@ class iCount extends Engine {
       $this->save([
         'transaction_id' => $this->transaction,
         'url' => $this->api['bill'],
-        'status' => $response['status'],
-        'description' => isset($response['error_description']) ? $response['error_description'] : null,
+        'status' => $response['status'], 
+        'description' => isset($response['error_description']) ? $response['error_description'] : $response['reason'],
         'request' => json_encode($post),
         'response' => json_encode($response)
       ]);
@@ -46,6 +46,7 @@ class iCount extends Engine {
       $params['confirmation_code'] = $response['confirmation_code'];
       $params['cc_card_type'] = $response['cc_card_type'];
       $params['cc_type'] = $response['cc_type'];
+      $this->confirmation_code = $response['confirmation_code'];
       return($params);
     }
 
@@ -84,7 +85,7 @@ class iCount extends Engine {
         'transaction_id' => $this->transaction,
         'url' => $this->api['bill'],
         'status' => $response['status'],
-        'description' => isset($response['error_description']) ? $response['error_description'] : null,
+        'description' => isset($response['error_description']) ? $response['error_description'] : $response['reason'],
         'request' => json_encode($post),
         'response' => json_encode($response)
       ]);
@@ -140,7 +141,7 @@ class iCount extends Engine {
           'transaction_id' => $this->transaction,
           'url' => $this->api['store'],
           'status' => $response['status'],
-          'description' => isset($response['error_description']) ? $response['error_description'] : null,
+          'description' => isset($response['error_description']) ? $response['error_description'] : $response['reason'],
           'request' => json_encode($post),
           'response' => json_encode($response)
         ]);

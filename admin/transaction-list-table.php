@@ -13,7 +13,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     global $wpdb;
 		parent::__construct( [
 			'singular' => __( 'Transaction', 'simple-payment' ),
-			'plural'   => __( 'Transaction', 'simple-payment' ),
+			'plural'   => __( 'Transactions', 'simple-payment' ),
 			'ajax'     => false
 		] );
     self::$engine = $engine;
@@ -53,7 +53,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
           $engine = isset($_REQUEST['engine']) && $_REQUEST['engine'] ? sanitize_text_field( $_REQUEST['engine'] ) : null;
           $options = $wpdb->get_results('SELECT `engine` AS `title` FROM '.self::$table_name.' GROUP BY `engine` ORDER BY `engine` ASC ', ARRAY_A);
           if ($options) {
-              echo '<select name="engine" class="sp-filter-engine" onchange="location.href=this.value;"><option value="'.remove_query_arg('engine').'">'.__('All Engines', 'simple-payment').'</option>';
+              echo '<select id="engine" class="sp-filter-engine" onchange="location.href=this.value;"><option value="'.remove_query_arg('engine').'">'.__('All Engines', 'simple-payment').'</option>';
               foreach ($options as $option) {
                   $url = add_query_arg([
                       'engine' => $option['title']
@@ -120,7 +120,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   function column_id( $item ) {
     if (self::$engine || $this->is_export()) return($item['id']);
-    $archive_nonce = wp_create_nonce( 'sp_archive_transaction' );
+    $archive_nonce = wp_create_nonce( 'archive_'.$this->_args['singular'] );
     $title = '<strong>' . $item['id'] . '</strong>';
     $actions = [
       'archive' => sprintf( '<a href="%s">%s</a>', add_query_arg([
@@ -191,6 +191,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       'status'    => __( 'Status', 'simple-payment' ),
       'payments'    => __( 'Payments', 'simple-payment' ),
       'transaction_id'    => __( 'Transaction ID', 'simple-payment' ),
+      'confirmation_code'    => __( 'Confirmation Code', 'simple-payment' ),
       'user_id'    => __( 'User', 'simple-payment' ),
       'url'    => __( 'URL', 'simple-payment' ),
       'parameters'    => __( 'Parameters', 'simple-payment' ),
@@ -211,6 +212,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       'status' => array( 'status', false ),
       'url' => array( 'url', false ),
       'transaction_id' => array( 'transaction_id', false ),
+      'confirmation_code' => array( 'confirmation_code', false ),
       'user_id' => array( 'user_id', false ),
       'error_code' => array( 'error_code', false ),
       'parameters' => array( 'parameters', false ),
@@ -228,23 +230,26 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   public function process_bulk_action() {
     if ( 'archive' === $this->current_action() ) {
       $nonce = esc_attr( $_REQUEST['_wpnonce'] );
-      if ( ! wp_verify_nonce( $nonce, 'sp_archive_transaction' ) ) {
+      if ( ! wp_verify_nonce( $nonce, 'archive_'.$this->_args['singular'] ) ) {
         die( 'Go get a life script kiddies' );
-      } else {
-        self::archive_transaction( absint( $_GET['id'] ) );
-        //wp_redirect( wp_get_referer() );
-        return;
-      }
+      } 
+      self::archive_transaction( absint( $_GET['id'] ) );
+      //wp_redirect( wp_get_referer() );
+      return;
     }
     // If the delete bulk action is triggered
     if ( ( isset( $_POST['action'] ) && $_POST['action'] == 'bulk-archive' )
          || ( isset( $_POST['action2'] ) && $_POST['action2'] == 'bulk-archive' )
     ) {
+      $nonce = esc_attr( $_REQUEST['_wpnonce'] );
+      if ( ! wp_verify_nonce( $nonce, 'bulk-'.$this->_args['plural'] ) ) {
+        die( 'Go get a life script kiddies' );
+      }
       $archive_ids = esc_sql( $_POST['id'] );
       foreach ( $archive_ids as $id ) {
         self::archive_transaction( $id );
       }
-      //wp_redirect( wp_get_referer() );
+      wp_redirect( wp_get_referer() );
       return;
     }
   }

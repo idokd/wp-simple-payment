@@ -18,7 +18,7 @@ $SPWP_STATES = [ 'AL' => 'Alabama', 'AK' => 'Alaska', 'AZ' => 'Arizona', 'AR' =>
 $sp_sections = [
   'licensing' => [
     'title' => __('Licensing Information', 'simple-payment'),
-    'description' => __('Obtain a license <a href="mailto:ido@yalla-ya.com" target="_blank">here</a> to use in production mode', 'simple-payment'),
+    'description' => __('Obtain a license <a href="https://simple-payment.yalla-ya.com/get" target="_blank">here</a> to use in production mode', 'simple-payment'),
     'section' => 'license'
   ],
   'settings' => [
@@ -86,7 +86,22 @@ $sp_settings = [
     'title' => __('Form Template', 'simple-payment'),
     'type' => 'select',
     'options' => ['legacy' => __('Legacy', 'simple-payment'), 'bootstrap' => __('Bootstrap', 'simple-payment'),  'bootstrap-basic' => __('Bootstrap Basic', 'simple-payment'), 'experimental' => __('Experimental', 'simple-payment')]],
-  'css' => [ 
+  'user_create' => [
+      'title' => __('Create Wordpress User', 'simple-payment'),
+      'type' => 'select',
+      'options' => ['disabled' => __('No Creation', 'simple-payment'), 'silent' => __('Silent Creation', 'simple-payment'), 'register' => __('Registration', 'simple-payment')]],
+  'user_create_step' => [
+    'title' => __('Create User Upon', 'simple-payment'),
+    'type' => 'select',
+    'options' => ['pre' => __('Preprocessing', 'simple-payment'),  'post' => __('Post processing', 'simple-payment')]],
+  'auto_purge' => [
+      'title' => __('Purge Transactions', 'simple-payment'),
+      'type' => 'select',
+      'options' => ['disabled' => __('Disabled', 'simple-payment'), 'archive' => __('Archive', 'simple-payment'), 'purge' => __('Purge', 'simple-payment'), 'archive_purge' => __('Archive & Purge', 'simple-payment')]],
+    'purge_period' => [ 
+      'title' => __('Purge Period (days)', 'simple-payment'),
+    ],
+      'css' => [ 
     'title' => __('CSS', 'simple-payment'),
     'type' => 'textarea'
   ],

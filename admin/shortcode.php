@@ -24,6 +24,11 @@
       <td>Product or Service name that will appear on the charge, will also work with: title, concept</td>
   </tr>
   <tr>
+      <td>currency</td>
+      <td>null</td>
+      <td>Currency ISO standard 3 letters</td>
+  </tr>
+  <tr>
       <td>type</td>
       <td>form</td>
       <td>Form/ Button/ Template- should shortcode render a button or a complete form</td>

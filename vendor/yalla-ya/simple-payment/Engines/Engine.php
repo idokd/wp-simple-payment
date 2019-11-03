@@ -11,6 +11,7 @@ class Engine {
 
   public $name = 'Base';
   public $transaction = null;
+  public $confirmation_code = null;
   public $handler;
   public $interactive;
   protected $callback;

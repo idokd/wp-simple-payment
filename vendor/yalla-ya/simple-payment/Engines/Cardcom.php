@@ -71,6 +71,7 @@ class Cardcom extends Engine {
     parse_str($status, $status);
     //$this->record($params, $status);
     $this->transaction = $params['lowprofilecode'];
+    $this->confirmation_code = ''; // TODO: ??
     $response = $status;
     $this->save([
       'transaction_id' => $this->transaction,
@@ -343,7 +344,7 @@ class Cardcom extends Engine {
       'request' => json_encode($post),
       'response' => json_encode($response)
     ]);
-    return($status);
+    return($status); // OperationResponseText, OperationResponse
   }
 
   public function recur() {
