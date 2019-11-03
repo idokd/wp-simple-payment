@@ -19,7 +19,7 @@ class SimplePayment {
   const OPERATION_ERROR = 'error';
   const OPERATION_ZAPIER = 'zapier';
 
-  const TRANSACTION_ID = 'transaction_id'; const CURRENCY = 'currency'; const AMOUNT = 'amount'; const PRODUCT = 'product'; 
+  const TRANSACTION_ID = 'transaction_id'; const CURRENCY = 'currency'; const AMOUNT = 'amount'; const PRODUCT = 'product'; const PRODUCT_CODE = 'product_code'; 
 
   const FIRST_NAME = 'first_name'; const LAST_NAME = 'last_name'; const FULL_NAME = 'full_name'; const PHONE = 'phone'; const MOBILE = 'mobile'; const EMAIL = 'email';
   

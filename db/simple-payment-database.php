@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '11';
+$sp_db_version = '12';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -13,7 +13,7 @@ add_action( 'plugins_loaded', 'sp_update_db_check' );
 
 function sp_update_db_check() {
     global $sp_db_version;
-    if ( get_option( 'sp_db_version' ) != $sp_db_version ) {
+    if ( absint(get_option( 'sp_db_version' )) != absint($sp_db_version) ) {
         sp_install();
     }
 }

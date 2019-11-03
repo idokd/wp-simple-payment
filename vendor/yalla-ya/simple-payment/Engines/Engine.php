@@ -34,6 +34,7 @@ class Engine {
     // - Call payment gateway API
     // - Redirect to the payment gateway url with params
     // Return FALSE if transaction failed
+    // Return array of params to move to post_process if payment was handleded without being redirecting
     return(true);
   }
 

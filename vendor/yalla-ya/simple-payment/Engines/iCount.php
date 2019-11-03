@@ -130,8 +130,8 @@ class iCount extends Engine {
     }
 
     public function pre_process($params) {
-      $this->transaction = $this->uuid();
       parent::pre_process($params);
+      $this->transaction = $this->uuid();
       $params[SimplePayment::TRANSACTION_ID] = $this->transaction;
       $post = $this->basics($params);
       if ($this->param('use_storage')) {
