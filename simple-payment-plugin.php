@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.4.2
+ * Version: 1.4.3
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -34,7 +34,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public static $instance;
   protected $option_name = 'sp';
   protected $payment_page = null;
-  protected $paymnet_id = null;
+  protected $payment_id = null;
   static protected $table_name = 'sp_transactions';
   static $engines = ['PayPal', 'Cardcom', 'iCount', 'Custom'];
   static $interactives = ['Cardcom'];
@@ -680,7 +680,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
                   $rmop = true;
                 }
                 if (!$url) $url = get_bloginfo('url');
-                if ($rmop) $url = remove_query_arg(self::OP, $url);
+                if (isset($rmop) && $rmop) $url = remove_query_arg(self::OP, $url);
               }
               break;
             } catch (Exception $e) {
@@ -784,6 +784,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           $zapier = [
             'site' => get_bloginfo('url'), 
             'version' => self::VERSION,
+            'name' => get_bloginfo('name'),
             'platform' => 'Wordpress',
             'license' => $this->license,
             'initiator' => get_class($this),
@@ -952,20 +953,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.4.2File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.4.3File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.4.2filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.4.3filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.4.2File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.4.3File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',
@@ -1036,9 +1037,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       global $wpdb;
       $tablename = 'history';
       foreach ($params as $field => $value) $params[$field] = $this->sanitize_pci_dss($value);
-      // TODO: if id update instead of insert
+      if (!isset($params['payment_id'])) {
+        $payment_id = $this->payment_id ? : (isset($_REQUEST['payment_id']) ? $_REQUEST['payment_id'] : null);
+        if ($payment_id) $params['payment_id'] = $payment_id;
+      }
       if (!isset($params['ip_address'])) $params['ip_address'] = $_SERVER['REMOTE_ADDR'];
       if (!isset($params['user_agent'])) $params['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+      // TODO: if id update instead of insert
       $result = $wpdb->insert($wpdb->prefix . 'sp_' . $tablename, $params);
       return($result != null ? $wpdb->insert_id : false);
     }
