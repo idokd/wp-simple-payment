@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.3.9
+ * Version: 1.4.0
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -159,32 +159,35 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $wp_rewrite->flush_rules();
   }
 
-  function cron() {
-    $archive_purge = $this>param('auto_purge');
-    $period = absint($this>param('purge_period'));
-    if (!$period || $archive_purge == 'disabled' || !$archive_purge) return;
+  public static function cron() {
+    $archive_purge = self::param('auto_purge');
+    $period = absint(self::param('purge_period'));
+    if (!$period || !$archive_purge || $archive_purge == 'disabled') return;
     switch ($archive_purge) {
       case 'archive_purge': 
       case 'archive':
-        $this->process_archive($period);
+        self::process_archive($period);
         if ($archive_purge == 'archive') break;
       case 'purge':
-        $this->process_purge($archive_purge == 'purge' ? $period : $period * 2);
+        self::process_purge($archive_purge == 'purge' ? $period : $period * 2);
         break;
     }
   }
 
-  function process_archive($days) {
+  protected static function process_archive($days) {
     global $wpdb;
-    $sql = $wpdb->prepare('UPDATE '.$wpdb->prefix.self::$table_name.' SET `archived` = 1 WHERE `created` < DATE_SUB(CURDATE(),INTERVAL ? DAY)', $days);
+    $sql = $wpdb->prepare('UPDATE '.$wpdb->prefix.self::$table_name.' SET `archived` = 1 WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY)', $days);
     $wpdb->query($sql);
   }
 
-  function process_purge($days) {
+  protected static function process_purge($days) {
     global $wpdb;
-    $sql = $wpdb->prepare('DELETE '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(CURDATE(),INTERVAL ? DAY)', $days);
+    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.'sp_history'.' WHERE `transaction_id` IN (SELECT `transaction_id` FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY))', $days);
     $wpdb->query($sql);
-    // TODO: process history of those ids
+    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.'sp_history'.' WHERE `payment_id` IN (SELECT `id` FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY))', $days);
+    $wpdb->query($sql);
+    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY)', $days);
+    $wpdb->query($sql);
   }
 
   function register_reading_setting() {
@@ -598,7 +601,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     
     $secrets = [ self::CARD_NUMBER, self::CARD_CVV ];
     foreach ($secrets as $field) if (isset($params[$field])) $this->secrets[$field] = $params[$field];
-    $this->secrets['engine_password'] = $this->engine->password;
+    if (isset($this->engine->password)) $this->secrets['engine.password'] = $this->engine->password;
 
     if (!isset($params['language'])) {
       $parts = explode('-', get_bloginfo('language'));
@@ -707,17 +710,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             $url = remove_query_arg(self::OP, $url);
             break;
           case self::OPERATION_ZAPIER:
-            $zapier = [
-              'site' => get_bloginfo('url'), 
-              'version' => self::VERSION,
-              'platform' => 'Wordpress',
-              'license' => $this->license,
-              'initiator' => get_class($this),
-              'platform_version' => get_bloginfo('version'), 
-              'plugin_versoin' => $this->version
-            ];
-            header('application/json;');
-            print json_encode($zapier);
+            $this->zapier();
             die; break;
             break;
           case self::OPERATION_PCSS:
@@ -773,6 +766,36 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     else return($this->generate_unique_username($username));
   }
 
+  function zapier($params = []) {
+    global $wpdb;
+    header('Content-Type: application/json');
+    $method = isset($_REQUEST['method']) ? $_REQUEST['method'] : 'default';
+    $api_key = isset($_REQUEST['api_key']) ? $_REQUEST['api_key'] : null;
+    if (!$api_key) {
+      print json_encode(['error' => 401, 'description' => __('API KEY Invalid', 'simple-payment')]);
+      die;
+    }
+    switch ($method) {
+        case 'transactions':
+          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `archived` = 0 ORDER BY `created` DESC';
+          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          break;
+        default:
+          $zapier = [
+            'site' => get_bloginfo('url'), 
+            'version' => self::VERSION,
+            'platform' => 'Wordpress',
+            'license' => $this->license,
+            'initiator' => get_class($this),
+            'platform_version' => get_bloginfo('version'), 
+            'plugin_versoin' => $this->version
+          ];
+          break;
+    }
+    print_r($this->license);
+    print json_encode($zapier);
+    die;
+  }
   function shortcode($atts) {
       extract( shortcode_atts( array(
             'id' => null,
@@ -847,7 +870,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'url' => $this->sanitize_pci_dss($_SERVER['HTTP_REFERER']),
         'status' => self::TRANSACTION_NEW,
         'sandbox' => $this->sandbox,
-        'user_id' => $user_id ? $user_id : null
+        'user_id' => $user_id ? $user_id : null,
+        'ip_address' => $_SERVER['REMOTE_ADDR'],
+        'user_agent' => $_SERVER['HTTP_USER_AGENT']
     ]);
     $this->payment_id = $wpdb->insert_id;
     return($result ? $wpdb->insert_id : false);
@@ -928,20 +953,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.3.9File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.4.0File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.3.9filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.4.0filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.3.9File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.4.0File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',
@@ -1013,6 +1038,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $tablename = 'history';
       foreach ($params as $field => $value) $params[$field] = $this->sanitize_pci_dss($value);
       // TODO: if id update instead of insert
+      if (!isset($params['ip_address'])) $params['ip_address'] = $_SERVER['REMOTE_ADDR'];
+      if (!isset($params['user_agent'])) $params['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
       $result = $wpdb->insert($wpdb->prefix . 'sp_' . $tablename, $params);
       return($result != null ? $wpdb->insert_id : false);
     }

@@ -99,7 +99,8 @@ class iCount extends Engine {
       $post = [];
       $post['cid'] = $this->param('business');
       $post['user'] = $this->param('username');
-      $post['pass'] = $this->param('password');
+      $this->password = $this->param('password');
+      $post['pass'] = $this->password;
       $post['client_name'] = isset($params[SimplePayment::FULL_NAME]) ? $params[SimplePayment::FULL_NAME] : $params[SimplePayment::CARD_OWNER];
       if (isset($params[SimplePayment::TAX_ID])) $post['vat_id'] = $params[SimplePayment::TAX_ID];
       // custom_client_id

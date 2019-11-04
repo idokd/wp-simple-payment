@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '12';
+$sp_db_version = '14';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -39,6 +39,8 @@ function sp_install() {
     `error_code` VARCHAR(255) DEFAULT NULL,
     `error_description` VARCHAR(255) DEFAULT NULL,
     `confirmation_code` VARCHAR(255) DEFAULT NULL,
+    `ip_address` VARCHAR(250) DEFAULT NULL,
+    `user_agent` VARCHAR(250) DEFAULT NULL,
     `retries` TINYINT(1) NOT NULL DEFAULT 0,
     `sandbox` TINYINT(1) NOT NULL DEFAULT 0,
     `archived` TINYINT(1) NOT NULL DEFAULT 0,
@@ -55,37 +57,18 @@ function sp_install() {
 
   dbDelta( $sql );
 
-  $table_name = $wpdb->prefix . "sp_cardcom";
-  $sql = "CREATE TABLE $table_name (
-    `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
-    `transaction_id` VARCHAR(50),
-    `terminal` MEDIUMINT(9) NOT NULL,
-    `operation` INT NOT NULL,
-    `response_code` INT DEFAULT NULL,
-    `deal_response` INT DEFAULT NULL,
-    `token_response` INT DEFAULT NULL,
-    `token` VARCHAR(50) DEFAULT NULL,
-    `operation_response` INT DEFAULT NULL,
-    `operation_description` TEXT DEFAULT NULL,
-    `request` TEXT DEFAULT NULL,
-    `response` TEXT DEFAULT NULL,
-    `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY `idx_id` (`id`),
-      KEY `idx_transaction` (`transaction_id`)
-  ) $charset_collate;";
-
-  dbDelta( $sql );
-
   $table_name = $wpdb->prefix . "sp_history";
   $sql = "CREATE TABLE $table_name (
     `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+    `payment_id` MEDIUMINT(9) DEFAULT NULL,
     `transaction_id` VARCHAR(50),
     `url` TEXT DEFAULT NULL,
     `status` INT DEFAULT NULL,
     `description` VARCHAR(50) DEFAULT NULL,
     `request` TEXT DEFAULT NULL,
     `response` TEXT DEFAULT NULL,
+    `ip_address` VARCHAR(250) DEFAULT NULL,
+    `user_agent` VARCHAR(250) DEFAULT NULL,
     `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `idx_id` (`id`),

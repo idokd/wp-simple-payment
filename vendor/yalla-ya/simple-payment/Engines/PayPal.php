@@ -37,15 +37,15 @@ class PayPal extends Engine {
           'post' => 'https://www.sandbox.paypal.com/cgi-bin/webscr'
       ]
   ];
-  protected $context;
-  protected $clientId;
-  protected $clientSecret;
+  public $context;
+  public $clientId;
+  public $password;
 
   public function __construct($params = null, $handler = null, $sandbox = true) {
     parent::__construct($params, $handler, $sandbox);
     $this->clientId = $this->param('client_id');
-    $this->clientSecret = $this->param('client_secret');
-    if ($this->clientId && $this->clientSecret) $this->context = $this->getApiContext($this->clientId, $this->clientSecret);
+    $this->password = $this->param('client_secret');
+    if ($this->clientId && $this->password) $this->context = $this->getApiContext($this->clientId, $this->password);
   }
 
   public function post_process($params) {
@@ -54,7 +54,14 @@ class PayPal extends Engine {
     $this->transaction = $_REQUEST['paymentId'];
     //$token = $_REQUEST['token'];
     //$payer = $_REQUEST['PayerID'];
-    $this->save(['request' => $params]);
+    $this->save([
+      'transaction_id' => $this->transaction,
+      'url' => '',
+      'status' => '',
+      'description' => isset($_REQUEST['token']) ? $_REQUEST['token'] : null,
+      'request' => json_encode($params),
+      'response' => json_encode($_REQUEST)
+    ]);
     return(true);
   }
 
@@ -68,7 +75,7 @@ class PayPal extends Engine {
     // - Call payment gateway API
     // - Redirect to the payment gateway url with params
     // Return FALSE if transaction failed
-    echo '<form id="frm" action="'.$this->api['sandbox']['post'].'" method="post">';
+    echo '<form id="frm" action="'.($this->sandbox ? $this->api['sandbox']['post'] : $this->api['post']).'" method="post">';
     foreach ($post as $key => $value) {
         echo '<input type="hidden" name="'.htmlentities($key).'" value="'.htmlentities($value).'">';
     }
@@ -81,6 +88,7 @@ class PayPal extends Engine {
     // no_shipping, lc, image_url
 
     // TODO : add additional known fields if known
+    $this->transaction = $this->uuid();
     $amount = $params['amount'];
     $currency = $this->param('currency');
     $concept = $params['concept'];
@@ -110,26 +118,34 @@ class PayPal extends Engine {
       try {
         $payment->create($this->context);
       } catch (Exception $e) {
+        
       }
       $this->transaction = $payment->getId();
       $params['url'] = $payment->getApprovalLink();
-    } else $this->transaction = self::uuid();
+    } 
 
     // for Express Checkout tradiaionl form post
     $post = [];
     $post['cmd'] = '_xclick';
-    $post['hosted_button_id'] = '';
+    $post['hosted_button_id'] = $this->param('hosted_button_id');;
     $post['item_name'] = $concept;
     $post['currency_code'] = $currency;
-    $post['business'] = $this->param('paypal_business');
+    $post['business'] = $this->param('business');
     $post['amount'] = $amount;
     $post['return'] = $this->url(SimplePayment::OPERATION_SUCCESS);
     $post['cancel_return'] = $this->url(SimplePayment::OPERATION_CANCEL);
     $post['notify_url'] = $this->url(SimplePayment::OPERATION_STATUS);
     $post['rm'] = '2';
-    $post['url'] = $this->api['sandbox']['post'];
+    $post['url'] = $this->sandbox ? $this->api['sandbox']['post'] : $this->api['post'];
     $params['post'] = $post;
-    $this->save(['url' => $post['url'], 'request' => $params]);
+    $this->save([
+      'transaction_id' => $this->transaction,
+      'url' => $post['url'],
+      'status' => null,
+      'description' => 'Express Checkout',
+      'request' => json_encode($post),
+      'response' => null
+    ]);
     return($params);
   }
 
@@ -144,7 +160,7 @@ class PayPal extends Engine {
   function getApiContext($clientId, $clientSecret) {
     $apiContext = new ApiContext(new OAuthTokenCredential($clientId, $clientSecret));
     $apiContext->setConfig([
-      'mode' => 'sandbox',
+      'mode' => $this->sandbox ? 'sandbox' : 'live',
       //'log.LogEnabled' => true,
       //'log.FileName' => 'PayPal.log',
       //'log.LogLevel' => 'DEBUG', // PLEASE USE `INFO` LEVEL FOR LOGGING IN LIVE ENVIRONMENTS
