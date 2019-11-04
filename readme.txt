@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor
 Requires at least: 4.6
 Tested up to: 5.2.4
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -54,6 +54,25 @@ PS: You'll need an [Simple Payment API key for advanced gateways](https://simple
 = Which Payment Gateway this plugin support? =
 
 Currently it supports PayPal, Cardcom, iCount, with another new payment gateway added every month.
+
+= How does Simple Payment complies with PCI-DSS =
+
+When a payment is passed through the plugin, it restricts the use of sensible data to the minimum possible, 
+avoids any replication of variables and data, and upon saving on the database is masks and hides the data
+so no sensible data is saved in the database.
+
+Additional it allows you to automaticaly purge any records older the X days.
+
+= Can I work with Simple Payments and other plugins =
+
+Simple Payment is ready to be extended, it exposes actions and filters (add_action & add_filters), to hook
+in differnet parts of the payment process.
+
+You can also extend any of the existing Payment Gateways (Engines) or write your own Custom Engine, and finally
+you can integrate Simple Payment with [Zapier](https://zapier.com/developer/public-invite/66167/f63e9e617b9e5e534c26c308f15087ee/)
+
+
+
 
 == Feedback and Support ==
 
