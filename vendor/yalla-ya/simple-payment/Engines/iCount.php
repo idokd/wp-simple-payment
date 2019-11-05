@@ -23,7 +23,7 @@ class iCount extends Engine {
     public function process($params) {
       $post = $this->basics($params);
       if ($this->sandbox) $post['is_test'] = true;
-      $post['currency_code'] = $this->param(SimplePayment::CURRENCY); // currency_code (cuurency_id / currency
+      $post['currency_code'] = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param(SimplePayment::CURRENCY); // currency_code (cuurency_id / currency
       $post['is_credit'] = false;
       $post['sum'] = $params[SimplePayment::AMOUNT];
       if (isset($params[SimplePayment::PAYMENTS]) && is_numeric($params[SimplePayment::PAYMENTS])) $post['num_of_payments'] = $params[SimplePayment::PAYMENTS];

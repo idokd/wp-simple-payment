@@ -90,7 +90,7 @@ class PayPal extends Engine {
     // TODO : add additional known fields if known
     $this->transaction = $this->uuid();
     $amount = $params['amount'];
-    $currency = $this->param('currency');
+    $currency = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param('currency');
     $concept = $params['concept'];
     if ($this->context) {
       $payer = new Payer();

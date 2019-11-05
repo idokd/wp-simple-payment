@@ -5,7 +5,7 @@ require_once(SPWP_PLUGIN_DIR.'/settings.php');
 $installments = isset($installments) ? $installments : 0;
 $year_today = date('Y'); $year_max = $year_today + 10;
 $installments_min = $SPWP->param('installments_min');
-$installments_max = $SPWP->param('installments_max') ? : $installments;
+$installments_max = $installments > $SPWP->param('installments_max') ? $installments : $SPWP->param('installments_max');
 $installments = $SPWP->param('installments_default');
 
 // TODO: valdate 3 digits (or 4 in american express) cvv and further credit card format
@@ -22,6 +22,7 @@ $target = $target ? ' target="'.$target.'"' : '';
   <input type="hidden" name="amount" value="<?php echo $amount; ?>" />
   <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
 <?php if (isset($currency)) { ?><input type="hidden" name="currency" value="<?php echo $currency; ?>" /><?php } ?>
+<?php if (isset($redirect_url)) { ?><input type="hidden" name="redirect_url" value="<?php echo $redirect_url; ?>" /><?php } ?>
 
   <?php if (isset($_REQUEST['message']) && $message = $_REQUEST['message']) { ?><div class="alert alert-warning" role="alert"><?php echo $message; ?></div><?php } ?>
     <h4 class="mb-3"><?php _e('Payment', 'simple-payment'); ?></h4>

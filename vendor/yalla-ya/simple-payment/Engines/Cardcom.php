@@ -150,8 +150,7 @@ class Cardcom extends Engine {
     if (isset($params['payment_id']) && $params['payment_id']) $post['ReturnValue'] = $params['payment_id'];
 
     $post['codepage'] = 65001; // Codepage fixed to enable hebrew
-
-    $currency = $this->param('currency');
+    $currency = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param('currency');
     if ($currency != '') {
       if ($currency = self::CURRENCIES[$currency]) $post['CoinID'] = $currency;
       else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
@@ -307,7 +306,7 @@ class Cardcom extends Engine {
     $language = isset($params['language']) ? $params['language'] : $this->param('language');
     if ($language != '') $post['Account.IsDocumentLangEnglish'] = $language == 'he' ? 'false' : 'true';
 
-    $currency = $this->param('currency');
+    $currency = isset($params['currency']) ? $params['currency'] : $this->param('currency');
     if ($currency != '') {
       if ($currency = self::CURRENCIES[$currency]) $post['RecurringPayments.FinalDebitCoinId'] = $currency;
       else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
@@ -362,7 +361,7 @@ class Cardcom extends Engine {
     }
     $post['TokenToCharge.SumToBill'] = $params['amount'];
 
-    $currency = $this->param('currency');
+    $currency = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param('currency');
     if ($currency != '') {
       if ($currency = self::CURRENCIES[$currency]) $post['CoinID'] = $currency;
       else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
@@ -411,7 +410,7 @@ class Cardcom extends Engine {
   protected function document($params) {
     $post = [];
     $language = $this->param('language');
-    $currency = $this->param('currency');
+    $currency = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param('currency');
     if ($language) $post['InvoiceHead.Languge'] = $params['language'];
     if ($currency) $post['InvoiceHead.CoinID'] = $params['currency'];
     if (isset($params['email']) && $params['email']) $post['InvoiceHead.Email'] = $params['email'];
