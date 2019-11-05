@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor
 Requires at least: 4.6
 Tested up to: 5.2.4
-Stable tag: 1.4.5
+Stable tag: 1.4.6
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -86,8 +86,33 @@ I hope it is useful for you and look forward to reading your reviews! 😉 Thank
 
 == Changelog ==
 
-Checkout [changelog.txt](http://plugins.svn.wordpress.org/simple-payment/trunk/changelog.txt) file
+Checkout for more details [changelog.txt](http://plugins.svn.wordpress.org/simple-payment/trunk/changelog.txt) file
 
+== Changelog ==
+= 1.4.5 =
+*Release Date - 5 November 2019*
+
+Great news! we now support Zapier & WooCommerce, so all Payment Gateways (Engines) can now 
+work transparently in WooCommerce.
+
+* Zapier integration; use this link to connect and configure: [Zapier](https://zapier.com/developer/public-invite/66167/f63e9e617b9e5e534c26c308f15087ee/)
+* WooCommerce enable Simple Payment on your WooCommerce and enjoy the same control of Simple Payment
+* Shortcode now accept: currency & installments
+* Stability improvements
+* General Bug fixes
+
+= 1.4.0 =
+*Release Date - 4 November 2019*
+
+* Introduction of Archive & Purge transaction
+* Introduction of Beta Zapier integration
+* Create Wordpress User (Secret or Via Register) on payment (pre or post payment)
+* General Bug fixes
+
+= 1.0.0 =
+*Release Date - 1 October 2019*
+
+* First release
 == Screenshots ==
 
 1. Create Payment Page; use Admin -> Settings -> Reading to define which is your Payment Page.
