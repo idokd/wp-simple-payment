@@ -2,10 +2,9 @@
 //var $product, $price, $id, $fixed;
 $SPWP = SimplePaymentPlugin::instance();
 require_once(SPWP_PLUGIN_DIR.'/settings.php');
-$installments = isset($installments) ? $installments : 0;
 $year_today = date('Y'); $year_max = $year_today + 10;
 $installments_min = $SPWP->param('installments_min');
-$installments_max = $SPWP->param('installments_max') ? : $installments;
+$installments_max = $SPWP->param('installments_max');
 $installments = $SPWP->param('installments_default');
 
 // TODO: valdate 3 digits (or 4 in american express) cvv and further credit card format
@@ -15,26 +14,7 @@ $amount = number_format((float) $amount, 2);
 $target = isset($target) ? $target : $SPWP->param('target');
 $target = $target ? ' target="'.$target.'"' : '';
 ?>
-<div class="col-md-8 order-md-1">
-  <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo $SPWP->payment_page(); ?>" method="post"<?php echo $target; ?>>
-  <input type="hidden" name="op" value="purchase" />
-  <input type="hidden" name="product" value="<?php echo $product; ?>" />
-  <input type="hidden" name="amount" value="<?php echo $amount; ?>" />
-  <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
-<?php if (isset($currency)) { ?><input type="hidden" name="currency" value="<?php echo $currency; ?>" /><?php } ?>
-
-  <?php if (isset($_REQUEST['message']) && $message = $_REQUEST['message']) { ?><div class="alert alert-warning" role="alert"><?php echo $message; ?></div><?php } ?>
-    <h4 class="mb-3"><?php _e('Payment', 'simple-payment'); ?></h4>
-    <div class="d-block my-3">
-      <div class="custom-control custom-radio">
-        <input id="credit" name="method" type="radio" class="custom-control-input" value="debit" checked="" required="">
-        <label class="custom-control-label" for="credit"><?php _e('Credit card', 'simple-payment'); ?></label>
-      </div>
-      <div class="custom-control custom-radio">
-        <input id="debit" name="method" type="radio" class="custom-control-input" value="debit" required="">
-        <label class="custom-control-label" for="debit"><?php _e('Debit card', 'simple-payment'); ?></label>
-      </div>
-    </div>
+<div class="col-md-8 order-md-1" id="simple-payment">
     <div class="row">
       <div class="col-md-6 mb-3">
         <label for="cc-name"><?php _e('Name on card', 'simple-payment'); ?></label>
@@ -92,15 +72,13 @@ $target = $target ? ' target="'.$target.'"' : '';
         <?php } ?>
       </div>
     </div>
-    <button class="btn btn-primary btn-lg btn-block" type="submit"><?php echo sprintf(__('Process Payment [%s]', 'simple-payment'), $amount); ?></button>
-  </form>
 </div>
 <script>
 (function () {
   'use strict'
   window.addEventListener('load', function () {
     // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.getElementsByClassName('needs-validation')
+    var forms = document.getElementsByClassName('checkout')
 
     
     // Loop over them and prevent submission

@@ -11,7 +11,7 @@ class SimplePayment {
   const TRANSACTION_PENDING = 'pending';
   const TRANSACTION_SUCCESS = 'success';
   const TRANSACTION_FAILED = 'failed';
-  const TRANSACTION_CANCEL = 'canceled';
+  const TRANSACTION_CANCEL = 'cancelled';
 
   const OPERATION_SUCCESS = 'success';
   const OPERATION_CANCEL = 'cancel';
@@ -19,19 +19,23 @@ class SimplePayment {
   const OPERATION_ERROR = 'error';
   const OPERATION_ZAPIER = 'zapier';
 
+  const ENGINE = 'engine'; const METHOD = 'method';
+
   const TRANSACTION_ID = 'transaction_id'; const CURRENCY = 'currency'; const AMOUNT = 'amount'; const PRODUCT = 'product'; const PRODUCT_CODE = 'product_code'; 
 
   const FIRST_NAME = 'first_name'; const LAST_NAME = 'last_name'; const FULL_NAME = 'full_name'; const PHONE = 'phone'; const MOBILE = 'mobile'; const EMAIL = 'email';
   
   const CARD_OWNER = 'card_owner';  const CARD_NUMBER = 'card_number'; const CARD_EXPIRY_MONTH = 'expiry_month'; const CARD_EXPIRY_YEAR = 'expiry_year'; const CARD_CVV = 'cvv'; const CARD_OWNER_ID = 'card_owner_id'; 
 
+  const ADDRESS = 'address'; const ADDRESS2 = 'address2'; const CITY = 'city'; const STATE = 'state'; const COUNTRY = 'country'; const ZIPCODE = 'zipcode';
+
   const PAYMENTS = 'payments';  const TAX_ID = 'tax_id';
 
-  const LANGUAGE = 'language';
+  const LANGUAGE = 'language'; const COMMENT = 'comment'; const INSTALLMENTS = 'installments';
   
   protected $callback;
   protected $sandbox = true;
-  protected $engine;
+  public $engine;
   protected $license;
 
   protected static $params;
@@ -183,5 +187,37 @@ class SimplePayment {
         preg_replace("/[^0-9]/", "", substr($num, 0, $sep)) . '.' .
         preg_replace("/[^0-9]/", "", substr($num, $sep+1, strlen($num)))
     );
-}
+  }
+
+  public static function validate($params, $type = null) {
+    $errors = [];
+    switch ($type) {
+        default:
+        case 'required':
+          $required = [self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_OWNER, self::CARD_NUMBER];
+          foreach ($required as $field) if (!isset($params[$field]) || !$params[$field]) $errors[$field] = 'REQUIRED_FIELD_'.strtoupper($field);
+          if ($type) break;
+        case 'cvv':
+        if (isset($params[self::CARD_CVV])) {
+          $len = strlen($params[self::CARD_CVV]);
+            if ($len < 3 || $len > 4) $errors[self::CARD_CVV] = 'INVALID_CARD_CVV';
+          }
+          if ($type) break;
+        case 'number':
+          if (isset($params[self::CARD_NUMBER])) {
+            $len = strlen($params[self::CARD_NUMBER]);
+            if ($len < 15 || $len > 16) $errors[self::CARD_NUMBER] = 'INVALID_CARD_NUMBER';
+          }
+          if ($type) break;
+        case 'validity':
+          if (isset($params[self::CARD_EXPIRY_MONTH])) {
+            $expires = \DateTime::createFromFormat('mY', $params[self::CARD_EXPIRY_MONTH].$params[self::CARD_EXPIRY_YEAR])->modify('+1 month first day of midnight');
+            $now = new \DateTime('now');
+            if ($expires < $now) $errors[self::CARD_EXPIRY_MONTH] = 'INVALID_CARD_EXPIRATION';
+          }
+          if ($type) break;
+    }
+    return($errors);
+  }
+
 }

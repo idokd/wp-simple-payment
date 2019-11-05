@@ -35,7 +35,7 @@ class Cardcom extends Engine {
 
   protected $terminal = 1000;
   protected $username = 'barak9611';
-  protected $password = 'c1234567!';
+  public $password = 'c1234567!';
 
   const LANGUAGES = [ 'he' => 'Hebrew', 'en' => 'English' ];
   const CURRENCIES = [ 'ILS' => 1, 'USD' => 2, 'AUD' => 36,	'CAD' => 124, 'DKK' => 208, 'JPY' => 392, 'NZD' => 554, 'RUB' => 643, 'CHF' => 756, 'GBP' => 826 ];
@@ -51,8 +51,9 @@ class Cardcom extends Engine {
   }
 
   public function process($params) {
-    header("Location: ".$params['url']);
-    return(true);
+    //header("Location: ".$params['url']);
+    //return(true);
+    return($params['url']);
   }
 
   public function status($params) {
@@ -127,7 +128,8 @@ class Cardcom extends Engine {
     if (!$this->sandbox) {
       $post['TerminalNumber'] = $this->param_part($params);
       $post['UserName'] = $this->param_part($params, 'username');
-      // $post['Password'] = $this->param_part($params, 'password');
+      // $this->password = $this->param_part($params, 'password');
+      // $post['Password'] = $this->password;
     } else {
       $post['TerminalNumber'] = $this->terminal;
       $post['UserName'] = $this->username;

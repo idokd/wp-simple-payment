@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '14';
+$sp_db_version = '16';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -76,6 +76,11 @@ function sp_install() {
   ) $charset_collate;";
 
   dbDelta( $sql );
+
+  $table_name = $wpdb->prefix . "sp_cardcom";
+  $sql = "DROP TABLE IF EXISTS " . $table_name;
+  $wpdb->query($sql);
+
   update_option( "sp_db_version", $sp_db_version );
 }
 

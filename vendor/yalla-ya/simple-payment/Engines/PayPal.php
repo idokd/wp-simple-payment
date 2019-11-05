@@ -39,10 +39,10 @@ class PayPal extends Engine {
   ];
   public $context;
   public $clientId;
-  public $password;
 
   public function __construct($params = null, $handler = null, $sandbox = true) {
     parent::__construct($params, $handler, $sandbox);
+
     $this->clientId = $this->param('client_id');
     $this->password = $this->param('client_secret');
     if ($this->clientId && $this->password) $this->context = $this->getApiContext($this->clientId, $this->password);
@@ -107,8 +107,8 @@ class PayPal extends Engine {
           ->setDescription($concept)
           ->setInvoiceNumber($this->transaction);
       $redirectUrls = new RedirectUrls();
-      $redirectUrls->setReturnUrl($this->url(SimplePayment::OPERATION_SUCCESS))
-        ->setCancelUrl($this->url(SimplePayment::OPERATION_CANCEL));
+      $redirectUrls->setReturnUrl($this->url(SimplePayment::OPERATION_SUCCESS, $params))
+        ->setCancelUrl($this->url(SimplePayment::OPERATION_CANCEL, $params));
         // TODO add status usrl
       $payment = new Payment();
       $payment->setIntent("sale")
@@ -132,9 +132,9 @@ class PayPal extends Engine {
     $post['currency_code'] = $currency;
     $post['business'] = $this->param('business');
     $post['amount'] = $amount;
-    $post['return'] = $this->url(SimplePayment::OPERATION_SUCCESS);
-    $post['cancel_return'] = $this->url(SimplePayment::OPERATION_CANCEL);
-    $post['notify_url'] = $this->url(SimplePayment::OPERATION_STATUS);
+    $post['return'] = $this->url(SimplePayment::OPERATION_SUCCESS, $params);
+    $post['cancel_return'] = $this->url(SimplePayment::OPERATION_CANCEL, $params);
+    $post['notify_url'] = $this->url(SimplePayment::OPERATION_STATUS, $params);
     $post['rm'] = '2';
     $post['url'] = $this->sandbox ? $this->api['sandbox']['post'] : $this->api['post'];
     $params['post'] = $post;

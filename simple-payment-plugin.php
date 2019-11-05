@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.4.4
+ * Version: 1.4.5
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -77,6 +77,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   public function setEngine($engine) {
+    if ($this->engine && $this->engine->name == $engine) return;
     if ($this->param('mode') == 'live' && $this->license) {
       $this->sandbox = false;
     }
@@ -580,7 +581,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     return($status);
   }
 
-  function post_process($params = []) {
+  function post_process($params = [], $engine = null) {
+    $this->setEngine($engine ? : $this->param('engine'));
     $params = apply_filters('sp_payment_post_process_filter', $params);
     if (parent::post_process($params)) {
       $this->update($this->engine->transaction, [
@@ -594,30 +596,30 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     return(false);
   }
 
-  function pre_process($params = []) {
-    $method = isset($_REQUEST['method']) ? strtolower(sanitize_text_field($_REQUEST['method'])) : null;
-    $fields = ['engine', self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, 'concept', 'method', self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, 'address', 'address2', self::EMAIL, 'country', 'state', 'zipcode', self::PAYMENTS, 'installments', self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, 'comment', 'city', self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, 'language'];
-    foreach ($fields as $field) if (isset($_REQUEST[$field]) && $_REQUEST[$field]) $params[$field] = sanitize_text_field($_REQUEST[$field]);
+  function pre_process($pre_params = []) {
+    $method = isset($pre_params[self::METHOD]) ? strtolower(sanitize_text_field($pre_params[self::METHOD])) : null;
+    $fields = ['concept', 'redirect_url', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
+    foreach ($fields as $field) if (isset($pre_params[$field]) && $pre_params[$field]) $params[$field] = sanitize_text_field($pre_params[$field]);
     
     $secrets = [ self::CARD_NUMBER, self::CARD_CVV ];
     foreach ($secrets as $field) if (isset($params[$field])) $this->secrets[$field] = $params[$field];
     if (isset($this->engine->password)) $this->secrets['engine.password'] = $this->engine->password;
 
-    if (!isset($params['language'])) {
+    if (!isset($params[self::LANGUAGE])) {
       $parts = explode('-', get_bloginfo('language'));
-      $params['language'] = $parts[0];
+      $params[self::LANGUAGE] = $parts[0];
     }
-    if (!isset($params['concept']) && isset($params['product'])) $params['concept'] = $params['product'];
-    if ($method) $params['method'] = $method;
-    if (!isset($_REQUEST[self::FULL_NAME]) && (isset($params[self::FIRST_NAME]) || isset($params[self::LAST_NAME]))) $params[self::FULL_NAME] = (isset($params[self::FIRST_NAME]) ? $params[self::FIRST_NAME] : '').' '.(isset($params[self::LAST_NAME]) ? $params[self::LAST_NAME] : '');
-    if (!isset($_REQUEST[self::CARD_OWNER]) && isset($_REQUEST[self::FULL_NAME])) $params[self::CARD_OWNER] = $params[self::FULL_NAME];
-    $params['payment_id'] = $this->payment($params);
+    if (!isset($params['concept']) && isset($params[self::PRODUCT])) $params['concept'] = $params[self::PRODUCT];
+    if ($method) $params[self::METHOD] = $method;
+    if (!isset($pre_params[self::FULL_NAME]) && (isset($params[self::FIRST_NAME]) || isset($params[self::LAST_NAME]))) $params[self::FULL_NAME] = (isset($params[self::FIRST_NAME]) ? $params[self::FIRST_NAME] : '').' '.(isset($params[self::LAST_NAME]) ? $params[self::LAST_NAME] : '');
+    if (!isset($pre_params[self::CARD_OWNER]) && isset($pre_params[self::FULL_NAME])) $params[self::CARD_OWNER] = $params[self::FULL_NAME];
+    $params['payment_id'] = $this->register($params);
     try {
       $params = apply_filters('sp_payment_pre_process_filter', $params);
       $process = parent::pre_process($params);
       $this->update($params['payment_id'], ['status' => self::TRANSACTION_PENDING, 'transaction_id' => $this->engine->transaction]);
     } catch (Exception $e) {
-      $this->update($params['payment_id'], ['status' => self::TRANSACTION_PENDING, 'transaction_id' => $this->engine->transaction]);
+      $this->update($params['payment_id'], ['status' => self::TRANSACTION_FAILED, 'transaction_id' => $this->engine->transaction]);
       throw $e;
     }
     if ($this->param('user_create_step') == 'pre' && !get_current_user_id()) $this->create_user($params);
@@ -644,7 +646,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     try {
       switch (strtolower(sanitize_text_field($_REQUEST[self::OP]))) {
           case self::OPERATION_SUCCESS:
-            $this->setEngine($engine);
             $rmop = false;
             $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
             if (!$url) {
@@ -655,13 +656,12 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
             if ($rmop) $url = remove_query_arg(self::OP, $url);
             try {
-              $this->post_process($_REQUEST);
+              $this->post_process($_REQUEST, $engine);
             } catch (Exception $e) {
-              $url = $this->payment_page();
               $status[self::OP] = self::OPERATION_ERROR;
               $status['status'] = $e->getCode();
               $status['message'] = $e->getMessage();
-              $url .= (strpos($url, '?') ? '&' : '?').http_build_query($status);
+              $url = $this->error(isset($status) ? $status : $_REQUEST, (isset($status['status']) ? $status['status']  : null), (isset($status['message']) ? $status['message'] : null));
               break;
             } 
             break;
@@ -669,7 +669,16 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           case 'payment':
           case 'redirect':
             try {
-              $this->setEngine($engine);
+              $url = $this->payment($_REQUEST, $engine);
+              if ($url === true) die;
+              //$url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
+              if (!$url) {
+                $url = $this->payment_page();
+                $rmop = true;
+              }
+              if (!$url) $url = get_bloginfo('url');
+              if (isset($rmop) && $rmop) $url = remove_query_arg(self::OP, $url);
+              /*$this->setEngine($engine);
               if ($process = $this->pre_process($_REQUEST)) {
                 $process = $this->process($process);
                 if ($process === true) die;
@@ -681,23 +690,15 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
                 }
                 if (!$url) $url = get_bloginfo('url');
                 if (isset($rmop) && $rmop) $url = remove_query_arg(self::OP, $url);
-              }
+              }*/
               break;
             } catch (Exception $e) {
-              $this->update($this->payment_id, [
-                'status' => self::TRANSACTION_FAILED,
-                'error_code' => $e->getCode(),
-                'error_description' => $e->getMessage(),
-              ]);
+              $status['payment_id'] = $this->payment_id;
               $status['status'] = $e->getCode();
               $status['message'] = $e->getMessage();
             }
           case self::OPERATION_ERROR:
-            // TODO: process error message - record status to transaction in db
-            $url = $this->payment_page();
-            if (!$url) $url = get_bloginfo('url');
-            $url .= (strpos($url, '?') ? '&' : '?').http_build_query(isset($status) ? $status :$_REQUEST);
-            $url = remove_query_arg(self::OP, $url);
+            $url = $this->error(isset($status) ? $status : $_REQUEST, (isset($status['status']) ? $status['status']  : null), (isset($status['message']) ? $status['message'] : null));
             break;
           case self::OPERATION_STATUS:
             $this->setEngine($engine);
@@ -705,9 +706,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             die; break;
             break;
           case self::OPERATION_CANCEL:
-            $url = $this->payment_page();
-            $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
-            $url = remove_query_arg(self::OP, $url);
+            $url = $this->cancel($_REQUEST);
             break;
           case self::OPERATION_ZAPIER:
             $this->zapier();
@@ -734,6 +733,47 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     } 
     if ($url) { echo '<html><head><script type="text/javascript"> parent.location.replace("'.$url.'"); </script></head><body></body</html>'; die(); }
   }
+
+  function payment($params = [], $engine = null) {
+    $return = false;
+    $engine = $engine ? : $this->param('engine');
+    $this->setEngine($engine);
+    if ($process = $this->pre_process($params)) {
+      $process = $this->process($process);
+      if ($process === true) return(true);
+      if (!$process) return(false);
+      $return = is_array($process) ? $this->post_process($process, $engine) : $process;
+    }
+    return($return);
+  }
+
+  function error($params = [], $code = null, $description = null) {
+    $url = $this->payment_page();
+    if (!$url) $url = get_bloginfo('url');
+    $url .= (strpos($url, '?') ? '&' : '?').http_build_query($params);
+    $url = remove_query_arg(self::OP, $url);
+    $payment_id = isset($params['payment_id']) ? $params['payment_id']: null;
+    $data = [
+      'status' => self::TRANSACTION_FAILED
+    ];
+    if ($code) $data['error_code'] = $code;
+    if ($code) $data['error_description'] = $description;
+    if ($this->engine->transaction) $data['transaction_id'] = $this->engine->transaction;
+    $this->update($payment_id ? $payment_id : $this->engine->transaction, $data, $payment_id > 0);
+    return($url);
+  }
+
+  function cancel($params = []) {
+    $url = $this->payment_page();
+    $url .= (strpos($url, '?') ? '&' : '?').http_build_query($params);
+    $url = remove_query_arg(self::OP, $url);
+    $payment_id = isset($params['payment_id']) ? $params['payment_id']: null;
+    $this->update($payment_id ? : $this->engine->transaction, [
+        'status' => self::TRANSACTION_CANCEL
+    ], !$payment_id);
+    return($url);
+  }
+
   function create_user($params) {
     $email = isset($params[self::EMAIL]) ? $params[self::EMAIL] : false;
     if (!$email) return(false);
@@ -812,6 +852,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             'method' => null,
             'form' => self::param('form_type'),
             'template' => null,
+            'installments' => 1,
             'amount_field' => self::param('amount_field'),
             'product_field' => null,
       ), $atts ) );
@@ -857,7 +898,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       }
   }
 
-  protected function payment($params) {
+  protected function register($params) {
     global $wpdb;
     $user_id = get_current_user_id();
     $result = $wpdb->insert($wpdb->prefix.self::$table_name, [
@@ -953,20 +994,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.4.4File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.4.5File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.4.4filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.4.5filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.4.4File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.4.5File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',
@@ -1053,3 +1094,5 @@ require_once('db/simple-payment-database.php');
 
 global $SPWP;
 $SPWP = SimplePaymentPlugin::instance();
+
+require_once('addons/woocommerce/woo-simple-payment.php');

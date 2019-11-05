@@ -80,3 +80,44 @@ Content-Type: application/x-www-form-urlencoded
 < content-length: 1751
 < 
 * Connection #0 to host licensing.yalla-ya.com left intact
+*   Trying 216.58.213.19:443...
+* TCP_NODELAY set
+* Connected to licensing.yalla-ya.com (216.58.213.19) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* Cipher selection: ALL:!EXPORT:!EXPORT40:!EXPORT56:!aNULL:!LOW:!RC4:@STRENGTH
+* successfully set certificate verify locations:
+*   CAfile: /Applications/MAMP/Library/OpenSSL/cert.pem
+  CApath: none
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES128-GCM-SHA256
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Oct  8 11:40:31 2019 GMT
+*  expire date: Jan  6 11:40:31 2020 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fdab28a7000)
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 55
+Content-Type: application/x-www-form-urlencoded
+
+* Connection state changed (MAX_CONCURRENT_STREAMS == 100)!
+* We are completely uploaded and fine
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"6c2-PloAqUqJUsS15BxGEKh2y7ogEUc"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 8f8e4f8403b921df456fd8019f61300a;o=1
+< date: Tue, 05 Nov 2019 09:03:31 GMT
+< server: Google Frontend
+< content-length: 1730
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
