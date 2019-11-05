@@ -24,6 +24,7 @@ class Engine {
     self::$params = $params;
     $this->handler = $handler;
     $this->sandbox = $sandbox;
+    $this->password = $this->param('password');
   }
 
   protected function param($key) {

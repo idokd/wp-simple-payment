@@ -11,7 +11,6 @@ $installments = $SPWP->param('installments_default');
 // TODO: valdate 3 digits (or 4 in american express) cvv and further credit card format
 // TODO: Consider adding credit card type
 $amount = number_format((float) $amount, 2);
-
 $target = isset($target) ? $target : $SPWP->param('target');
 $target = $target ? ' target="'.$target.'"' : '';
 ?>
