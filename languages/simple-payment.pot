@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Simple Payment plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 1.4.8\n"
+"Project-Id-Version: Simple Payment 1.4.9\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2019-11-05T19:57:07+00:00\n"
+"POT-Creation-Date: 2019-11-06T08:10:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: simple-payment\n"
@@ -17,8 +17,8 @@ msgstr ""
 #. Plugin Name of the plugin
 #: addons/woocommerce/woo-simple-payment.php:38
 #: addons/woocommerce/woo-simple-payment.php:83
-#: simple-payment-plugin.php:244
 #: simple-payment-plugin.php:245
+#: simple-payment-plugin.php:246
 msgid "Simple Payment"
 msgstr ""
 
@@ -75,7 +75,7 @@ msgid "Please remit payment to Store Name upon pickup or delivery."
 msgstr ""
 
 #: addons/woocommerce/woo-simple-payment.php:94
-#: simple-payment-plugin.php:294
+#: simple-payment-plugin.php:295
 msgid "Instructions"
 msgstr ""
 
@@ -98,7 +98,8 @@ msgid "If none selected it will use Simple Payment default."
 msgstr ""
 
 #: addons/woocommerce/woo-simple-payment.php:110
-#: templates/form-bootstrap-basic.php:85
+#: templates/form-bootstrap-basic-id.php:73
+#: templates/form-bootstrap-basic.php:73
 #: templates/form-bootstrap.php:202
 #: templates/form-donation.php:214
 #: templates/form-experimental.php:202
@@ -205,8 +206,8 @@ msgid "Status"
 msgstr ""
 
 #: admin/transaction-list-table.php:192
-#: simple-payment-plugin.php:252
 #: simple-payment-plugin.php:253
+#: simple-payment-plugin.php:254
 msgid "Payments"
 msgstr ""
 
@@ -415,7 +416,7 @@ msgid "Setup your Simple Payment to accept iCount Payments"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:289
+#: simple-payment-plugin.php:290
 #: templates/form-bootstrap.php:152
 #: templates/form-donation.php:164
 #: templates/form-experimental.php:152
@@ -424,12 +425,12 @@ msgid "PayPal"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:290
+#: simple-payment-plugin.php:291
 msgid "Cardcom"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:291
+#: simple-payment-plugin.php:292
 msgid "iCount"
 msgstr ""
 
@@ -450,8 +451,8 @@ msgid "Currency"
 msgstr ""
 
 #: settings.php:79
-#: simple-payment-plugin.php:204
-#: simple-payment-plugin.php:237
+#: simple-payment-plugin.php:205
+#: simple-payment-plugin.php:238
 msgid "Payment Page"
 msgstr ""
 
@@ -731,59 +732,60 @@ msgstr ""
 msgid "Email Document to Client"
 msgstr ""
 
-#: simple-payment-plugin.php:263
+#: simple-payment-plugin.php:264
 msgid "Transaction Details"
 msgstr ""
 
-#: simple-payment-plugin.php:286
+#: simple-payment-plugin.php:287
 msgid "Simple Payment Settings"
 msgstr ""
 
-#: simple-payment-plugin.php:288
+#: simple-payment-plugin.php:289
 msgid "General"
 msgstr ""
 
-#: simple-payment-plugin.php:292
+#: simple-payment-plugin.php:293
 msgid "License"
 msgstr ""
 
-#: simple-payment-plugin.php:293
+#: simple-payment-plugin.php:294
 msgid "Shortcode"
 msgstr ""
 
-#: simple-payment-plugin.php:324
+#: simple-payment-plugin.php:325
 msgid "License Key"
 msgstr ""
 
-#: simple-payment-plugin.php:403
+#: simple-payment-plugin.php:404
 msgid "License key is required"
 msgstr ""
 
-#: simple-payment-plugin.php:426
+#: simple-payment-plugin.php:427
 msgid "License is not valid on the current domain"
 msgstr ""
 
-#: simple-payment-plugin.php:434
+#: simple-payment-plugin.php:435
 msgid "License has not been activated"
 msgstr ""
 
-#: simple-payment-plugin.php:439
+#: simple-payment-plugin.php:440
 msgid "License key was not found"
 msgstr ""
 
-#: simple-payment-plugin.php:443
+#: simple-payment-plugin.php:444
 msgid "Unhandled error:"
 msgstr ""
 
-#: simple-payment-plugin.php:511
+#: simple-payment-plugin.php:512
 msgid "Auto"
 msgstr ""
 
-#: simple-payment-plugin.php:802
+#: simple-payment-plugin.php:803
 msgid "API KEY Invalid"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:27
+#: templates/form-bootstrap-basic-id.php:15
+#: templates/form-bootstrap-basic.php:15
 #: templates/form-bootstrap.php:139
 #: templates/form-donation.php:151
 #: templates/form-experimental.php:139
@@ -791,7 +793,8 @@ msgstr ""
 msgid "Payment"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:31
+#: templates/form-bootstrap-basic-id.php:19
+#: templates/form-bootstrap-basic.php:19
 #: templates/form-bootstrap.php:144
 #: templates/form-donation.php:156
 #: templates/form-experimental.php:144
@@ -799,7 +802,8 @@ msgstr ""
 msgid "Credit card"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:35
+#: templates/form-bootstrap-basic-id.php:23
+#: templates/form-bootstrap-basic.php:23
 #: templates/form-bootstrap.php:148
 #: templates/form-donation.php:160
 #: templates/form-experimental.php:148
@@ -807,7 +811,8 @@ msgstr ""
 msgid "Debit card"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:40
+#: templates/form-bootstrap-basic-id.php:28
+#: templates/form-bootstrap-basic.php:28
 #: templates/form-bootstrap.php:157
 #: templates/form-donation.php:169
 #: templates/form-experimental.php:157
@@ -816,7 +821,8 @@ msgstr ""
 msgid "Name on card"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:42
+#: templates/form-bootstrap-basic-id.php:30
+#: templates/form-bootstrap-basic.php:30
 #: templates/form-bootstrap.php:159
 #: templates/form-donation.php:171
 #: templates/form-experimental.php:159
@@ -825,7 +831,8 @@ msgstr ""
 msgid "Full name as displayed on card"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:44
+#: templates/form-bootstrap-basic-id.php:32
+#: templates/form-bootstrap-basic.php:32
 #: templates/form-bootstrap.php:161
 #: templates/form-donation.php:173
 #: templates/form-experimental.php:161
@@ -834,7 +841,8 @@ msgstr ""
 msgid "Name on card is required."
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:48
+#: templates/form-bootstrap-basic-id.php:36
+#: templates/form-bootstrap-basic.php:36
 #: templates/form-bootstrap.php:165
 #: templates/form-donation.php:177
 #: templates/form-experimental.php:165
@@ -843,7 +851,8 @@ msgstr ""
 msgid "Credit card number"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:51
+#: templates/form-bootstrap-basic-id.php:39
+#: templates/form-bootstrap-basic.php:39
 #: templates/form-bootstrap.php:168
 #: templates/form-donation.php:180
 #: templates/form-experimental.php:168
@@ -852,7 +861,8 @@ msgstr ""
 msgid "Credit card number is required."
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:57
+#: templates/form-bootstrap-basic-id.php:45
+#: templates/form-bootstrap-basic.php:45
 #: templates/form-bootstrap.php:174
 #: templates/form-donation.php:186
 #: templates/form-experimental.php:174
@@ -861,9 +871,12 @@ msgstr ""
 msgid "Expiration"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:64
-#: templates/form-bootstrap-basic.php:73
-#: templates/form-bootstrap-basic.php:80
+#: templates/form-bootstrap-basic-id.php:52
+#: templates/form-bootstrap-basic-id.php:61
+#: templates/form-bootstrap-basic-id.php:68
+#: templates/form-bootstrap-basic.php:52
+#: templates/form-bootstrap-basic.php:61
+#: templates/form-bootstrap-basic.php:68
 #: templates/form-bootstrap.php:181
 #: templates/form-bootstrap.php:190
 #: templates/form-bootstrap.php:197
@@ -879,7 +892,8 @@ msgstr ""
 msgid "Required."
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:77
+#: templates/form-bootstrap-basic-id.php:65
+#: templates/form-bootstrap-basic.php:65
 #: templates/form-bootstrap.php:194
 #: templates/form-donation.php:206
 #: templates/form-experimental.php:194
@@ -888,7 +902,8 @@ msgstr ""
 msgid "CVV"
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:90
+#: templates/form-bootstrap-basic-id.php:78
+#: templates/form-bootstrap-basic.php:78
 #: templates/form-bootstrap.php:207
 #: templates/form-donation.php:219
 #: templates/form-experimental.php:208
@@ -896,7 +911,20 @@ msgstr ""
 msgid "Number of Installments is required."
 msgstr ""
 
-#: templates/form-bootstrap-basic.php:95
+#: templates/form-bootstrap-basic-id.php:85
+msgid "Card Owner ID Number"
+msgstr ""
+
+#: templates/form-bootstrap-basic-id.php:87
+msgid "Card owner ID (official ID)"
+msgstr ""
+
+#: templates/form-bootstrap-basic-id.php:89
+msgid "Card owner ID number required."
+msgstr ""
+
+#: templates/form-bootstrap-basic-id.php:93
+#: templates/form-bootstrap-basic.php:83
 #: templates/form-bootstrap.php:212
 #: templates/form-experimental.php:213
 #: templates/form-legacy.php:82

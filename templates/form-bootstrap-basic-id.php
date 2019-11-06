@@ -80,6 +80,16 @@ wp_enqueue_script( 'simple-payment-checkout-js', plugin_dir_url( __FILE__ ).'ass
         <?php } ?>
       </div>
     </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="cc-name"><?php _e('Card Owner ID Number', 'simple-payment'); ?></label>
+        <input type="text" class="form-control" id="cc-owner-id" name="<?php echo $SPWP::CARD_OWNER_ID; ?>" placeholder="" required="" maxlength="9">
+        <small class="text-muted"><?php _e('Card owner ID (official ID)', 'simple-payment'); ?></small>
+        <div class="invalid-feedback">
+          <?php _e('Card owner ID number required.', 'simple-payment'); ?>
+        </div>
+      </div>
+    </div>
     <button class="btn btn-primary btn-lg btn-block" type="submit"><?php echo sprintf(__('Process Payment [%s]', 'simple-payment'), $amount); ?></button>
   </form>
 </div>
