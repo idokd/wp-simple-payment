@@ -129,7 +129,6 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
           '_wpnonce' => $archive_nonce
       ]), __('Archive', 'simple-payment') ),
       'details' => sprintf( '<a href="?page=simple-payments-details&id=%s&transaction_id=%s&engine=%s">%s</a>', $item['id'], $item['transaction_id'], $item['engine'], __('Details', 'simple-payment') )
-
     ];
     return $title.$this->row_actions( $actions );
   }

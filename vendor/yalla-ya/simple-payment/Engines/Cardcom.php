@@ -168,10 +168,10 @@ class Cardcom extends Engine {
     if (isset($params['payments']) && $params['payments']) {
       if ($params['payments'] == 'installments') {
         $payments = $this->param('max_payments');
-        if ($payments != '') $post['MaxNumOfPayments'] = $payments ? : isset($params['installments']) ? $params['installments'] : 12;
+        $post['MaxNumOfPayments'] = $payments ? : (isset($params['installments']) ? $params['installments'] : 12);
         $payments = $this->param('min_payments');
         if ($payments != '') $post['MinNumOfPayments'] = $payments;
-        if ($payments != '') $post['DefaultNumOfPayments'] = isset($params['installments']) && $params['installments'] ? $params['installments'] : $this->param('default_payments');
+        $post['DefaultNumOfPayments'] = isset($params['installments']) && $params['installments'] ? $params['installments'] : $this->param('default_payments');
       }
     }
 
