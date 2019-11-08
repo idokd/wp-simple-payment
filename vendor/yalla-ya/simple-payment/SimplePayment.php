@@ -50,7 +50,9 @@ class SimplePayment {
       if (!isset($_SERVER['HTTPS']) || !$_SERVER['HTTPS']) throw new Exception('HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500);
     }
     $class = __NAMESPACE__ . '\\Engines\\' . $engine;
-    $this->engine = new $class(self::param(strtolower($engine)), $this, $this->sandbox);
+    $settings = self::param(strtolower($engine));
+    foreach (self::$params as $key => $value) if (!is_array($value)) $settings[$key] = $value; 
+    $this->engine = new $class($settings, $this, $this->sandbox);
   }
 
   public static function param($key = null, $default = false) {
@@ -60,7 +62,7 @@ class SimplePayment {
     $value = self::$params;
     if (!isset($value[$keys[0]])) return($default);
     foreach ($keys as $k) {
-      $value = isset($value[$k]) ? $value[$k] : null;
+      $value = isset($value[$k]) ? $value[$k] : $default;
     }
     return($value);
   }
