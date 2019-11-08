@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.5.2
+ * Version: 1.5.3
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -575,10 +575,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $params = apply_filters('sp_payment_status_filter', $params);
     $data = [];
     if (isset($params['payment_id'])) $data = $this->fetch($params['payment_id']);
-    $status = parent::status(array_merge($data, $params));
-    if ($this->engine->confirmation_code) {
+    $code = parent::status(array_merge($data, $params));
+    if ($code) {
         $this->update($this->engine->transaction, [
-          'confirmation_code' => $this->engine->confirmation_code,
+          'confirmation_code' => $code,
         ], true);
     }
     do_action('sp_payment_status', $params);
@@ -602,8 +602,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   function pre_process($pre_params = []) {
     $method = isset($pre_params[self::METHOD]) ? strtolower(sanitize_text_field($pre_params[self::METHOD])) : null;
-    $fields = ['concept', 'redirect_url', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
-    foreach ($fields as $field) if (isset($pre_params[$field]) && $pre_params[$field]) $params[$field] = sanitize_text_field($pre_params[$field]);
+    $fields = ['concept', 'redirect_url', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
+    foreach ($fields as $field) if (isset($pre_params[$field]) && $pre_params[$field]) $params[$field] = $field == 'redirect_url' ? $pre_params[$field] : sanitize_text_field($pre_params[$field]);
     
     $params[self::AMOUNT] = self::tofloat($params[self::AMOUNT]);
     $secrets = [ self::CARD_NUMBER, self::CARD_CVV ];
@@ -694,8 +694,16 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             $url = $this->error(isset($status) ? $status : $_REQUEST, (isset($status['status']) ? $status['status']  : null), (isset($status['message']) ? $status['message'] : null));
             break;
           case self::OPERATION_STATUS:
-            $this->setEngine($engine);
-            $this->status($_REQUEST); 
+            try {
+              $this->setEngine($engine);
+              $this->status($_REQUEST); 
+            } catch (Exception $e) {
+              $status['transaction_id'] = $this->engine->transaction;
+              $status['payment_id'] = $this->payment_id;
+              $status['status'] = $e->getCode();
+              $status['message'] = $e->getMessage();
+              $url = $this->error(isset($status) ? $status : $_REQUEST, (isset($status['status']) ? $status['status']  : null), (isset($status['message']) ? $status['message'] : null));
+            }
             die; break;
             break;
           case self::OPERATION_CANCEL:
@@ -1019,20 +1027,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.5.2File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.5.3File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.5.2filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.5.3filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.5.2File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.5.3File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',

@@ -73,21 +73,23 @@ class Cardcom extends Engine {
     parse_str($status, $status);
     //$this->record($params, $status);
     $this->transaction = $params['lowprofilecode'];
-    $this->confirmation_code = ''; // TODO: ??
+    $this->confirmation_code = $status['TokenApprovalNumber'];
     $response = $status;
     $this->save([
       'transaction_id' => $this->transaction,
       'url' => $this->api['indicator_request'],
-      'status' => isset($response['ResponseCode']) ? $response['ResponseCode'] : $response['response_code'],
-      'description' => isset($response['Description']) ? $response['Description'] : null,
+      'status' => isset($response['OperationResponse']) ? $response['OperationResponse'] : $response['DealResponse'],
+      'description' => isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'],
       'request' => json_encode($post),
       'response' => json_encode($response)
     ]);
-
+    if (!isset($response['OperationResponse']) || $response['OperationResponse'] != 0) {
+      throw new Exception(isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'], isset($response['OperationResponse']) ? $response['OperationResponse'] : $response['DealResponse']);
+    }
     if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
       if ($this->param('recurr_at') == 'status' && $this->param('reurring') == 'provider') $this->recur_by_provider($params);
     }
-    return($status);
+    return($this->confirmation_code);
   }
 
   public function post_process($params) {
