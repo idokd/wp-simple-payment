@@ -334,7 +334,10 @@ class Cardcom extends Engine {
 
     $post['RecurringPayments.FlexItem.IsPriceIncludeVat'] = 'true'; // Must be true - API requirement
     // TODO: assure to verifiy first_name / lasstname or use full name
-    $post['Account.CompanyName'] = isset($params['tax_id']) && $params['tax_id'] ? trim($params['tax_id']) : (isset($params['full_name']) && trim($params['full_name']) ? $params['full_name'] : $params['first_name'].' '.$params['last_name']);
+    if (isset($params['full_name']) && trim($params['full_name'])) $post['Account.CompanyName'] = trim($params['full_name']);
+    if (!isset($post['Account.CompanyName']) && isset($params['first_name']) && trim($params['first_name'])) $post['Account.CompanyName'] = trim($params['first_name'].(isset($params['last_name']) ? ' '.$params['last_name'] : ''));
+    if (!isset($post['Account.CompanyName']) && isset($params['last_name']) && trim($params['last_name'])) $post['Account.CompanyName'] = trim($params['last_name']);
+    if (isset($params['tax_id']) && trim($params['tax_id'])) $post['Account.CompanyName'] = trim($params['tax_id']);
     // Not in use:
     //  Account.AccountId	, 
     //  Account.DontCheckForDuplicate	RecurringPayments.RecurringId
