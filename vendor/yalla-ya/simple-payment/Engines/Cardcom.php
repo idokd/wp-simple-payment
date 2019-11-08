@@ -318,6 +318,7 @@ class Cardcom extends Engine {
       else throw new Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
     }
 
+    $post['codepage'] = 65001; // Codepage fixed to enable hebrew
     // month from now 28 days
     $date = new DateTime();
     $date->add(new DateInterval('P28D')); // P1D means a period of 28 day
