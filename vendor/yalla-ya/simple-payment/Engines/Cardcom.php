@@ -348,7 +348,6 @@ class Cardcom extends Engine {
       'request' => json_encode($post),
       'response' => json_encode($response)
     ]);
-    print_r($post);die;
     return($status); // OperationResponseText, OperationResponse
   }
 
