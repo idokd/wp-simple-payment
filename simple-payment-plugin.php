@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.5.5
+ * Version: 1.5.6
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -616,8 +616,15 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     }
     if (!isset($params['concept']) && isset($params[self::PRODUCT])) $params['concept'] = $params[self::PRODUCT];
     if ($method) $params[self::METHOD] = $method;
-    if (!isset($pre_params[self::FULL_NAME]) && (isset($params[self::FIRST_NAME]) || isset($params[self::LAST_NAME]))) $params[self::FULL_NAME] = (isset($params[self::FIRST_NAME]) ? $params[self::FIRST_NAME] : '').' '.(isset($params[self::LAST_NAME]) ? $params[self::LAST_NAME] : '');
-    if (!isset($pre_params[self::CARD_OWNER]) && isset($pre_params[self::FULL_NAME])) $params[self::CARD_OWNER] = $params[self::FULL_NAME];
+    if (isset($params[self::FULL_NAME]) && trim($params[self::FULL_NAME])) {
+      $names = explode(' ', $params[self::FULL_NAME]);
+      $first_name = $names[0];
+      $last_name = substr($params[self::FULL_NAME], strlen($first_name));
+      if (!isset($params[self::FIRST_NAME]) || !trim($params[self::FIRST_NAME])) $params[self::FIRST_NAME] = $first_name;
+      if (!isset($params[self::LAST_NAME]) || !trim($params[self::LAST_NAME])) $params[self::LAST_NAME] = $last_name;
+    }
+    if (!isset($params[self::FULL_NAME]) && (isset($params[self::FIRST_NAME]) || isset($params[self::LAST_NAME]))) $params[self::FULL_NAME] = trim((isset($params[self::FIRST_NAME]) ? $params[self::FIRST_NAME] : '').' '.(isset($params[self::LAST_NAME]) ? $params[self::LAST_NAME] : ''));
+    if (!isset($params[self::CARD_OWNER]) && isset($params[self::FULL_NAME])) $params[self::CARD_OWNER] = $params[self::FULL_NAME];
     $params['payment_id'] = $this->register($params);
     $this->payment_id = $params['payment_id'];
     try {
@@ -1027,20 +1034,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.5.5File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.5.6File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.5.5filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.5.6filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.5.5File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.5.6File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',
