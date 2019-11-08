@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Simple Payment plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 1.4.9\n"
+"Project-Id-Version: Simple Payment 1.5.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2019-11-06T08:10:39+00:00\n"
+"POT-Creation-Date: 2019-11-08T00:02:35+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: simple-payment\n"
@@ -17,8 +17,8 @@ msgstr ""
 #. Plugin Name of the plugin
 #: addons/woocommerce/woo-simple-payment.php:38
 #: addons/woocommerce/woo-simple-payment.php:83
-#: simple-payment-plugin.php:245
-#: simple-payment-plugin.php:246
+#: simple-payment-plugin.php:248
+#: simple-payment-plugin.php:249
 msgid "Simple Payment"
 msgstr ""
 
@@ -75,7 +75,7 @@ msgid "Please remit payment to Store Name upon pickup or delivery."
 msgstr ""
 
 #: addons/woocommerce/woo-simple-payment.php:94
-#: simple-payment-plugin.php:295
+#: simple-payment-plugin.php:298
 msgid "Instructions"
 msgstr ""
 
@@ -206,8 +206,8 @@ msgid "Status"
 msgstr ""
 
 #: admin/transaction-list-table.php:192
-#: simple-payment-plugin.php:253
-#: simple-payment-plugin.php:254
+#: simple-payment-plugin.php:256
+#: simple-payment-plugin.php:257
 msgid "Payments"
 msgstr ""
 
@@ -290,7 +290,7 @@ msgid "Suspended Deal"
 msgstr ""
 
 #: settings.php:6
-#: settings.php:331
+#: settings.php:319
 msgid "Invoice"
 msgstr ""
 
@@ -303,7 +303,7 @@ msgid "Order Confirmation"
 msgstr ""
 
 #: settings.php:6
-#: settings.php:331
+#: settings.php:319
 msgid "Receipt"
 msgstr ""
 
@@ -416,7 +416,7 @@ msgid "Setup your Simple Payment to accept iCount Payments"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:290
+#: simple-payment-plugin.php:293
 #: templates/form-bootstrap.php:152
 #: templates/form-donation.php:164
 #: templates/form-experimental.php:152
@@ -425,12 +425,12 @@ msgid "PayPal"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:291
+#: simple-payment-plugin.php:294
 msgid "Cardcom"
 msgstr ""
 
 #: settings.php:69
-#: simple-payment-plugin.php:292
+#: simple-payment-plugin.php:295
 msgid "iCount"
 msgstr ""
 
@@ -451,8 +451,8 @@ msgid "Currency"
 msgstr ""
 
 #: settings.php:79
-#: simple-payment-plugin.php:205
-#: simple-payment-plugin.php:238
+#: simple-payment-plugin.php:208
+#: simple-payment-plugin.php:241
 msgid "Payment Page"
 msgstr ""
 
@@ -517,7 +517,7 @@ msgid "Purge Transactions"
 msgstr ""
 
 #: settings.php:100
-#: settings.php:285
+#: settings.php:266
 msgid "Disabled"
 msgstr ""
 
@@ -534,7 +534,7 @@ msgid "Purge Period (days)"
 msgstr ""
 
 #: settings.php:105
-#: settings.php:255
+#: settings.php:236
 msgid "CSS"
 msgstr ""
 
@@ -559,17 +559,14 @@ msgid "Erase All Database & Settings"
 msgstr ""
 
 #: settings.php:116
-#: settings.php:236
 msgid "Min # of Payments"
 msgstr ""
 
 #: settings.php:122
-#: settings.php:242
 msgid "Max # of Payments"
 msgstr ""
 
 #: settings.php:128
-#: settings.php:248
 msgid "Default # of Payments"
 msgstr ""
 
@@ -594,7 +591,7 @@ msgid "Terminal ID"
 msgstr ""
 
 #: settings.php:153
-#: settings.php:315
+#: settings.php:303
 msgid "Username"
 msgstr ""
 
@@ -635,7 +632,7 @@ msgid "Invoice Processing"
 msgstr ""
 
 #: settings.php:213
-#: settings.php:329
+#: settings.php:317
 msgid "Document Type Upon Success"
 msgstr ""
 
@@ -651,136 +648,151 @@ msgstr ""
 msgid "Show Invoice Information"
 msgstr ""
 
-#: settings.php:261
+#: settings.php:242
 msgid "Prices Globally VAT Free"
 msgstr ""
 
-#: settings.php:266
+#: settings.php:247
 msgid "Email Invoice to Client"
 msgstr ""
 
-#: settings.php:271
+#: settings.php:252
 msgid "Site ID"
 msgstr ""
 
-#: settings.php:275
+#: settings.php:256
 msgid "Department ID"
 msgstr ""
 
-#: settings.php:277
+#: settings.php:258
 msgid "Numeric ID"
 msgstr ""
 
-#: settings.php:282
-msgid "Enable Recurring Payments"
+#: settings.php:263
+msgid "Enable Recurring (Direct Debit) Payments"
 msgstr ""
 
-#: settings.php:285
+#: settings.php:266
 msgid "Provider"
 msgstr ""
 
+#: settings.php:270
+msgid "Process Recurring Upon"
+msgstr ""
+
+#: settings.php:273
+msgid "Post Process"
+msgstr ""
+
+#: settings.php:273
+msgid "Status Process"
+msgstr ""
+
+#: settings.php:277
+msgid "Direct Debit Terminal"
+msgstr ""
+
+#: settings.php:282
+msgid "Direct Debit Operation"
+msgstr ""
+
 #: settings.php:289
-#: settings.php:301
 msgid "Repeated Recurring"
 msgstr ""
 
 #: settings.php:294
-msgid "Recurring Operation"
-msgstr ""
-
-#: settings.php:306
 msgid "Recurring Interval ID"
 msgstr ""
 
-#: settings.php:311
+#: settings.php:299
 msgid "Business ID"
 msgstr ""
 
-#: settings.php:319
+#: settings.php:307
 msgid "Password"
 msgstr ""
 
-#: settings.php:324
+#: settings.php:312
 msgid "Use CC Storage"
 msgstr ""
 
-#: settings.php:331
+#: settings.php:319
 msgid "None"
 msgstr ""
 
-#: settings.php:331
+#: settings.php:319
 msgid "Invoice / Receipt"
 msgstr ""
 
-#: settings.php:331
+#: settings.php:319
 msgid "Deal"
 msgstr ""
 
-#: settings.php:331
+#: settings.php:319
 msgid "Offer"
 msgstr ""
 
-#: settings.php:331
+#: settings.php:319
 msgid "Order"
 msgstr ""
 
-#: settings.php:335
+#: settings.php:323
 msgid "Auto invoice on installments"
 msgstr ""
 
-#: settings.php:340
+#: settings.php:328
 msgid "Email Document to Client"
 msgstr ""
 
-#: simple-payment-plugin.php:264
+#: simple-payment-plugin.php:267
 msgid "Transaction Details"
 msgstr ""
 
-#: simple-payment-plugin.php:287
+#: simple-payment-plugin.php:290
 msgid "Simple Payment Settings"
 msgstr ""
 
-#: simple-payment-plugin.php:289
+#: simple-payment-plugin.php:292
 msgid "General"
 msgstr ""
 
-#: simple-payment-plugin.php:293
+#: simple-payment-plugin.php:296
 msgid "License"
 msgstr ""
 
-#: simple-payment-plugin.php:294
+#: simple-payment-plugin.php:297
 msgid "Shortcode"
 msgstr ""
 
-#: simple-payment-plugin.php:325
+#: simple-payment-plugin.php:328
 msgid "License Key"
 msgstr ""
 
-#: simple-payment-plugin.php:404
+#: simple-payment-plugin.php:407
 msgid "License key is required"
 msgstr ""
 
-#: simple-payment-plugin.php:427
+#: simple-payment-plugin.php:430
 msgid "License is not valid on the current domain"
 msgstr ""
 
-#: simple-payment-plugin.php:435
+#: simple-payment-plugin.php:438
 msgid "License has not been activated"
 msgstr ""
 
-#: simple-payment-plugin.php:440
+#: simple-payment-plugin.php:443
 msgid "License key was not found"
 msgstr ""
 
-#: simple-payment-plugin.php:444
+#: simple-payment-plugin.php:447
 msgid "Unhandled error:"
 msgstr ""
 
-#: simple-payment-plugin.php:512
+#: simple-payment-plugin.php:515
 msgid "Auto"
 msgstr ""
 
-#: simple-payment-plugin.php:803
+#: simple-payment-plugin.php:835
 msgid "API KEY Invalid"
 msgstr ""
 

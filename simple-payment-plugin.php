@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.5.0
+ * Version: 1.5.1
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -23,7 +23,7 @@ if (file_exists(SPWP_PLUGIN_DIR .'/vendor/leewillis77/WpListTableExportable/boot
 class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   const OP = 'op';
-  const TYPE_FORM = 'form'; const TYPE_BUTTON = 'button'; const TYPE_TEMPLATE = 'template'; 
+  const TYPE_FORM = 'form'; const TYPE_BUTTON = 'button'; const TYPE_TEMPLATE = 'template'; const TYPE_HIDDEN = 'hidden';
   
   const OPERATION_CSS = 'css';
   const OPERATION_PCSS = 'pcss';
@@ -34,7 +34,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public static $instance;
   protected $option_name = 'sp';
   protected $payment_page = null;
-  protected $payment_id = null;
+  public $payment_id = null;
   static protected $table_name = 'sp_transactions';
   static $engines = ['PayPal', 'Cardcom', 'iCount', 'Custom'];
   static $interactives = ['Cardcom'];
@@ -147,8 +147,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public function payment_page() {
       if ($this->payment_page) $this->callback = get_page_link($this->payment_page);
       else $this->callback = self::param('callback_url');
-      //if (!$this->callback) $this->callback = get_bloginfo('url');
       if (!$this->callback) $this->callback = $_SERVER["REQUEST_URI"];
+      if (!$this->callback) $this->callback = get_bloginfo('url');
       return($this->callback);
   }
 
@@ -174,12 +174,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         self::process_purge($archive_purge == 'purge' ? $period : $period * 2);
         break;
     }
+    do_action('sp_payment_cron');
   }
 
   protected static function process_archive($days) {
     global $wpdb;
     $sql = $wpdb->prepare('UPDATE '.$wpdb->prefix.self::$table_name.' SET `archived` = 1 WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY)', $days);
     $wpdb->query($sql);
+    do_action('sp_payment_process_archive', $days);
   }
 
   protected static function process_purge($days) {
@@ -190,6 +192,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $wpdb->query($sql);
     $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY)', $days);
     $wpdb->query($sql);
+    do_action('sp_payment_process_purge', $days);
   }
 
   function register_reading_setting() {
@@ -369,7 +372,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   public function validate_options($options) {
-    if (!$options) $options = isset($_REQUEST['sp']) ? $_REQUEST['sp'] : [];
+    if (!is_array($options)) $options = isset($_REQUEST['sp']) ? $_REQUEST['sp'] : [];
     if (is_array($options)) $options = $this->validate_single($options);
     else $options = sanitize_text_field($options);
     $options = array_merge(self::$params, $options);
@@ -599,7 +602,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   function pre_process($pre_params = []) {
     $method = isset($pre_params[self::METHOD]) ? strtolower(sanitize_text_field($pre_params[self::METHOD])) : null;
-    $fields = ['concept', 'redirect_url', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE, self::CURRENCY];
+    $fields = ['concept', 'redirect_url', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
     foreach ($fields as $field) if (isset($pre_params[$field]) && $pre_params[$field]) $params[$field] = sanitize_text_field($pre_params[$field]);
     
     $params[self::AMOUNT] = self::tofloat($params[self::AMOUNT]);
@@ -616,6 +619,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     if (!isset($pre_params[self::FULL_NAME]) && (isset($params[self::FIRST_NAME]) || isset($params[self::LAST_NAME]))) $params[self::FULL_NAME] = (isset($params[self::FIRST_NAME]) ? $params[self::FIRST_NAME] : '').' '.(isset($params[self::LAST_NAME]) ? $params[self::LAST_NAME] : '');
     if (!isset($pre_params[self::CARD_OWNER]) && isset($pre_params[self::FULL_NAME])) $params[self::CARD_OWNER] = $params[self::FULL_NAME];
     $params['payment_id'] = $this->register($params);
+    $this->payment_id = $params['payment_id'];
     try {
       $params = apply_filters('sp_payment_pre_process_filter', $params);
       $process = parent::pre_process($params);
@@ -645,20 +649,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     if (!isset($_REQUEST[self::OP])) return;
     $url = null;
     $engine = isset($_REQUEST['engine']) ? sanitize_text_field($_REQUEST['engine']) : self::param('engine');
+    $op = strtolower(sanitize_text_field($_REQUEST[self::OP]));
     try {
-      switch (strtolower(sanitize_text_field($_REQUEST[self::OP]))) {
+      switch ($op) {
           case self::OPERATION_SUCCESS:
             $rmop = false;
             $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
-            if (!$url) {
-              $url = $this->payment_page();
-              $rmop = true;
-            }
+            if (!$url) $url = $this->payment_page();
             if (!$url) $url = get_bloginfo('url');
             $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
-            if ($rmop) $url = remove_query_arg(self::OP, $url);
+            $url = remove_query_arg(self::OP, $url);
             try {
-              $this->post_process($_REQUEST, $engine);
+              if (isset($_REQUEST['payment_id']) && $_REQUEST['payment_id']) $params = array_merge($this->fetch($_REQUEST['payment_id']), $_REQUEST);
+              else $params = $_REQUEST;
+              $this->post_process($params, $engine);
             } catch (Exception $e) {
               $status[self::OP] = self::OPERATION_ERROR;
               $status['status'] = $e->getCode();
@@ -671,6 +675,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           case 'payment':
           case 'redirect':
             try {
+              //if (isset($_REQUEST['target']) && $_REQUEST['target'] && $_REQUEST['target'] != '_blank') $target = $_REQUEST['target'];
               $url = $this->payment($_REQUEST, $engine);
               if ($url === true) $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
               if (!$url) {
@@ -719,7 +724,33 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $status['message'] = $e->getMessage();
       $url .= (strpos($url, '?') ? '&' : '?').http_build_query($status);
     } 
-    if ($url) { echo '<html><head><script type="text/javascript"> parent.location.replace("'.$url.'"); </script></head><body></body</html>'; die(); }
+    if ($url) {
+      if ($op == 'purchase') $target = '';
+      else $target = isset($target) && $target ? $target : (isset($_REQUEST['target']) ? $_REQUEST['target'] : null);
+      $targets = explode(':', $target);
+      $target = $targets[0];
+      switch ($target) {
+          case '_self':
+          case '_blank':
+            wp_redirect($url); 
+            break;
+          case '_top':
+            echo '<html><head><script type="text/javascript"> top.location.replace("'.$url.'"); </script></head><body></body</html>'; 
+            break;
+          case '_parent':
+            echo '<html><head><script type="text/javascript"> parent.location.replace("'.$url.'"); </script></head><body></body</html>'; 
+            break;
+          case 'javascript':
+            $script = $targets[1];
+            echo '<html><head><script type="text/javascript"> '.$script.' </script></head><body></body</html>'; 
+            break;
+          default:
+            wp_redirect($url); 
+            echo '<html><head><script type="text/javascript"> location.replace("'.$url.'"); </script></head><body></body</html>'; 
+            break;
+      }
+      die(); 
+    }
   }
 
   function payment($params = [], $engine = null) {
@@ -730,6 +761,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $process = $this->process($process);
       if ($process === true) return(true);
       if (!$process) return(false);
+
       $return = is_array($process) ? $this->post_process($process, $engine) : $process;
     }
     return($return);
@@ -855,9 +887,11 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           'engine' => $engine ? $engine : self::param('engine'),
           'method' => $method,
           'target' => $target,
+          'type' => $type,
           'redirect_url' => $redirect_url,
           'installments' => $installments,
-          'currency' => $currency
+          'currency' => $currency ? $currency : null,
+          'callback' => $this->callback
       ];
       if ($enable_query) {
         if (isset($_REQUEST[self::FULL_NAME])) $params[self::FULL_NAME] = sanitize_text_field($_REQUEST[self::FULL_NAME]);
@@ -873,11 +907,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
                 esc_html( $title ? $title : 'Buy' ));
             break;
           default:
+          case self::TYPE_HIDDEN:
+              $form = 'hidden';
           case self::TYPE_FORM:
               $template = 'form-'.$form;
               $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
-              wp_enqueue_script( 'simple-payment-js', plugin_dir_url( __FILE__ ).'assets/js/simple-payment.js', [], $plugin['Version'], true );
           case self::TYPE_TEMPLATE:
+            wp_enqueue_script( 'simple-payment-js', plugin_dir_url( __FILE__ ).'assets/js/simple-payment.js', [], $plugin['Version'], true );
+            if ($params['target']) $params['callback'] .= (strpos($params['callback'], '?') ? '&' : '?').http_build_query(['target' => $params['target']]);
             if (self::param('css')) wp_enqueue_style( 'simple-payment-css', $this->callback.'?'.http_build_query([self::OP => self::OPERATION_CSS]), [], md5(self::param('css')), 'all' );
             foreach ($params as $key => $value) set_query_var($key, $value);
             ob_start();
@@ -889,23 +926,22 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   protected function register($params) {
     global $wpdb;
-    $user_id = get_current_user_id();
-    $result = $wpdb->insert($wpdb->prefix.self::$table_name, [
-        'engine' => $this->engine->name,
-        'currency' => isset($params[self::CURRENCY]) && $params[self::CURRENCY] ? $params[self::CURRENCY] : null,
-        'amount' => self::tofloat($params[self::AMOUNT]),
-        'concept' => $params['product'],
-        'payments' => isset($params[self::PAYMENTS]) ? $params[self::PAYMENTS] : null,
-        'parameters' => $this->sanitize_pci_dss(json_encode($params)),
-        'url' => $this->sanitize_pci_dss($_SERVER['HTTP_REFERER']),
-        'status' => self::TRANSACTION_NEW,
-        'sandbox' => $this->sandbox,
-        'user_id' => $user_id ? $user_id : null,
-        'ip_address' => $_SERVER['REMOTE_ADDR'],
-        'user_agent' => $_SERVER['HTTP_USER_AGENT']
-    ]);
-    $this->payment_id = $wpdb->insert_id;
-    return($result ? $wpdb->insert_id : false);
+    $values = [
+      'engine' => $this->engine->name,
+      'currency' => isset($params[self::CURRENCY]) && $params[self::CURRENCY] ? $params[self::CURRENCY] : $this->param('currency'),
+      'amount' => self::tofloat($params[self::AMOUNT]),
+      'concept' => $params['product'],
+      'payments' => isset($params[self::PAYMENTS]) ? $params[self::PAYMENTS] : null,
+      'parameters' => $this->sanitize_pci_dss(json_encode($params)),
+      'url' => $this->sanitize_pci_dss($_SERVER['HTTP_REFERER']),
+      'status' => self::TRANSACTION_NEW,
+      'sandbox' => $this->sandbox,
+      'user_id' => get_current_user_id() ? : null,
+      'ip_address' => $_SERVER['REMOTE_ADDR'],
+      'user_agent' => $_SERVER['HTTP_USER_AGENT']
+    ];
+    $result = $wpdb->insert($wpdb->prefix.self::$table_name, $values);
+    return($wpdb->insert_id ?  : false);
   }
 
   protected static function update($id, $params, $transaction_id = false) {
@@ -983,20 +1019,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
         array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.5.0File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.5.1File modification time.
       );
       wp_register_script(
         'simple-payment-gb-block-js',
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
         array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.5.0filemtime — Gets file modification time.
+        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.5.1filemtime — Gets file modification time.
         true 
       );
       wp_register_style(
         'simple-payment-gb-editor-css', 
         plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
         array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.5.0File modification time.
+        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.5.1File modification time.
       );
       wp_localize_script(
         'simple-payment-gb-block-js',
@@ -1034,6 +1070,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       self::update($id ? : $_REQUEST['transaction'], [
         'archived' => true
       ]);
+      do_action('sp_payment_archive', $id);
       //wp_redirect( wp_get_referer() );
     }
 

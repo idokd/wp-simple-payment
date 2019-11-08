@@ -105,14 +105,12 @@ class Engine {
 
     public function url($type, $params = null) {
       $url = $this->callback;
-      $addition = [
-        'transaction_id' => $this->transaction
-      ];
-      if ($params) {
-        if (isset($params['payment_id'])) $addition['payment_id'] = $params['payment_id'];
-        if (isset($params['redirect_url'])) $addition['redirect_url'] = $params['redirect_url'];
-      }
-      return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='.$this->name.($addition ? '&'.http_build_query($addition) : ''));
+      $qry = [];
+      if (strpos($url, 'transaction_id') === false) $qry['transaction_id'] = $this->transaction;
+      if (isset($params['payments']) && strpos($url, 'payments') === false) $qry['payments'] = $params['payments'];
+      if (isset($params['payment_id']) && strpos($url, 'payment_id') === false) $qry['payment_id'] = $params['payment_id'];
+      if (isset($params['redirect_url']) && strpos($url, 'redirect_url') === false) $qry['redirect_url'] = $params['redirect_url'];
+      return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='.$this->name.($qry ? '&'.http_build_query($qry) : ''));
     }
 
     protected function post($url, $vars) {

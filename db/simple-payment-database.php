@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '16';
+$sp_db_version = '22';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -29,18 +29,18 @@ function sp_install() {
     `engine` VARCHAR(50) DEFAULT NULL,
     `status` VARCHAR(50) DEFAULT NULL,
     `transaction_id` VARCHAR(50) DEFAULT NULL,
-    `url` VARCHAR(255) DEFAULT NULL,
+    `url` TEXT DEFAULT NULL,
     `payments` VARCHAR(255) DEFAULT NULL,
     `parameters` TEXT DEFAULT NULL,
-    `currency` VARCHAR(5) DEFAULT NULL,
+    `currency` VARCHAR(3) DEFAULT NULL,
     `amount` DECIMAL(10,2),
     `concept` VARCHAR(250) DEFAULT NULL,
     `user_id` INT DEFAULT NULL,
     `error_code` VARCHAR(255) DEFAULT NULL,
     `error_description` VARCHAR(255) DEFAULT NULL,
     `confirmation_code` VARCHAR(255) DEFAULT NULL,
-    `ip_address` VARCHAR(250) DEFAULT NULL,
-    `user_agent` VARCHAR(250) DEFAULT NULL,
+    `ip_address` VARCHAR(50) DEFAULT NULL,
+    `user_agent` TEXT DEFAULT NULL,
     `retries` TINYINT(1) NOT NULL DEFAULT 0,
     `sandbox` TINYINT(1) NOT NULL DEFAULT 0,
     `archived` TINYINT(1) NOT NULL DEFAULT 0,
@@ -50,7 +50,9 @@ function sp_install() {
       KEY `idx_engine` (`engine`),
       KEY `idx_transaction` (`engine`,`transaction_id`),
       KEY `idx_user` (`user_id`),
-      KEY `idx_archived` (`archived`)
+      KEY `idx_status` (`status`),
+      KEY `idx_archived` (`archived`),
+      KEY `idx_created` (`created`)
   ) $charset_collate;
 
   ALTER TABLE $table_name  AUTO_INCREMENT = 1000;";
@@ -72,7 +74,9 @@ function sp_install() {
     `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `idx_id` (`id`),
-      KEY `idx_transaction` (`transaction_id`)
+      KEY `idx_transaction` (`transaction_id`),
+      KEY `idx_created` (`created`)
+
   ) $charset_collate;";
 
   dbDelta( $sql );

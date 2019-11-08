@@ -231,26 +231,7 @@ $sp_settings = [
     'title' => __('Show Invoice Information', 'simple-payment'),
     'type' => 'check',
     'section' => 'cardcom_display'
-  ], // ShowInvoiceHead
-  'cardcom.min_payments' => [ // MinNumOfPayments
-    'title' => __('Min # of Payments', 'simple-payment'),
-    'type' => 'select',
-    'min' => 1, 'max' => 36,
-    'section' => 'cardcom_display'
   ],
-  'cardcom.max_payments' => [  // MaxNumOfPayments
-    'title' => __('Max # of Payments', 'simple-payment'),
-    'type' => 'select',
-    'min' => 1, 'max' => 36,
-    'section' => 'cardcom_display'
-  ],
-  'cardcom.default_payments' => [ // DefaultNumOfPayments
-    'title' => __('Default # of Payments', 'simple-payment'),
-    'type' => 'select',
-    'min' => 1, 'max' => 36,
-    'section' => 'cardcom_display'
-  ],
-
   'cardcom.css' => [ // ShowCardOwnerEmail, CardOwnerEmail, ReqCardOwnerEmail
     'title' => __('CSS', 'simple-payment'),
     'type' => 'textarea',
@@ -279,19 +260,26 @@ $sp_settings = [
 
 
   'cardcom.reurring' => [
-    'title' => __('Enable Recurring Payments', 'simple-payment'),
+    'title' => __('Enable Recurring (Direct Debit) Payments', 'simple-payment'),
     'section' => 'cardcom_recurring',
     'type' => 'select',
     'options' => [ 'disabled' => __('Disabled', 'simple-payment'), 'provider' => __('Provider', 'simple-payment')] // 'internal' => __('Internal', 'simple-payment')
   ],
 
+  'cardcom.recurr_at' => [
+    'title' => __('Process Recurring Upon', 'simple-payment'),
+    'section' => 'cardcom_recurring',
+    'type' => 'select',
+    'options' => [ 'post' => __('Post Process', 'simple-payment'), 'status' => __('Status Process', 'simple-payment')]
+  ],
+
   'cardcom.reurring_terminal' => [
-    'title' => __('Repeated Recurring', 'simple-payment'),
+    'title' => __('Direct Debit Terminal', 'simple-payment'),
     'section' => 'cardcom_recurring',
   ],
 
   'cardcom.reurring_operation' => [
-    'title' => __('Recurring Operation', 'simple-payment'),
+    'title' => __('Direct Debit Operation', 'simple-payment'),
     'section' => 'cardcom_recurring',
     'type' => 'select',
     'options' => $SPWP_CARCOM_RECURRING_OPERATIONS

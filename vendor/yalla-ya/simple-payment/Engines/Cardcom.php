@@ -16,6 +16,7 @@ class Cardcom extends Engine {
   public $interactive = true;
   protected $cancelType = 2;
   // CancelType (0 - no cancel, 1 - back button, 2 - cancel url)
+  protected $recurrAt = 'post'; // status
 
   public $api = [
     'version' => 10,
@@ -84,7 +85,7 @@ class Cardcom extends Engine {
     ]);
 
     if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
-      if ($this->param('reurring') == 'provider') $this->recur_by_provider($params);
+      if ($this->param('recurr_at') == 'status' && $this->param('reurring') == 'provider') $this->recur_by_provider($params);
     }
     return($status);
   }
@@ -101,6 +102,9 @@ class Cardcom extends Engine {
       'request' => json_encode($params),
       'response' => json_encode($response)
     ]);
+    if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
+      if ($this->param('recurr_at') == 'post' && $this->param('reurring') == 'provider') return($this->recur_by_provider($params));
+    }
     return($_REQUEST['ResponeCode'] == 0);
   }
 
@@ -150,10 +154,10 @@ class Cardcom extends Engine {
     if (isset($params['payment_id']) && $params['payment_id']) $post['ReturnValue'] = $params['payment_id'];
 
     $post['codepage'] = 65001; // Codepage fixed to enable hebrew
-    $currency = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param('currency');
-    if ($currency != '') {
+    $currency = isset($params[SimplePayment::CURRENCY]) && $params[SimplePayment::CURRENCY] ? $params[SimplePayment::CURRENCY] : $this->param('currency');
+    if ($currency) {
       if ($currency = self::CURRENCIES[$currency]) $post['CoinID'] = $currency;
-      else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
+      else throw new Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
     }
 
     $language = isset($params['language']) ? $params['language'] : $this->param('language');
@@ -173,7 +177,7 @@ class Cardcom extends Engine {
     $post['ErrorRedirectUrl'] = $this->url(SimplePayment::OPERATION_ERROR, $params);
     $post['IndicatorUrl'] = $this->url(SimplePayment::OPERATION_STATUS, $params);
     $post['CancelUrl'] = $this->url(SimplePayment::OPERATION_CANCEL, $params);
-    if ($this->param('css') != '') $post['CSSUrl'] = $this->callback.(strpos($this->callback, '?') ? '&' : '?').'op=css';
+    if ($this->param('css') != '') $post['CSSUrl'] = $this->callback.(strpos($this->callback, '?') !== false ? '&' : '?').'op=css';
 
     $post['CancelType'] = $this->cancelType;
 
@@ -236,7 +240,7 @@ class Cardcom extends Engine {
     parse_str($status, $status);
     $status['url'] = $this->param('method') == 'paypal' ? $status['PayPalUrl'] : $status['url'];
     //$this->record($post, $status);
-    $this->transaction = $status['LowProfileCode'];
+    $this->transaction = $this->transaction ? : $status['LowProfileCode'];
     $response = $status;
     $this->save([
       'transaction_id' => $this->transaction,
@@ -250,23 +254,23 @@ class Cardcom extends Engine {
     if (isset($status['ResponseCode']) && $status['ResponseCode'] != 0) {
       throw new Exception($status['Description'], $status['ResponseCode']);
     }
-    return($status);
+    return($response);
   }
 
   public function recur_by_provider($params) {
     $post = [];
-
+    
     if (!$this->sandbox) {
       $post['TerminalNumber'] = $this->param_part($params);
       $post['UserName'] = $this->param_part($params, 'username');
       $terminals = $this->param('terminal');
       $terminals = explode(';', $terminals);
-      if ($this->param('recurring_terminal')) $post['RecurringPayments.ChargeInTerminal'] = $this->param('recurring_terminal');
     } else {
       $post['TerminalNumber'] = $this->terminal;
       $post['UserName'] = $this->username;
     }
 
+    if ($this->param('recurring_terminal')) $post['RecurringPayments.ChargeInTerminal'] = $this->param('recurring_terminal');
     $post['Operation'] = $this->param('reurring_operation');
     $post['LowProfileDealGuid'] = isset($params['lowprofilecode']) ? $params['lowprofilecode'] : $params['transaction_id'];
     
@@ -306,10 +310,10 @@ class Cardcom extends Engine {
     $language = isset($params['language']) ? $params['language'] : $this->param('language');
     if ($language != '') $post['Account.IsDocumentLangEnglish'] = $language == 'he' ? 'false' : 'true';
 
-    $currency = isset($params['currency']) ? $params['currency'] : $this->param('currency');
+    $currency = isset($params['currency']) && $params['currency'] ? $params['currency'] : $this->param('currency');
     if ($currency != '') {
       if ($currency = self::CURRENCIES[$currency]) $post['RecurringPayments.FinalDebitCoinId'] = $currency;
-      else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
+      else throw new Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
     }
 
     // month from now 28 days
@@ -335,7 +339,6 @@ class Cardcom extends Engine {
     // BankInfo.Bank	 BankInfo.Branch	BankInfo.AccountNumber	 BankInfo.Description	
     $status = $this->post($this->api['recurring_request'], $post);
     parse_str($status, $status);
-    //$this->record($post, $status);
     $response = $status;
     $this->save([
       'transaction_id' => $this->transaction,
@@ -345,6 +348,7 @@ class Cardcom extends Engine {
       'request' => json_encode($post),
       'response' => json_encode($response)
     ]);
+    print_r($post);die;
     return($status); // OperationResponseText, OperationResponse
   }
 
@@ -361,10 +365,10 @@ class Cardcom extends Engine {
     }
     $post['TokenToCharge.SumToBill'] = $params['amount'];
 
-    $currency = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param('currency');
+    $currency = isset($params[SimplePayment::CURRENCY]) && $params[SimplePayment::CURRENCY] ? $params[SimplePayment::CURRENCY] : $this->param('currency');
     if ($currency != '') {
       if ($currency = self::CURRENCIES[$currency]) $post['CoinID'] = $currency;
-      else throw Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
+      else throw new Exception('CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500);
     }
 
     $post['TokenToCharge.CoinID'] = $currency;

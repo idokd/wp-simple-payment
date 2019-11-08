@@ -86,6 +86,7 @@ class SimplePayment {
   }
 
   function pre_process($params = []) {
+    // Return array of data, or thorw exception
     return($this->engine->pre_process($params));
   }
 
