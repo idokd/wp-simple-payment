@@ -333,9 +333,10 @@ class Cardcom extends Engine {
     if ($docType != '') $post['RecurringPayments.DocTypeToCreate'] = $docType;
 
     $post['RecurringPayments.FlexItem.IsPriceIncludeVat'] = 'true'; // Must be true - API requirement
-
+    // TODO: assure to verifiy first_name / lasstname or use full name
+    $post['Account.CompanyName'] = isset($params['tax_id']) && $params['tax_id'] ? $params['tax_id'] : $params['first_name'].' '.$params['last_name'];
     // Not in use:
-    //  Account.AccountId	, Account.CompanyName	
+    //  Account.AccountId	, 
     //  Account.DontCheckForDuplicate	RecurringPayments.RecurringId
     // Account.ForeignAccountNumber	, RecurringPayments.IsActive	
     // BankInfo.Bank	 BankInfo.Branch	BankInfo.AccountNumber	 BankInfo.Description	
