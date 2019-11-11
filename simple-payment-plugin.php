@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.6.4
+ * Version: 1.6.5
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -30,15 +30,17 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   const USERNAME = 'username';
   
-  public $version;
+  public static $version;
   public static $instance;
+
+  public static $table_name = 'sp_transactions';
+  public static $engines = ['PayPal', 'Cardcom', 'iCount', 'Custom'];
+  public static $interactives = ['Cardcom'];
+
+  public $payment_id = null;
+
   protected $option_name = 'sp';
   protected $payment_page = null;
-  public $payment_id = null;
-  static protected $table_name = 'sp_transactions';
-  static $engines = ['PayPal', 'Cardcom', 'iCount', 'Custom'];
-  static $interactives = ['Cardcom'];
-
   protected $secrets = [];
 
   protected $test_shortcodes = [
@@ -65,9 +67,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public function __construct($params = []) {
     $option = get_option('sp') ? : [];
     parent::__construct(array_merge(array_merge($this->defaults, $params), $option));
-    $this->license = get_option('sp_license');
+    self::$license = get_option('sp_license');
     $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
-    $this->version = $plugin['Version'];
+    self::$version = $plugin['Version'];
     $this->load();
   }
 
@@ -78,7 +80,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function setEngine($engine) {
     if ($this->engine && $this->engine->name == $engine) return;
-    if ($this->param('mode') == 'live' && $this->license) {
+    if ($this->param('mode') == 'live' && self::$license) {
       $this->sandbox = false;
     }
     parent::setEngine($engine);
@@ -91,7 +93,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
     add_filter( 'cron_schedules', [$this, 'cron_schedule'] );
 
-    add_action('sp_cron', [$this, 'cron']);
+    add_action('sp_cron', [get_class($this), 'cron']);
     if (!wp_next_scheduled('sp_cron')) wp_schedule_event(time(), 'sp_cron_schedule', 'sp_cron') ;
     
     add_action('sp_cron_purge', [$this, 'cron_purge']);
@@ -160,9 +162,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   function deactivate() {
     global $wp_rewrite;
     $timestamp = wp_next_scheduled('sp_cron'); 
-    wp_unschedule_event($timestamp, 'sp_cron'); 
+    if ($timestamp) wp_unschedule_event($timestamp, 'sp_cron'); 
     $timestamp = wp_next_scheduled('sp_cron_purge'); 
-    wp_unschedule_event($timestamp, 'sp_cron_purge'); 
+    if ($timestamp) wp_unschedule_event($timestamp, 'sp_cron_purge'); 
     $wp_rewrite->flush_rules();
   }
 
@@ -181,14 +183,15 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   public static function cron() {
-    $mins = self::param('pending_period');
+    $mins = self::param('verify_after');
     if ($mins) self::process_verify($mins);
+
+    $mins = self::param('pending_period');
     if ($mins) self::process_pending($mins);
 
-    
     do_action('sp_payment_cron');
   }
-
+  
   public static function cron_purge() {
     $archive_purge = self::param('auto_purge');
     $period = absint(self::param('purge_period'));
@@ -205,15 +208,15 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     do_action('sp_cron_purge');
   }
 
-  protected static function process_verify($mins) {
+  public static function process_verify($mins) {
     global $wpdb;
-    $mins = 30;
-    $sql = $wpdb->prepare("SELECT * FROM ".$wpdb->prefix.self::$table_name." WHERE `transaction_id` AND `status` = 'pending' AND `created` < DATE_SUB(CURDATE(),INTERVAL %d MINUTE)", $mins);
-    $pendings = $wpdb->get_results( $sql , 'ARRAY_A' );
-    foreach($pendings as $transaction) {
+    $sql = $wpdb->prepare("SELECT * FROM ".$wpdb->prefix.self::$table_name." WHERE `transaction_id` IS NOT NULL AND `status` = 'pending' AND `archived` = 0 AND `created` < DATE_SUB(NOW(), INTERVAL %d MINUTE)", $mins);
+    $transactions = $wpdb->get_results( $sql , 'ARRAY_A' );
+    $sp = self::instance();
+    foreach($transactions as $transaction) {
+        $sp->payment_id = $transaction['id'];
         $transaction_id = $transaction['transaction_id'];
-        $sp = SimplePayment::instance();
-        $engine = $sp->setEngine($transaction['engine']);
+        $sp->setEngine($transaction['engine']);
         try {
           $status = $sp->engine->verify($transaction_id);
           if ($status) {
@@ -234,13 +237,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           ], true);
         }
     }
-    do_action('sp_payment_process_verify');
+    do_action('sp_process_verify');
   }
 
   protected static function process_pending($mins) {
     if (!$mins) return;
     global $wpdb;
-    $sql = $wpdb->prepare("UPDATE ".$wpdb->prefix.self::$table_name." SET `status` = 'failed', `modified` = CURDATE() WHERE `status` IN ('created', 'pending') AND `created` < DATE_SUB(CURDATE(),INTERVAL %d MINUTE)", $mins);
+    $sql = $wpdb->prepare("UPDATE ".$wpdb->prefix.self::$table_name." SET `status` = 'failed', `modified` = NOW() WHERE `status` IN ('created', 'pending') AND `created` < DATE_SUB(NOW(),INTERVAL %d MINUTE)", $mins);
     $wpdb->query($sql);
     do_action('sp_payment_process_pending', $mins);
   }
@@ -248,7 +251,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   protected static function process_archive($days) {
     if (!$days) return;
     global $wpdb;
-    $sql = $wpdb->prepare('UPDATE '.$wpdb->prefix.self::$table_name.' SET `archived` = 1, `modified` = CURDATE() WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY)', $days);
+    $sql = $wpdb->prepare('UPDATE '.$wpdb->prefix.self::$table_name.' SET `archived` = 1, `modified` = NOW() WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY)', $days);
     $wpdb->query($sql);
     do_action('sp_payment_process_archive', $days);
   }
@@ -256,11 +259,11 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   protected static function process_purge($days) {
     if (!$days) return;
     global $wpdb;
-    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.'sp_history'.' WHERE `transaction_id` IN (SELECT `transaction_id` FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY))', $days);
+    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.'sp_history'.' WHERE `transaction_id` IN (SELECT `transaction_id` FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY))', $days);
     $wpdb->query($sql);
-    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.'sp_history'.' WHERE `payment_id` IN (SELECT `id` FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY))', $days);
+    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.'sp_history'.' WHERE `payment_id` IN (SELECT `id` FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY))', $days);
     $wpdb->query($sql);
-    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY)', $days);
+    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY)', $days);
     $wpdb->query($sql);
     do_action('sp_payment_process_purge', $days);
   }
@@ -364,6 +367,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             <a id="cardcom" href="options-general.php?page=sp&tab=cardcom" class="nav-tab <?php echo $tab == 'cardcom' ? 'nav-tab-active' : ''; ?>"><?php _e('Cardcom', 'simple-payment'); ?></a>
             <a id="icount" href="options-general.php?page=sp&tab=icount" class="nav-tab <?php echo $tab == 'icount' ? 'nav-tab-active' : ''; ?>"><?php _e('iCount', 'simple-payment'); ?></a>
             <a id="license" href="options-general.php?page=sp&tab=license" class="nav-tab <?php echo $tab == 'license' ? 'nav-tab-active' : ''; ?>"><?php _e('License', 'simple-payment'); ?></a>
+            <a id="extensions" href="options-general.php?page=sp&tab=extensions" class="nav-tab <?php echo $tab == 'extensions' ? 'nav-tab-active' : ''; ?>"><?php _e('Extensions', 'simple-payment'); ?></a>
             <a id="shortcode" href="options-general.php?page=sp&tab=shortcode" class="nav-tab <?php echo $tab == 'shortcode' ? 'nav-tab-active' : ''; ?>"><?php _e('Shortcode', 'simple-payment'); ?></a>
             <a id="instructions" href="options-general.php?page=sp&tab=instructions" class="nav-tab <?php echo $tab == 'instructions' ? 'nav-tab-active' : ''; ?>"><?php _e('Instructions', 'simple-payment'); ?></a>
         </h2>
@@ -446,6 +450,23 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     if (is_array($options)) $options = $this->validate_single($options);
     else $options = sanitize_text_field($options);
     $options = array_merge(self::$params, $options);
+    if (isset($options['api_key']) && $options['api_key']) {
+      $options['api_key'] = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+          // 32 bits for "time_low"
+          mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+          // 16 bits for "time_mid"
+          mt_rand(0, 0xffff),
+          // 16 bits for "time_hi_and_version",
+          // four most significant bits holds version number 4
+          mt_rand(0, 0x0fff) | 0x4000,
+          // 16 bits, 8 bits for "clk_seq_hi_res",
+          // 8 bits for "clk_seq_low",
+          // two most significant bits holds zero and one for variant DCE1.1
+          mt_rand(0, 0x3fff) | 0x8000,
+          // 48 bits for "node"
+          mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+      );
+    }
     return($options);
   }
 
@@ -459,20 +480,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public function render_license_key_field() {
     printf(
       '<input type="text" id="key" size="40" name="sp_license[key]" value="%s" />',
-      isset($this->license['key']) ? esc_attr($this->license['key']) : ''
+      isset(self::$license['key']) ? esc_attr(self::$license['key']) : ''
     );
 
-    if (isset($this->license['status'])) {
+    if (isset(self::$license['status'])) {
       printf(
         '&nbsp;<span class="description">License %s</span>',
-        isset($this->license['status']) ? esc_attr($this->license['status']) : 'is missing'
+        isset(self::$license['status']) ? esc_attr(self::$license['status']) : 'is missing'
       );
     }
   }
 
   // Sanitize input from our plugin's option form and validate the provided key.
   public function license_key_callback($options) {
-    if (!isset($options['key'])) return($this->license);
+    if (!isset($options['key'])) return(self::$license);
     if (isset($options['key']) && !$options['key']) {
       add_settings_error('sp_license', esc_attr('settings_updated'), __('License key is required', 'simple-payment'), 'error');
       return;
@@ -563,6 +584,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         case 'password':
           $this->setting_password_fn($options['option'], $options['params']);
           break;
+        case 'random':
+          $this->setting_random_fn($options['option'], $options['params']);
+          break;
         case 'string':
         default:
           $this->setting_text_fn($options['option'], $options['params']);
@@ -623,6 +647,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   	$option = self::param($key);
     $field = $this->option_name.$this->param_name($key);
   	echo "<input id='".$key."' name='{$field}' size='40' type='password' value='{$option}' />";
+  }
+  
+  function setting_random_fn($key, $params = null) {
+    $option = self::param($key);
+    $field = $this->option_name.$this->param_name($key);
+    echo "<input id='".$key."' size='40' type='text' readonly value='{$option}' />";
+    echo "&nbsp;<input id='{$key}_reset' value='true' name='{$field}' type='checkbox' /> ".__('Reset API KEY', 'simple_payment');
   }
 
 /*
@@ -786,10 +817,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           case self::OPERATION_CANCEL:
             $url = $this->cancel($_REQUEST);
             break;
-          case self::OPERATION_ZAPIER:
+          /*case self::OPERATION_ZAPIER:
             $this->zapier();
             die; break;
-            break;
+            break;*/
           case self::OPERATION_PCSS:
             header('Content-Type: text/css');
             echo self::param(strtolower($engine).'.css');
@@ -800,6 +831,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             die; break;
           case 'recur':
 
+            die; break;
+          default:
+            do_action('sp_extension_'.$op);
             die; break;
       }
     } catch (Exception $e) {
@@ -911,57 +945,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     else return($this->generate_unique_username($username));
   }
 
-  function zapier($params = []) {
-    global $wpdb;
-    header('Content-Type: application/json');
-    $method = isset($_REQUEST['method']) ? $_REQUEST['method'] : 'default';
-    $api_key = isset($_REQUEST['api_key']) ? $_REQUEST['api_key'] : null;
-    if (!$api_key) {
-      print json_encode(['error' => 401, 'description' => __('API KEY Invalid', 'simple-payment')]);
-      die;
-    }
-    switch ($method) {
-        case 'archive':
-          self::archive($_REQUEST['id']);
-          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `id` = '.$_REQUEST['id'];
-          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
-          break;
-        case 'transaction':
-          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `id` = '.$_REQUEST['id'];
-          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
-          break;
-        case 'transactions':
-          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `archived` = 0 ORDER BY `created` DESC';
-          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
-          break;
-        case 'transactions_updated':
-          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `archived` = 0 ORDER BY `modified` DESC';
-          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
-          break;
-        case 'transactions_archived':
-          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `archived` = 1 ORDER BY `created` DESC';
-          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
-          break;
-        case 'transactions_pending':
-          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `archived` = 0 AND `status` = '.self::TRANSACTION_PENDING.' ORDER BY `created` DESC';
-          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
-          break;  
-        default:
-          $zapier = [
-            'site' => get_bloginfo('url'), 
-            'version' => self::VERSION,
-            'name' => get_bloginfo('name'),
-            'platform' => 'Wordpress',
-            'license' => $this->license,
-            'initiator' => get_class($this),
-            'platform_version' => get_bloginfo('version'), 
-            'plugin_versoin' => $this->version
-          ];
-          break;
-    }
-    print json_encode($zapier);
-    die;
-  }
   function shortcode($atts) {
       extract( shortcode_atts( array(
             'id' => null,
@@ -1054,7 +1037,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   protected static function update($id, $params, $transaction_id = false) {
     global $wpdb;
     $table_name = $wpdb->prefix.self::$table_name;
-    if (!isset($params['modified'])) $params['modified'] = current_time('mysql');
+    if (!isset($params['modified'])) $params['modified'] = current_time('mysql'); // TODO: try with NOW()
     $user_id = get_current_user_id();
     if ($user_id) $params['user_id'] = $user_id;
     $result = $wpdb->update($table_name, $params, [($transaction_id ? 'transaction_id' : 'id') => $id]);
@@ -1190,6 +1173,7 @@ global $SPWP;
 $SPWP = SimplePaymentPlugin::instance();
 
 require_once('addons/gutenberg/init.php');
+require_once('addons/zapier/init.php');
 require_once('addons/woocommerce/init.php');
 require_once('addons/wpjobboard/init.php');
 

@@ -25,6 +25,11 @@ $sp_sections = [
       'title' => __('General Settings', 'simple-payment'),
       'description' => __('Setup how Simple Payment should operate the payments below:', 'simple-payment'),
   ],
+  'extensions' => [
+    'title' => __('Extensions', 'simple-payment'),
+    'description' => __('Setup how Simple Payment extends and connects via API:', 'simple-payment'),
+    'section' => 'extensions'
+  ],
   'installments' => [
     'title' => __('Installments Settings', 'simple-payment'),
     'description' => __('Setup how Simple Payment should operate installments and recurring payments:', 'simple-payment'),
@@ -100,8 +105,14 @@ $sp_settings = [
       'type' => 'select',
       'options' => ['0' => 'Disabled', '10' => __('10 Min', 'simple-payment'), '30' => __('30 Min', 'simple-payment'), '60' => __('1 Hour', 'simple-payment'), '720' => __('12 Hours', 'simple-payment'), '1440' => __('1 Day', 'simple-payment'), '4320' => __('3 Days', 'simple-payment'), '10080' => __('7 Days', 'simple-payment'), '43200' => __('30 Days', 'simple-payment')]
     ],
+    'verify_after' => [
+      'title' => __('Auto Transaction Verification', 'simple-payment'),
+      'type' => 'select',
+      'options' => ['0' => 'Disabled', '10' => __('10 Min', 'simple-payment'), '30' => __('30 Min', 'simple-payment'), '60' => __('1 Hour', 'simple-payment'), '720' => __('12 Hours', 'simple-payment'), '1440' => __('1 Day', 'simple-payment'), '4320' => __('3 Days', 'simple-payment'), '10080' => __('7 Days', 'simple-payment'), '43200' => __('30 Days', 'simple-payment')]
+    ],
+  
     'pending_period' => [
-      'title' => __('Auto fail pending transaction', 'simple-payment'),
+      'title' => __('Fail Pending Transaction', 'simple-payment'),
       'type' => 'select',
       'options' => ['0' => 'Disabled', '10' => __('10 Min', 'simple-payment'), '30' => __('30 Min', 'simple-payment'), '60' => __('1 Hour', 'simple-payment'), '720' => __('12 Hours', 'simple-payment'), '1440' => __('1 Day', 'simple-payment'), '4320' => __('3 Days', 'simple-payment'), '10080' => __('7 Days', 'simple-payment'), '43200' => __('30 Days', 'simple-payment')]
     ],
@@ -339,5 +350,10 @@ $sp_settings = [
     'title' => __('Email Document to Client', 'simple-payment'),
     'type' => 'check',
     'section' => 'icount_settings'
+  ],
+  'api_key' => [
+    'title' => __('API KEY', 'simple-payment'),
+    'type' => 'random',
+    'section' => 'extensions'
   ],
 ];

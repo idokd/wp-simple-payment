@@ -17,7 +17,8 @@ class iCount extends Engine {
     public $api = [
       'bill' => 'https://api.icount.co.il/api/v3.php/cc/bill',
       'store' => 'https://api.icount.co.il/api/v3.php/cc_storage/store',
-      'document' => 'https://api.icount.co.il/api/v3.php/doc/create'
+      'document' => 'https://api.icount.co.il/api/v3.php/doc/create',
+      'verify' => 'https://api.icount.co.il/api/v3.php/cc/transactions'
     ];
 
     public function process($params) {

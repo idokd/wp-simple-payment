@@ -57,6 +57,45 @@ class Cardcom extends Engine {
     return($params['url']);
   }
 
+  public function verify($id) {
+    $this->transation = $id;
+    $post = [];
+    $post['terminalnumber'] = $this->terminal;
+    $post['username'] = $this->username;
+    $post['lowprofilecode'] = $this->transation;
+    $post['codepage'] = 65001;
+
+    $response = $this->post($this->api['indicator_request'], $post);
+    parse_str($response, $response);
+    $this->save([
+      'transaction_id' => $this->transaction,
+      'url' => $this->api['indicator_request'],
+      'status' => isset($response['OperationResponse']) ? $response['OperationResponse'] : (isset($response['DealResponse']) ? $response['DealResponse'] : ''),
+      'description' => isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'],
+      'request' => json_encode($post),
+      'response' => json_encode($response)
+    ]);
+    $operation = $response['Operation'];
+    $code = isset($response['OperationResponse']) ? $response['OperationResponse'] : 999;
+    switch($operation) {
+      case 1:
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0) return($response['InternalDealNumber']);
+        $code = $response['DealResponse'];
+        break;
+      case 2:
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0 && isset($response['TokenResponse']) && $response['TokenResponse'] == 0) return($response['TokenApprovalNumber']);
+        $code = $response['TokenResponse'];
+        break;
+      case 3:
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 &&  isset($response['SuspendedDealResponseCode']) && $response['SuspendedDealResponseCode'] == 0) return($response['TokenApprovalNumber']);
+        $code = $response['SuspendedDealResponseCode'];
+        break;
+      case 4:
+        break;
+    }
+    throw new Exception(isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'], $code);
+  }
+
   public function status($params) {
     parent::status($params);
     $this->transation = $params['lowprofilecode'];

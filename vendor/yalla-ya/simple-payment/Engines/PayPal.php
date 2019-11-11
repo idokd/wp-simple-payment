@@ -48,6 +48,13 @@ class PayPal extends Engine {
     if ($this->clientId && $this->password) $this->context = $this->getApiContext($this->clientId, $this->password);
   }
 
+  public function verify($id) {
+    $payment = Payment::get($id, $this->context);
+    if ($payment->getState() == 'failed') throw new Exception($payment->getFailureReason(), $payment->getState());
+    if ($payment->getState() == 'approved') return($payment->getPayer());
+    return(false);
+  }
+
   public function post_process($params) {
     //&paymentId=PAYID-LWNTCSI09697453H2945450G&token=EC-8A964303H1112514L&PayerID=DA5RML92QXCAE
 

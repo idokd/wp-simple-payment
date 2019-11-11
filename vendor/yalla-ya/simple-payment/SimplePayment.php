@@ -6,7 +6,7 @@ use Exception;
 
 class SimplePayment {
 
-  const VERSION = 1.0;
+  const VERSION = 1.1;
   const TRANSACTION_NEW = 'created';
   const TRANSACTION_PENDING = 'pending';
   const TRANSACTION_SUCCESS = 'success';
@@ -17,7 +17,6 @@ class SimplePayment {
   const OPERATION_CANCEL = 'cancel';
   const OPERATION_STATUS = 'status';
   const OPERATION_ERROR = 'error';
-  const OPERATION_ZAPIER = 'zapier';
 
   const ENGINE = 'engine'; const METHOD = 'method';
 
@@ -33,10 +32,10 @@ class SimplePayment {
 
   const LANGUAGE = 'language'; const COMMENT = 'comment'; const INSTALLMENTS = 'installments';
   
+  public static $license;
   protected $callback;
   protected $sandbox = true;
   public $engine;
-  protected $license;
 
   protected static $params;
 
@@ -46,7 +45,7 @@ class SimplePayment {
 
   public function setEngine($engine) {
     if ($engine != 'Custom' && !$this->sandbox) {
-      $this->validate_license($this->license, null, $engine);
+      $this->validate_license(self::$license, null, $engine);
       if (!isset($_SERVER['HTTPS']) || !$_SERVER['HTTPS']) throw new Exception('HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500);
     }
     $class = __NAMESPACE__ . '\\Engines\\' . $engine;
