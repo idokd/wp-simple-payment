@@ -47,6 +47,12 @@ class Engine {
     return(true);
   }
 
+  public function verify($params) {
+    // Process the statuc callback, for example
+    // Return FALSE if transaction failed
+    return(false);
+  }
+
   public function post_process($params) {
     // Process the result of the transactions save
     return(true);

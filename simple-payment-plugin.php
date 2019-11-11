@@ -87,13 +87,16 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function load() {
     add_action('plugins_loaded', [$this, 'load_textdomain']);
-    if (self::is_gutenberg_active()) add_action('init', [$this, 'gutenberg_assets']);
-
     add_action('wp_loaded', [$this, 'init']);
+
+    add_filter( 'cron_schedules', [$this, 'cron_schedule'] );
+
     add_action('sp_cron', [$this, 'cron']);
-    if (!wp_next_scheduled('sp_cron')) {
-      wp_schedule_event(time(), 'daily', 'sp_cron') ;
-    }
+    if (!wp_next_scheduled('sp_cron')) wp_schedule_event(time(), 'sp_cron_schedule', 'sp_cron') ;
+    
+    add_action('sp_cron_purge', [$this, 'cron_purge']);
+    if (!wp_next_scheduled('sp_cron_purge')) wp_schedule_event(time(), 'daily', 'sp_cron_purge') ;
+    
     if (is_admin()) {
       register_activation_hook(__FILE__, [$this, 'activate']);
       register_deactivation_hook(__FILE__, [$this, 'deactivate']);
@@ -156,12 +159,37 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   function deactivate() {
     global $wp_rewrite;
-    $timestamp = wp_next_scheduled('sp_cron');
-    wp_unschedule_event($timestamp, 'sp_cron');
+    $timestamp = wp_next_scheduled('sp_cron'); 
+    wp_unschedule_event($timestamp, 'sp_cron'); 
+    $timestamp = wp_next_scheduled('sp_cron_purge'); 
+    wp_unschedule_event($timestamp, 'sp_cron_purge'); 
     $wp_rewrite->flush_rules();
   }
 
+  public function render() {
+    do_action('sp_form_render');
+  }
+
+  function cron_schedule( $schedules ) {
+    $min = $this->param('cron_period');
+    if (!$min) return($schedules);
+    $schedules['sp_cron_schedule'] = array(
+        'interval' => $min * 60,
+        'display'  => sprintf(esc_html__( 'Every %s Minutes' ), $min)
+    );
+    return($schedules);
+  }
+
   public static function cron() {
+    $mins = self::param('pending_period');
+    if ($mins) self::process_verify($mins);
+    if ($mins) self::process_pending($mins);
+
+    
+    do_action('sp_payment_cron');
+  }
+
+  public static function cron_purge() {
     $archive_purge = self::param('auto_purge');
     $period = absint(self::param('purge_period'));
     if (!$period || !$archive_purge || $archive_purge == 'disabled') return;
@@ -174,17 +202,59 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         self::process_purge($archive_purge == 'purge' ? $period : $period * 2);
         break;
     }
-    do_action('sp_payment_cron');
+    do_action('sp_cron_purge');
+  }
+
+  protected static function process_verify($mins) {
+    global $wpdb;
+    $mins = 30;
+    $sql = $wpdb->prepare("SELECT * FROM ".$wpdb->prefix.self::$table_name." WHERE `transaction_id` AND `status` = 'pending' AND `created` < DATE_SUB(CURDATE(),INTERVAL %d MINUTE)", $mins);
+    $pendings = $wpdb->get_results( $sql , 'ARRAY_A' );
+    foreach($pendings as $transaction) {
+        $transaction_id = $transaction['transaction_id'];
+        $sp = SimplePayment::instance();
+        $engine = $sp->setEngine($transaction['engine']);
+        try {
+          $status = $sp->engine->verify($transaction_id);
+          if ($status) {
+            $sp->update($transaction_id , [
+              'status' => self::TRANSACTION_SUCCESS,
+              'confirmation_code' => $status,
+            ], true);
+          } else {
+            $sp->update($transaction_id , [
+              'retries' => $transaction['retries'] ? $retries + 1 : 1,
+            ], true);
+          }
+        } catch (Exception $e) {
+          $sp->update($transaction_id , [
+            'status' => self::TRANSACTION_FAILED,
+            'error_code' => $e->getCode(),
+            'error_description' => $e->getMessage()
+          ], true);
+        }
+    }
+    do_action('sp_payment_process_verify');
+  }
+
+  protected static function process_pending($mins) {
+    if (!$mins) return;
+    global $wpdb;
+    $sql = $wpdb->prepare("UPDATE ".$wpdb->prefix.self::$table_name." SET `status` = 'failed', `modified` = CURDATE() WHERE `status` IN ('created', 'pending') AND `created` < DATE_SUB(CURDATE(),INTERVAL %d MINUTE)", $mins);
+    $wpdb->query($sql);
+    do_action('sp_payment_process_pending', $mins);
   }
 
   protected static function process_archive($days) {
+    if (!$days) return;
     global $wpdb;
-    $sql = $wpdb->prepare('UPDATE '.$wpdb->prefix.self::$table_name.' SET `archived` = 1 WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY)', $days);
+    $sql = $wpdb->prepare('UPDATE '.$wpdb->prefix.self::$table_name.' SET `archived` = 1, `modified` = CURDATE() WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY)', $days);
     $wpdb->query($sql);
     do_action('sp_payment_process_archive', $days);
   }
 
   protected static function process_purge($days) {
+    if (!$days) return;
     global $wpdb;
     $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.'sp_history'.' WHERE `transaction_id` IN (SELECT `transaction_id` FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(CURDATE(),INTERVAL %d DAY))', $days);
     $wpdb->query($sql);
@@ -792,7 +862,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       'status' => self::TRANSACTION_FAILED
     ];
     if ($code) $data['error_code'] = $code;
-    if ($code) $data['error_description'] = $description;
+    if ($description) $data['error_description'] = $description;
     if ($this->engine->transaction) $data['transaction_id'] = $this->engine->transaction;
     $this->update($payment_id ? $payment_id : $this->engine->transaction, $data, $payment_id > 0);
     return($url);
@@ -851,10 +921,31 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       die;
     }
     switch ($method) {
+        case 'archive':
+          self::archive($_REQUEST['id']);
+          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `id` = '.$_REQUEST['id'];
+          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          break;
+        case 'transaction':
+          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `id` = '.$_REQUEST['id'];
+          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          break;
         case 'transactions':
           $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `archived` = 0 ORDER BY `created` DESC';
           $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
           break;
+        case 'transactions_updated':
+          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `archived` = 0 ORDER BY `modified` DESC';
+          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          break;
+        case 'transactions_archived':
+          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `archived` = 1 ORDER BY `created` DESC';
+          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          break;
+        case 'transactions_pending':
+          $sql = 'SELECT * FROM '.$wpdb->prefix.self::$table_name.' WHERE `archived` = 0 AND `status` = '.self::TRANSACTION_PENDING.' ORDER BY `created` DESC';
+          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          break;  
         default:
           $zapier = [
             'site' => get_bloginfo('url'), 
@@ -929,8 +1020,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
               $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
           case self::TYPE_TEMPLATE:
             wp_enqueue_script( 'simple-payment-js', plugin_dir_url( __FILE__ ).'assets/js/simple-payment.js', [], $plugin['Version'], true );
+            wp_enqueue_style( 'simple-payment-css', plugin_dir_url( __FILE__ ).'assets/css/simple-payment.css', [], $plugin['Version'], true );
             if ($params['target']) $params['callback'] .= (strpos($params['callback'], '?') ? '&' : '?').http_build_query(['target' => $params['target']]);
-            if (self::param('css')) wp_enqueue_style( 'simple-payment-css', $this->callback.'?'.http_build_query([self::OP => self::OPERATION_CSS]), [], md5(self::param('css')), 'all' );
+            if (self::param('css')) wp_enqueue_style( 'simple-payment-custom-css', $this->callback.'?'.http_build_query([self::OP => self::OPERATION_CSS]), [], md5(self::param('css')), 'all' );
             foreach ($params as $key => $value) set_query_var($key, $value);
             ob_start();
             if (!locate_template($template.'.php', true) && file_exists(SPWP_PLUGIN_DIR.'/templates/'.$template.'.php')) load_template(SPWP_PLUGIN_DIR.'/templates/'.$template.'.php');
@@ -1002,8 +1094,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
          'default' => 20,
          'option' => 'sp_per_page'
       ]);
-      if (!isset($_REQUEST['transaction_id']) || !isset($_REQUEST['engine'])) throw new Exception(__('Error fetching transaction'), 500);
-      $id = sanitize_text_field($_REQUEST['transaction_id']);
+      if ((!isset($_REQUEST['id']) && !isset($_REQUEST['transaction_id'])) || !isset($_REQUEST['engine'])) throw new Exception(__('Error fetching transaction'), 500);
+      $id = isset($_REQUEST['transaction_id']) && $_REQUEST['transaction_id'] ? sanitize_text_field($_REQUEST['transaction_id']) : absint($_REQUEST['id']);
       $engine = sanitize_text_field($_REQUEST['engine']);
 
       require(SPWP_PLUGIN_DIR.'/admin/transaction-list-table.php');
@@ -1019,55 +1111,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     global $list;
     require(SPWP_PLUGIN_DIR.'/admin/transaction-log.php');
   }
-
-  /**
-   * Check if Gutenberg is active
-   *
-   * @since 1.0.0
-   *
-   * @return boolean
-   */
-    public static function is_gutenberg_active() {
-      return function_exists('register_block_type');
-    }
-
-    function gutenberg_assets() { // phpcs:ignore
-      wp_register_style(
-        'simple-payment-gb-style-css', 
-        plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.style.build.css', // Block style CSS.
-        array( 'wp-editor' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: 1.6.4File modification time.
-      );
-      wp_register_script(
-        'simple-payment-gb-block-js',
-        plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.build.js',
-        array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-shortcode', 'wp-editor' ), 
-        null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: 1.6.4filemtime — Gets file modification time.
-        true 
-      );
-      wp_register_style(
-        'simple-payment-gb-editor-css', 
-        plugin_dir_url( __FILE__ ).'/addons/gutenberg/blocks.editor.build.css', 
-        array( 'wp-edit-blocks' ), 
-        null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.6.4File modification time.
-      );
-      wp_localize_script(
-        'simple-payment-gb-block-js',
-        'spGlobal', // Array containing dynamic data for a JS Global.
-        [
-          'pluginDirPath' => plugin_dir_path( __DIR__ ),
-          'pluginDirUrl'  => plugin_dir_url( __DIR__ ),
-          // Add more data here that you want to access from `cgbGlobal` object.
-        ]
-      );
-      register_block_type(
-        'simple-payment/simple-payment', array(
-          'style'         => 'simple-payment-gb-style-css',
-          'editor_script' => 'simple-payment-gb-block-js',
-          'editor_style'  => 'simple-payment-gb-editor-css',
-        )
-      );
-    }
 
     /**
      * Load Simple Payment Text Domain.
@@ -1088,6 +1131,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         'archived' => true
       ]);
       do_action('sp_payment_archive', $id);
+      //wp_redirect( wp_get_referer() );
+    }
+
+    public static function unarchive($id = null) {
+      self::update($id ? : $_REQUEST['transaction'], [
+        'archived' => false
+      ]);
+      do_action('sp_payment_unarchive', $id);
       //wp_redirect( wp_get_referer() );
     }
 
@@ -1138,4 +1189,10 @@ require_once('db/simple-payment-database.php');
 global $SPWP;
 $SPWP = SimplePaymentPlugin::instance();
 
-require_once('addons/woocommerce/woo-simple-payment.php');
+require_once('addons/gutenberg/init.php');
+require_once('addons/woocommerce/init.php');
+require_once('addons/wpjobboard/init.php');
+
+//require_once('addons/recaptcha/init.php');
+
+

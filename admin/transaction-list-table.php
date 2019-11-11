@@ -80,6 +80,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     if ($count) $sql = "SELECT COUNT(*) FROM ".self::$table_name;
     else $sql = "SELECT * FROM ".self::$table_name;
     $where = [];
+    if ( ! empty( $_REQUEST['id'] ) ) $where[] = "`payment_id` = " .esc_sql(absint($_REQUEST['id']));
     if ( ! empty( $_REQUEST['transaction_id'] ) ) $where[] = "`transaction_id` =  '" .esc_sql($_REQUEST['transaction_id'])."'";
 
     if ( ! empty( $_REQUEST['status'] ) ) $where[] = "`status` =  '" .esc_sql($_REQUEST['status'])."'";
@@ -120,25 +121,42 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   function column_id( $item ) {
     if (self::$engine || $this->is_export()) return($item['id']);
-    $archive_nonce = wp_create_nonce( 'archive_'.$this->_args['singular'] );
     $title = '<strong>' . $item['id'] . '</strong>';
-    $actions = [
-      'archive' => sprintf( '<a href="%s">%s</a>', add_query_arg([
-          'action' => 'archive',
-          'id' => absint($item['id']),
-          '_wpnonce' => $archive_nonce
-      ]), __('Archive', 'simple-payment') ),
-      'details' => sprintf( '<a href="?page=simple-payments-details&id=%s&transaction_id=%s&engine=%s">%s</a>', $item['id'], $item['transaction_id'], $item['engine'], __('Details', 'simple-payment') )
-    ];
+    if (isset($item['archived']) && $item['archived']) {
+      $unarchive_nonce = wp_create_nonce( 'unarchive_'.$this->_args['singular'] );
+      $actions = [
+        'unarchive' => sprintf( '<a href="%s">%s</a>', add_query_arg([
+            'action' => 'unarchive',
+            'id' => absint($item['id']),
+            '_wpnonce' => $unarchive_nonce
+        ]), __('Unarchive', 'simple-payment') )
+      ];
+    } else {
+      $archive_nonce = wp_create_nonce( 'archive_'.$this->_args['singular'] );
+      $actions = [
+        'archive' => sprintf( '<a href="%s">%s</a>', add_query_arg([
+            'action' => 'archive',
+            'id' => absint($item['id']),
+            '_wpnonce' => $archive_nonce
+        ]), __('Archive', 'simple-payment') )
+      ];
+    }
+    $actions['details'] = sprintf( '<a href="?page=simple-payments-details&id=%s&transaction_id=%s&engine=%s">%s</a>', $item['id'], $item['transaction_id'], $item['engine'], __('Details', 'simple-payment') );
     return $title.$this->row_actions( $actions );
   }
 
   protected function get_bulk_actions() {
     if (self::$engine) return;
-		$actions = array(
-			'bulk-archive' => __( 'Archive', 'simple-payment' ),
-		);
-		return $actions;
+    if (isset($_REQUEST['archive']) && $_REQUEST['archive']) {
+      $actions = array(
+        'bulk-unarchive' => __( 'Unarchive', 'simple-payment' ),
+      );
+    } else {
+      $actions = array(
+        'bulk-archive' => __( 'Archive', 'simple-payment' ),
+      );
+    }
+		return($actions);
 	}
 
   public function column_default($item, $column_name) {
@@ -229,27 +247,46 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     SimplePaymentPlugin::archive($id);
   }
 
+  public function unarchive_transaction($id) {
+    SimplePaymentPlugin::unarchive($id);
+  }
+
   public function process_bulk_action() {
-    if ( 'archive' === $this->current_action() ) {
+    if ( in_array($this->current_action(), ['archive', 'unarchive']) ) {
       $nonce = esc_attr( $_REQUEST['_wpnonce'] );
-      if ( ! wp_verify_nonce( $nonce, 'archive_'.$this->_args['singular'] ) ) {
+      if ( ! wp_verify_nonce( $nonce, $this->current_action().'_'.$this->_args['singular'] ) ) {
         die( 'Go get a life script kiddies' );
       } 
-      self::archive_transaction( absint( $_GET['id'] ) );
+      switch ($this->current_action()) {
+        case 'archive':
+          self::archive_transaction( absint( $_GET['id'] ) );
+          break;
+        case 'unarchive':
+          self::unarchive_transaction( absint( $_GET['id'] ) );
+          break;
+      }
       //wp_redirect( wp_get_referer() );
       return;
     }
     // If the delete bulk action is triggered
-    if ( ( isset( $_POST['action'] ) && $_POST['action'] == 'bulk-archive' )
-         || ( isset( $_POST['action2'] ) && $_POST['action2'] == 'bulk-archive' )
+    if ( ( isset( $_POST['action'] ) && $_POST['action'])
+         || ( isset( $_POST['action2'] ) && $_POST['action2'] )
     ) {
       $nonce = esc_attr( $_REQUEST['_wpnonce'] );
       if ( ! wp_verify_nonce( $nonce, 'bulk-'.$this->_args['plural'] ) ) {
         die( 'Go get a life script kiddies' );
       }
-      $archive_ids = esc_sql( $_POST['id'] );
-      foreach ( $archive_ids as $id ) {
-        self::archive_transaction( $id );
+      $ids = esc_sql( $_POST['id'] );
+      $action = isset($_POST['action']) && $_POST['action'] != -1 ? $_POST['action'] : $_POST['action2'];
+      foreach ( $ids as $id ) {
+        switch ($action) {
+          case 'bulk-archive':
+            self::archive_transaction( $id );
+            break;
+          case 'bulk-unarchive':
+            self::unarchive_transaction( $id );
+            break;
+        }
       }
       wp_redirect( wp_get_referer() );
       return;

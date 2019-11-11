@@ -19,7 +19,14 @@
               event.preventDefault()
               event.stopPropagation()
             }
-            form.classList.add('was-validated')
+            form.classList.add('was-validated');
+            // TODO: show iframe/modal
+            if (params['display'] == 'iframe') {
+                jQuery.parentsUntil(':hidden').show();
+            }
+            if (params['display'] == 'modal') {
+              jQuery.parentsUntil(':hidden').show();
+          }
           }, false);
         });
       }, false);

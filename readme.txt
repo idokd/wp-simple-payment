@@ -89,6 +89,13 @@ I hope it is useful for you and look forward to reading your reviews! 😉 Thank
 Checkout for more details [changelog.txt](http://plugins.svn.wordpress.org/simple-payment/trunk/changelog.txt) file
 
 == Changelog ==
+
+= 1.6.5 =
+*Release Date - 11 November 2019*
+
+* Unarchive feature
+* General improvements and addons code structure
+
 = 1.4.5 =
 *Release Date - 5 November 2019*
 

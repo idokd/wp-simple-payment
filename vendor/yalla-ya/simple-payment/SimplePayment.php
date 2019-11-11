@@ -51,7 +51,7 @@ class SimplePayment {
     }
     $class = __NAMESPACE__ . '\\Engines\\' . $engine;
     $settings = self::param(strtolower($engine));
-    foreach (self::$params as $key => $value) if (!is_array($value)) $settings[$key] = $value; 
+    foreach (self::$params as $key => $value) if (!is_array($value) && !isset($settings[$key])) $settings[$key] = $value; 
     $this->engine = new $class($settings, $this, $this->sandbox);
   }
 

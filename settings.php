@@ -94,7 +94,18 @@ $sp_settings = [
     'title' => __('Create User Upon', 'simple-payment'),
     'type' => 'select',
     'options' => ['pre' => __('Preprocessing', 'simple-payment'),  'post' => __('Post processing', 'simple-payment')]],
-  'auto_purge' => [
+    
+    'cron_period' => [
+      'title' => __('Cron Schedule', 'simple-payment'),
+      'type' => 'select',
+      'options' => ['0' => 'Disabled', '10' => __('10 Min', 'simple-payment'), '30' => __('30 Min', 'simple-payment'), '60' => __('1 Hour', 'simple-payment'), '720' => __('12 Hours', 'simple-payment'), '1440' => __('1 Day', 'simple-payment'), '4320' => __('3 Days', 'simple-payment'), '10080' => __('7 Days', 'simple-payment'), '43200' => __('30 Days', 'simple-payment')]
+    ],
+    'pending_period' => [
+      'title' => __('Auto fail pending transaction', 'simple-payment'),
+      'type' => 'select',
+      'options' => ['0' => 'Disabled', '10' => __('10 Min', 'simple-payment'), '30' => __('30 Min', 'simple-payment'), '60' => __('1 Hour', 'simple-payment'), '720' => __('12 Hours', 'simple-payment'), '1440' => __('1 Day', 'simple-payment'), '4320' => __('3 Days', 'simple-payment'), '10080' => __('7 Days', 'simple-payment'), '43200' => __('30 Days', 'simple-payment')]
+    ],
+    'auto_purge' => [
       'title' => __('Purge Transactions', 'simple-payment'),
       'type' => 'select',
       'options' => ['disabled' => __('Disabled', 'simple-payment'), 'archive' => __('Archive', 'simple-payment'), 'purge' => __('Purge', 'simple-payment'), 'archive_purge' => __('Archive & Purge', 'simple-payment')]],
