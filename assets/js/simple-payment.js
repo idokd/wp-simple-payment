@@ -53,6 +53,7 @@
     },
 
     validExpiry: function(month, year) {
+      if (!month && !year) return(true);
       var now = new Date();
       now.setHours(0,0,0,0);
       var expiry = new Date(year, month, 0);
@@ -61,6 +62,7 @@
     },
     
     validCard: function(number) {
+        if (!number) return(true);
         var regex = new RegExp("^[0-9]{16}$");
         return(regex.test(number) && SimplePayment.luhn(number));
     },
