@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.6.6
+ * Version: 1.6.7
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -450,7 +450,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     if (is_array($options)) $options = $this->validate_single($options);
     else $options = sanitize_text_field($options);
     $options = array_merge(self::$params, $options);
-    if (isset($options['api_key']) && $options['api_key']) {
+    if (isset($options['api_key_reset']) && $options['api_key_reset']) {
       $options['api_key'] = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
           // 32 bits for "time_low"
           mt_rand(0, 0xffff), mt_rand(0, 0xffff),
@@ -466,6 +466,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           // 48 bits for "node"
           mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
       );
+      unset($options['api_key_reset']);
     }
     return($options);
   }
@@ -651,7 +652,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   
   function setting_random_fn($key, $params = null) {
     $option = self::param($key);
-    $field = $this->option_name.$this->param_name($key);
+    $field = $this->option_name.$this->param_name($key.'_reset');
     echo "<input id='".$key."' size='40' type='text' readonly value='{$option}' />";
     echo "&nbsp;<input id='{$key}_reset' value='true' name='{$field}' type='checkbox' /> ".__('Reset API KEY', 'simple_payment');
   }
