@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.6.5
+ * Version: 1.6.6
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -1062,7 +1062,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         $sql = "SELECT * FROM ".$table_name." WHERE `id` = %d LIMIT 1";
         $sql = sprintf($sql, absint($id));
     } else {
-        $sql = "SELECT * FROM ".$table_name." WHERE `engine` = '%s' `transaction_id` = %d LIMIT 1";
+        $sql = "SELECT * FROM ".$table_name." WHERE `engine` = '%s' AND `transaction_id` = %d LIMIT 1";
         $sql = sprintf($sql, esc_sql($engine), esc_sql($id));
     }
     $result = $wpdb->get_results( $sql , 'ARRAY_A' );
