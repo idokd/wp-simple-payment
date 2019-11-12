@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.6.7
+ * Version: 1.6.8
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -15,6 +15,7 @@ if (!defined("ABSPATH")) {
 
 define('SPWP_PLUGIN_FILE', __FILE__);
 define('SPWP_PLUGIN_DIR', dirname(SPWP_PLUGIN_FILE));
+define('SPWP_PLUGIN_URL', plugin_dir_url( __FILE__ ));
 
 require_once(SPWP_PLUGIN_DIR . '/vendor/autoload.php');
 
@@ -220,17 +221,17 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         try {
           $status = $sp->engine->verify($transaction_id);
           if ($status) {
-            $sp->update($transaction_id , [
+            self::update($transaction_id , [
               'status' => self::TRANSACTION_SUCCESS,
               'confirmation_code' => $status,
             ], true);
           } else {
-            $sp->update($transaction_id , [
-              'retries' => $transaction['retries'] ? $retries + 1 : 1,
+            self::update($transaction_id , [
+              'retries' => $transaction['retries'] ? $transaction['retries'] + 1 : 1,
             ], true);
           }
         } catch (Exception $e) {
-          $sp->update($transaction_id , [
+          self::update($transaction_id , [
             'status' => self::TRANSACTION_FAILED,
             'error_code' => $e->getCode(),
             'error_description' => $e->getMessage()
@@ -981,13 +982,23 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           'redirect_url' => $redirect_url,
           'installments' => $installments,
           'currency' => $currency ? $currency : null,
-          'callback' => $this->callback
+          'callback' => $this->callback,
+          'title' => $title ? : null,
+          'form' => $form ? : null
       ];
       if ($enable_query) {
         if (isset($_REQUEST[self::FULL_NAME])) $params[self::FULL_NAME] = sanitize_text_field($_REQUEST[self::FULL_NAME]);
         if (isset($_REQUEST[self::PHONE])) $params[self::PHONE] = sanitize_text_field($_REQUEST[self::PHONE]);
         if (isset($_REQUEST[self::EMAIL])) $params[self::EMAIL] = sanitize_email($_REQUEST[self::EMAIL]);
       }
+      return($this->checkout($params));
+    }
+
+    function checkout($params) {
+      $type = isset($params['type']) ? $params['type'] : null;
+      $target = isset($params['target']) ? $params['target'] : null;
+      $title = isset($params['title']) ? $params['title'] : null;
+      $form = isset($params['form']) ? $params['form'] : null;
       switch ($type) {
           case self::TYPE_BUTTON:
             $url = $this->callback;
@@ -1001,18 +1012,22 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
               $form = 'hidden';
           case self::TYPE_FORM:
               $template = 'form-'.$form;
-              $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
           case self::TYPE_TEMPLATE:
-            wp_enqueue_script( 'simple-payment-js', plugin_dir_url( __FILE__ ).'assets/js/simple-payment.js', [], $plugin['Version'], true );
-            wp_enqueue_style( 'simple-payment-css', plugin_dir_url( __FILE__ ).'assets/css/simple-payment.css', [], $plugin['Version'], true );
-            if ($params['target']) $params['callback'] .= (strpos($params['callback'], '?') ? '&' : '?').http_build_query(['target' => $params['target']]);
-            if (self::param('css')) wp_enqueue_style( 'simple-payment-custom-css', $this->callback.'?'.http_build_query([self::OP => self::OPERATION_CSS]), [], md5(self::param('css')), 'all' );
+            $this->scripts();
+            if ($target) $params['callback'] .= (strpos($params['callback'], '?') ? '&' : '?').http_build_query(['target' => $params['target']]);
             foreach ($params as $key => $value) set_query_var($key, $value);
             ob_start();
             if (!locate_template($template.'.php', true) && file_exists(SPWP_PLUGIN_DIR.'/templates/'.$template.'.php')) load_template(SPWP_PLUGIN_DIR.'/templates/'.$template.'.php');
             return ob_get_clean();
             break;
       }
+  }
+
+  public function scripts() {
+    $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
+    wp_enqueue_script( 'simple-payment-js', plugin_dir_url( __FILE__ ).'assets/js/simple-payment.js', [], $plugin['Version'], true );
+    wp_enqueue_style( 'simple-payment-css', plugin_dir_url( __FILE__ ).'assets/css/simple-payment.css', [], $plugin['Version'], true );
+    if (self::param('css')) wp_enqueue_style( 'simple-payment-custom-css', $this->callback.'?'.http_build_query([self::OP => self::OPERATION_CSS]), [], md5(self::param('css')), 'all' );
   }
 
   protected function register($params) {

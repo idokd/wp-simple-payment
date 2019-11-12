@@ -1,19 +1,6 @@
 <?php
-//var $product, $price, $id, $fixed;
-$SPWP = SimplePaymentPlugin::instance();
-require_once(SPWP_PLUGIN_DIR.'/settings.php');
-$year_today = date('Y'); $year_max = $year_today + 10;
-$installments_min = $SPWP->param('installments_min');
-$installments_max = $SPWP->param('installments_max');
-$installments = $SPWP->param('installments_default');
-
-$phone_pattern= '^\d{4}-\d{3}-\d{4}$';
-// TODO: valdate 3 digits (or 4 in american express) cvv and further credit card format
-// TODO: enable masks on fields (phone, mobile, credit card)
-// TODO: Consider adding credit card type
-$amount = number_format((float) $amount, 2);
-$target = isset($target) ? $target : $SPWP->param('target');
-$target = $target ? ' target="'.$target.'"' : '';
+require('preparation.php');
+wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL.'assets/js/form-checkout.js', [], $SPWP::$version, true );
 ?>
 <div class="col-md-8 order-md-1">
 <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo $SPWP->payment_page(); ?>" method="post"<?php echo $target; ?>>

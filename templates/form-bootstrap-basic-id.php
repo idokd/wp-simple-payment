@@ -1,6 +1,6 @@
 <?php
 require('preparation.php');
-wp_enqueue_script( 'simple-payment-checkout-js', plugin_dir_url( __FILE__ ).'assets/js/form-checkout.js', [], $SPWP->version, true );
+wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL.'assets/js/form-checkout.js', [], $SPWP::$version, true );
 ?>
 <div class="col-md-8 order-md-1">
   <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo $SPWP->payment_page(); ?>" method="post"<?php echo $target; ?>>

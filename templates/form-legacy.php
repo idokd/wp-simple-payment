@@ -1,17 +1,6 @@
 <?php
-$SPWP = SimplePaymentPlugin::instance();
-
-//var $product, $price, $id, $fixed;
-
-// TODO: fill country selectbox (maybe also states)
-// TODO: add validation for credit card number regexp
-// TODO: validate credit card expiry
-// TODO: valdate 3 digits (or 4 in american express) cvv
-// TODO: show/hide depending if paypal or not.
-
-$amount = number_format((float) $amount, 2);
-$target = isset($target) ? $target : $SPWP->param('target');
-$target = $target ? ' target="'.$target.'"' : '';
+require('preparation.php');
+wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL.'assets/js/form-checkout.js', [], $SPWP::$version, true );
 ?>
 <div class="col-md-8 order-md-1">
 <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo $SPWP->payment_page(); ?>" method="post"<?php echo $target; ?>>
