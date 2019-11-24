@@ -16,6 +16,8 @@ class Engine {
   public $interactive;
   public $password;
 
+  public static $supports = [];
+  
   protected $callback;
   protected static $params;
   protected $sandbox;

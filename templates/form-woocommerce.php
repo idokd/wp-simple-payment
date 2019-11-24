@@ -1,18 +1,6 @@
 <?php
-//var $product, $price, $id, $fixed;
-$SPWP = SimplePaymentPlugin::instance();
-require_once(SPWP_PLUGIN_DIR.'/settings.php');
-$year_today = date('Y'); $year_max = $year_today + 10;
-$installments_min = $SPWP->param('installments_min');
-$installments_max = $SPWP->param('installments_max');
-$installments = $SPWP->param('installments_default');
-
-// TODO: valdate 3 digits (or 4 in american express) cvv and further credit card format
-// TODO: Consider adding credit card type
-$amount = number_format((float) $amount, 2);
-
-$target = isset($target) ? $target : $SPWP->param('target');
-$target = $target ? ' target="'.$target.'"' : '';
+require('preparation.php');
+//wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL.'assets/js/form-checkout.js', [], $SPWP::$version, true );
 ?>
 <div class="col-md-8 order-md-1" id="simple-payment">
     <div class="row">
@@ -73,7 +61,7 @@ $target = $target ? ' target="'.$target.'"' : '';
       </div>
     </div>
 </div>
-<script>
+<!--script>
 (function () {
   'use strict'
   window.addEventListener('load', function () {
@@ -147,4 +135,4 @@ function setInputFilter(textbox, inputFilter) {
     });
   });
 }
-</script>
+</script-->

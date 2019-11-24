@@ -20,7 +20,8 @@
             SimplePayment.validate();
             if (form.checkValidity() === false) {
               event.preventDefault()
-              event.stopPropagation()
+              event.stopPropagation();
+              return(false);
             }
             form.classList.add('was-validated');
             SimplePayment.pre();
@@ -87,18 +88,29 @@
       Object.values(this._validations).forEach(validation => {
         var ele = validation[0];
         var fn = validation[1];
-        var passed = fn(ele);
-        ele = Array.isArray(ele) ? ele[0] : ele;
-        ele.setCustomValidity(!passed ? 'Failed Validation' : '');
-        valid = valid && passed;
+        if (ele && fn) {
+          var passed = fn(ele);
+          ele = Array.isArray(ele) ? ele[0] : ele;
+          ele.setCustomValidity(!passed ? 'Failed Validation' : '');
+          valid = valid && passed;
+        }
       });
       return(valid);
+    },
+
+    form: function(elem) {
+      this._form = elem;
     },
 
     setup: function() {
       var inputs = $("[sp-data]");
       for (var i = 0; i < inputs.length; i++) {
-        this.params[$(inputs[i]).attr('sp-data')] = $(inputs[i]).val();
+        var type = $(inputs[i]).attr('type');
+        var value = $(inputs[i]).val();
+        if (type == 'checkbox') {
+          value = $(inputs[i]).attr('checked') ? value : null
+        }
+        this.params[$(inputs[i]).attr('sp-data')] = value;
       }
       return(this._setup = true);
     },
@@ -116,7 +128,9 @@
     pre: function(target) {
       var target = typeof(target) !== 'undefined' ? target : SimplePayment.params['target'];
       if (SimplePayment.params['display'] == 'iframe') {
-        jQuery('[name="' + target + '"]').closest(':hidden').show();
+        var iframe = $('[name="' + target + '"]');        
+        if (!iframe.length) $('[sp-data="container"]').append('<iframe name="' + target + '" src="about:blank" sp-data="iframe"></iframe>');
+        $('[name="' + target + '"]').closest(':hidden').show();
       }
       if (SimplePayment.params['display'] == 'modal') {
         if (SimplePayment.params['modal']) jQuery(SimplePayment.params['modal']).modal('show');
@@ -129,7 +143,7 @@
     },
 
     submit: function(params, target) {
-      if (typeof(params) !== 'undefined') this.init(params);
+      if (typeof(params) !== 'undefined' && params) this.init(params);
       if (!this._setup) this.setup();
       var target = typeof(target) !== 'undefined' && target ? target : this.params['target'];
       if (!this._form) {

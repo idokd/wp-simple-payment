@@ -2,14 +2,15 @@
 
 class Wpjb_Payment_SimplePayment extends Wpjb_Payment_Abstract {
 
-    protected $SP;
-
+    protected $SPWP;
+    
     public function __construct(Wpjb_Model_Payment $data = null) {
-        $this->SP = SimplePaymentPlugin::instance();
+        $this->SPWP = SimplePaymentPlugin::instance();
         $this->_default = array(
             'disabled' => '0'
         );
         $this->_data = $data;
+        add_action('sp_payment_success', [$this, 'accept']);
     }
     
     public function getEngine() {
@@ -19,40 +20,68 @@ class Wpjb_Payment_SimplePayment extends Wpjb_Payment_Abstract {
     public function getForm() { 
         return('Wpjb_Form_Admin_Config_SimplePayment'); 
     }
-    
+
+    //public function getFormFrontend() {
+    //    return('Wpjb_Form_Payment_SimplePayment'); 
+    //}
+
     public function getTitle() {
         return('Simple Payment');
     }
 
-    // processTransaction(array $post, array $get) - return null if all is ok
-    // otherwise throw an exception
-    public function processTransaction() {        
-        /*\Stripe\Stripe::setApiKey($this->conf("secret_key")); 
-        
-        $this->maybeSaveCC();
-                
-        $payment_intent_id = Daq_Request::getInstance()->getParam('payment_intent_id');
-        //$customer_id = get_user_meta( $payment->post_author, '??', true );
-        $intent = \Stripe\PaymentIntent::retrieve( $payment_intent_id );
-        
-        // Proceed only if status succeeded
-        if( $intent->status !== "succeeded" ) {
-        exit (-2);
-        }
-        
-        $cArr = Wpjb_List_Currency::getByCode($intent->currency);
-        $pricing = new Wpjb_Model_Pricing($this->_data->pricing_id);
-        
-        return array(
-            "external_id"   => $payment_intent_id,
-            'is_recurring'  => $pricing->meta->is_recurring->value(),
-            "paid"          => ( $intent->amount_received / pow( 10, $cArr["decimal"] ) ),
-        );*/
+    public function accept($params) {
+        if (!isset($params['source']) || $params['source'] != 'wpjobboard') return(false);
+        if (!isset($params['source_id']) || !$params['source_id']) return(false);
 
+        $arr = [
+            'action' => 'wpjb_payment_accept',
+            'engine' => $this->getEngine(),
+            'id' => $params['source_id'],
+            'payment_id' => $params['id'],
+            'amount' => $params['amount'],
+            'redirect_url' => '',
+        ];
+        $response = wp_remote_post(admin_url('admin-ajax.php')."?".http_build_query($arr));
+
+        /* TODO: This is how i wished it could be handled (with less workaourund ofcourse),
+        but the wp_ajax_nopriv_wpjb_payment_accept - has an exit and die which doesnt allow to handle this
+        piece of code
+        
+        $request = Daq_Request::getInstance();
+        $request->addParam('GET', 'engine', $this->getEngine());
+        $request->addParam('GET', 'id', $params['source_id']);
+        $request->addParam('POST', 'engine', $this->getEngine());
+        $request->addParam('POST', 'id', $params['source_id']);
+
+        add_filter('wp_redirect', [$this, 'disableRedirect'], 10, 2);
+        ob_start();
+        $res = do_action('wp_ajax_nopriv_wpjb_payment_accept');
+        $result = ob_get_clean();
+        print_r($res);
+        remove_filter('wp_redirect', [$this, 'disableRedirect'], 10);
+        */
+
+
+    }
+
+    public function disableRedirect($location, $status) {
+        return('');
+    }
+
+    public function processTransaction() {    
+        // $payment = $this->SPWP->fetch($_REQUEST['payment_id']);
+        // TODO: now assuming paid fully. maybe use _get['amount']
+        return([
+            'echo' => 1,
+            'redirect_after' => $this->_get['redirect_url'],
+            'external_id'   => $this->_get['payment_id'],
+            'is_recurring'  => false, //$pricing->meta->is_recurring->value(),
+            'paid'          => $this->_data->payment_sum
+        ]);
     }
     
     public function bind(array $post, array $get) {
-        $this->setObject(new Wpjb_Model_Payment($post["id"]));
+        $this->setObject(new Wpjb_Model_Payment(isset($post["id"]) ? $post["id"] : $get["id"]));
         parent::bind($post, $get);
     }
 
@@ -72,27 +101,54 @@ class Wpjb_Payment_SimplePayment extends Wpjb_Payment_Abstract {
         }
 
         $amount = $this->_data->payment_sum-$this->_data->payment_paid;
-        $product = sprintf(__('Order %1$s. (%2$s).', "wpjobboard"), $this->getObject()->id(), get_bloginfo("name"));
-        $arr = array(
-            "action" => "wpjb_payment_accept",
-            "engine" => $this->getEngine(),
-            "id" => $this->_data->id
-        );
-        $params = apply_filters("sp_wpjb_data", [
-            'notify_url' => admin_url('admin-ajax.php')."?".http_build_query($arr),
+        $product = $this->conf('product');
+        $product = sprintf($product, $this->getObject()->id(), get_bloginfo("name"));
+        if (!$product) {
+            $pricing = new Wpjb_Model_Pricing($this->_data->pricing_id);
+            $product = $pricing->title;
+        } 
+        
+        $params = [
+            //  Originally expected a 'redirect_url' => admin_url('admin-ajax.php')."?".http_build_query($arr),
             'redirect_url' => $complete,
+            'target' => '_top',
+            'source' => 'wpjobboard',
+            'source_id' => $this->getObject()->id,
             'product' => $product,
             'amount' => $amount,
-            'type' => 'form',
-            'form' => 'wpjobboard',
-            'target' => '_top',
-            'display' => 'modal',
-            'callback' => '/', //$this->SP->payment_page(),
             'currency' => $this->getObject()->payment_currency,
-            'product_code' => 'WPJB'.$this->getObject()->id
-        ], $this);
-        $html = $this->SP->checkout($params);
-        $html.= "<script>SimplePayment.submit('".json_encode($params)."', '".($params['display'] ? 'sp-'.$params['display'] : '')."');</script>";
+            'product_code' => 'WPJB'.$this->getObject()->id,
+        ];
+        $params[SimplePaymentPlugin::FULL_NAME] = $this->getObject()->fullname;
+        $params[SimplePaymentPlugin::EMAIL] = $this->getObject()->email;
+
+        $params = apply_filters('sp_wpjb_params', $params, $this);
+        $engine = $this->conf('engine') && $this->conf('engine') != 'default' ? $this->conf('engine') : null;
+        try {
+            $this->SPWP->init(add_query_arg(['target' => '_top'], wp_get_referer()));
+            $url = $this->SPWP->payment($params, $engine);
+        } catch (Exception $e) {
+            // TODO: handle direct errors
+        }
+        if ($engine) $params['engine'] = $engine;
+        $display = SimplePaymentPlugin::supports($this->conf('display'), $engine) ? $this->conf('display') : null;
+        if ($display && in_array($display, ['iframe', 'modal'])) {
+            //$params['redirect_url'] = add_query_arg(['target' => '_top'], $params['redirect_url']);
+            $settings = $this->conf('settings');
+            if ($settings) $params = array_merge(json_decode($settings, true, 512, JSON_OBJECT_AS_ARRAY), $params);
+            $params['type'] = 'form';
+            $params['form'] = 'wpjobboard';
+            $params['display'] = $display;
+            $params['callback'] = $url;
+            $html = $this->SPWP->checkout($params);
+            $html.= "<script>
+                var form = jQuery('#wpjb-checkout-success');
+                form.find('.wpjb-flash-info').remove();
+                SimplePayment.submit('".json_encode($params)."', '".($params['display'] ? 'sp-'.$params['display'] : '')."');
+            </script>";
+        } else {
+            $html = SimplePaymentPlugin::redirect($url, null, true);
+        }
         return($html);
     }
     
@@ -101,7 +157,7 @@ class Wpjb_Payment_SimplePayment extends Wpjb_Payment_Abstract {
     }
     
     public function getIconFrontend() {
-        $this->SP->scripts();
+        $this->SPWP->scripts();
         return('wpjb-icon-credit-card'); 
     }
     

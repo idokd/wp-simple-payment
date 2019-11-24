@@ -18,6 +18,8 @@ class Cardcom extends Engine {
   // CancelType (0 - no cancel, 1 - back button, 2 - cancel url)
   protected $recurrAt = 'post'; // status
 
+  public static $supports = ['iframe', 'modal', 'tokenization'];
+
   public $api = [
     'version' => 10,
     // POST
@@ -58,11 +60,11 @@ class Cardcom extends Engine {
   }
 
   public function verify($id) {
-    $this->transation = $id;
+    $this->transaction = $id;
     $post = [];
     $post['terminalnumber'] = $this->terminal;
     $post['username'] = $this->username;
-    $post['lowprofilecode'] = $this->transation;
+    $post['lowprofilecode'] = $this->transaction;
     $post['codepage'] = 65001;
 
     $response = $this->post($this->api['indicator_request'], $post);
@@ -462,12 +464,19 @@ class Cardcom extends Engine {
     $currency = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param('currency');
     if ($language) $post['InvoiceHead.Languge'] = $params['language'];
     if ($currency) $post['InvoiceHead.CoinID'] = $params['currency'];
+
     if (isset($params['email']) && $params['email']) $post['InvoiceHead.Email'] = $params['email'];
-    if (isset($params['address']) && $params['address']) $post['InvoiceHead.CustAddresLine1'] = $params['address'];
-    if (isset($params['address2']) && $params['address2']) $post['InvoiceHead.CustAddresLine2'] = $params['address2'];
-    if (isset($params['city']) && $params['city']) $post['InvoiceHead.CustCity'] = $params['city'];
-    if (isset($params['phone']) && $params['phone']) $post['InvoiceHead.CustLinePH'] = $params['phone'];
-    if (isset($params['mobile']) && $params['mobile']) $post['InvoiceHead.CustMobilePH'] = $params['mobile'];
+    
+    if (!$this->param('doc_details') || in_array($this->param('doc_details'), ['address', 'full'])) {
+      if (isset($params['address']) && $params['address']) $post['InvoiceHead.CustAddresLine1'] = $params['address'];
+      if (isset($params['address2']) && $params['address2']) $post['InvoiceHead.CustAddresLine2'] = $params['address2'];
+      if (isset($params['city']) && $params['city']) $post['InvoiceHead.CustCity'] = $params['city'];
+    }
+    if (!$this->param('doc_details') || in_array($this->param('doc_details'), ['contact', 'full'])) {
+      if (isset($params['phone']) && $params['phone']) $post['InvoiceHead.CustLinePH'] = $params['phone'];
+      if (isset($params['mobile']) && $params['mobile']) $post['InvoiceHead.CustMobilePH'] = $params['mobile'];
+    }
+
     if (isset($params['tax_id']) && $params['tax_id']) $post['InvoiceHead.CompID'] = $params['tax_id'];
     if (isset($params['comment']) && $params['comment']) $post['InvoiceHead.Comments'] = $params['comment'];
     if ($this->param('email_invoice')) $post['InvoiceHead.SendByEmail'] = 'true';
@@ -476,6 +485,7 @@ class Cardcom extends Engine {
     if ($this->param('auto_load_account')) $post['InvoiceHead.IsLoadInfoFromAccountID'] = 'true';
     if ($this->param('department_id')) $post['InvoiceHead.DepartmentId'] = $this->param('department_id');
     if ($this->param('site_id')) $post['InvoiceHead.SiteUniqueId'] = $this->param('site_id');
+    
     $post['InvoiceLines1.Description'] = $params['product'];
     $post['InvoiceLines1.Price'] = $params['amount'];
     $post['InvoiceLines1.Quantity'] = 1;
@@ -483,10 +493,14 @@ class Cardcom extends Engine {
     // TODO: support per item: $post['InvoiceLines1.IsVatFree'] = 'true';
     if (isset($params['id']) && $params['id']) $post['InvoiceLines1.ProductID'] = $params['id'];
 /*
-    InvoiceHead.ManualInvoiceNumber - require special support from CardCom
+
     AccountForeignKey 	- not needed at the moment, TODO: maybe use user_id from wordpress (string)
-    InvoiceHead.AccountID	 - not needed (int)
-    InvoiceHead.ValueDate, InvoiceHead.Date - not supported on this API
+
+    InvoiceHead.ManualInvoiceNumber - require special authorization & support from CardCom, confict may cause failed document creation
+
+    InvoiceHead.AccountID	 - not needed (int) - this is account id in cardcom system, we dont have it and we don't care
+    
+    InvoiceHead.ValueDate, InvoiceHead.Date - not supported on this LowProfile API
 
    // TODO: Support Custom Fields
    CustomFields.Field1 .. 25 */

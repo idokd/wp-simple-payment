@@ -27,25 +27,39 @@ function sp_wc_gateway_init() {
 	class WC_SimplePayment_Gateway extends WC_Payment_Gateway_CC {
 
         protected $SPWP;
+        protected static $_instance = null;
+        public $view_transaction_url = '/wp-admin/admin.php?page=simple-payments-details&id=%s';
 
-		/**
-		 * Constructor for the gateway.
-		 */
+        public static function instance() {
+            if ( is_null( self::$_instance ) ) {
+                self::$_instance = new self();
+            }
+            return self::$_instance;
+        }
+        
+        public function __toString() {
+            return strtolower( get_class( $this ) );
+        }
+        
 		public function __construct() {
+            $this->SPWP = SimplePaymentPlugin::instance();
+
 			$this->id = 'simple-payment';
-			$this->icon = apply_filters('woocommerce_offline_icon', '');
-			$this->has_fields = false;//true;
+            $this->icon = apply_filters('woocommerce_offline_icon', '');
+            
+			$this->has_fields =  $this->SPWP->supports('cvv', $this->get_option('engine') ? : null);
 			$this->method_title = __( 'Simple Payment', 'simple-payment' );
 			$this->method_description = __( 'Allows integration of Simple Payment gateways into woocommerce', 'simple-payment' );
-            $this->supports = [] ;// ['products', 'refunds', 'tokenization', 'default_credit_card_form'];
-            // credit_card_form_cvc_on_saved_method
-            //$this->new_method_label = __('new payment method', 'simple-payment');
+            $this->supports =  ['products', 'refunds',  'default_credit_card_form'];
+            
+            // TODO: credit_card_form_cvc_on_saved_method - add this to support when CVV is not required on tokenized cards - credit_card_form_cvc_on_saved_method
+            // TODO: tokenization- in order to support tokinzation consider using the javascript
+            $this->new_method_label = __('new payment method', 'simple-payment');
 
 			// Load the settings.
 			$this->init_form_fields();
             $this->init_settings();
             
-		  
 			// Define user set variables
 			$this->title = $this->get_option( 'title' );
 			$this->description = $this->get_option( 'description' );
@@ -55,14 +69,24 @@ function sp_wc_gateway_init() {
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 			add_action( 'woocommerce_thankyou_'.$this->id, array($this, 'thankyou_page'));
           
-            if (!$this->has_fields) add_action('woocommerce_receipt_'.$this->id, array(&$this, 'provider_step'));
-
-			// Customer Emails
+            if (!$this->has_fields || in_array($this->get_option('display'), ['iframe', 'modal'])) add_action('woocommerce_receipt_'.$this->id, array(&$this, 'provider_step'));
+            add_action( "woocommerce_api_{$this}", array( $this, 'gateway_response' ) );
+            
+            // Customer Emails
 			add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ), 10, 3 );
-            $this->SPWP = SimplePaymentPlugin::instance();
+       
+            /** @since 1.2.0 */
+            add_filter( 'woocommerce_available_payment_gateways', 				array( $this, 'selected_payment_gateways' ) );
+            add_filter( 'woocommerce_get_customer_payment_tokens', 				array( $this, 'selected_customer_payment_token' ), 10, 3 );
+            add_filter( 'wc_payment_gateway_form_saved_payment_methods_html',  	array( $this, 'payment_methods_html' ) );
+            
+            add_filter( version_compare( WC()->version, '3.0.9', '>=' ) ? 'woocommerce' : 'wocommerce' . '_credit_card_type_labels', array( $this, 'credit_card_type_labels' ) );
         }
-	
-	
+    
+        public function needs_setup() {
+            return(false);
+        }
+
 		/**
 		 * Initialize Gateway Settings Form Fields
 		 */
@@ -105,7 +129,32 @@ function sp_wc_gateway_init() {
 					'desc_tip'    => true,
                     'options' => $engines,
                     'default' => ''
+                ),
+                'display' => array(
+					'title'   => __( 'Display Method', 'simple-payment' ),
+					'type'    => 'select',
+                    'label'   => __( 'Display Method', 'simple-payment' ),
+                    'description' => __( 'If none selected it will use Simple Payment default.', 'simple-payment' ),
+					'desc_tip'    => true,
+                    'options' => ['' => 'Default', 'iframe' => 'IFRAME', 'modal' => 'Modal', 'redirect' => 'redirect'],
+                    'default' => ''
+                ),
+                'product' => array(
+					'title'       => __( 'Product', 'simple-payment' ),
+                    'type'        => 'text',
+                    'label'   => __( 'Custom product name to use in Simple Payment', 'simple-payment' ),
+					'description' => __( 'Simple Payment globalize the purchase to single product on the Payment Gateway.', 'simple-payment' ),
+					'default'     => __('WooCommerce Order %s', 'simple-payment'),
+					'desc_tip'    => true,
 				),
+                'single_item_use_name' => array(
+					'title'   => __( 'Single Item Orders', 'simple-payment' ),
+					'type'    => 'checkbox',
+					'label'   => __( 'Single Item Order use as Product Name', 'simple-payment' ),
+                    'default' => 'yes',
+                    'description' => __( 'When order has a single item use item name as product name', 'simple-payment' ),
+					'desc_tip'    => true,
+                ),
                 'installments' => array(
 					'title'   => __( 'Installments', 'simple-payment' ),
 					'type'    => 'checkbox',
@@ -121,16 +170,106 @@ function sp_wc_gateway_init() {
 					'description' => __( 'If you wish to use a custom form template.', 'simple-payment' ),
 					'default'     => '',
 					'desc_tip'    => true,
+                ),
+                'settings' => array(
+					'title'       => __( 'Settings', 'simple-payment' ),
+                    'type'        => 'textarea',
+                    'label'   => __( 'Custom & advanced checkout settings', 'simple-payment' ),
+					'description' => __( 'Use if carefully', 'simple-payment' ),
+					'default'     => '',
+					'desc_tip'    => true,
 				),
 			) );
 		}
-    
+    /*
+    { "type":"hidden", "display": "modal" } 
+    */
         function provider_step($order_id) {
+            $order = wc_get_order( $order_id );
+            $params = $this->params($order->get_data());
+
             $url = get_post_meta((int) $order_id, 'sp_provider_url', true);
             wc_delete_order_item_meta((int) $order_id, 'sp_provider_url');
-            return('<iframe width="100%" height="1000" frameborder="0" src="'.$url.'" ></iframe>');
+
+            $settings = $this->get_option('settings');
+            if ($settings) $params = array_merge(json_decode($settings, true, 512, JSON_OBJECT_AS_ARRAY), $params);
+            
+            set_query_var('display', $this->get_option('display'));
+            $params['type'] = 'form';
+            $params['form'] = 'woocommerce-provider';
+            $params['callback'] = $url;
+            print $this->SPWP->checkout($params);
         }
 
+        public function gateway_response() {
+            $order_key = $_REQUEST['key'];
+            $order_id = $_REQUEST['order-pay'];
+            if (!$order_id) {
+                return;
+            }
+            $order = wc_get_order($order_id);
+            if (!$order = wc_get_order($order_id)) {
+                return;
+            }
+            //if ( ! empty( $transaction->Token ) && $order->get_user_id() ) {
+			//	$this->save_token( $transaction, $order->get_user_id() );
+			//}
+            $payment_id = $_REQUEST['payment_id']; // get payment id
+            $order->payment_complete($payment_id);
+            WC()->cart->empty_cart();
+            $target = isset($_REQUEST['target']) ? $_REQUEST['target'] : '';
+            $targets = explode(':', $target);
+            $target = $targets[0];
+            $url = $this->get_return_url($order);
+            switch ($target) {
+                case '_top':
+                  echo '<html><head><script type="text/javascript"> top.location.replace("'.$url.'"); </script></head><body></body</html>'; 
+                  break;
+                case '_parent':
+                  echo '<html><head><script type="text/javascript"> parent.location.replace("'.$url.'"); </script></head><body></body</html>'; 
+                  break;
+                case 'javascript':
+                  $script = $targets[1];
+                  echo '<html><head><script type="text/javascript"> '.$script.' </script></head><body></body</html>'; 
+                  break;
+                case '_blank':
+                  break;
+                case '_self':
+                default:
+                    echo '<html><head><script type="text/javascript"> location.replace("'.$url.'"); </script></head><body></body</html>'; 
+                    wp_redirect($url);
+            }
+            wp_die();
+            return;
+            //WC()->session->save_payment_method 	= null;
+		    //WC()->session->selected_token_id 	= null;
+
+            //$order->get_checkout_order_received_url(); //$this->get_return_url($order); //$order->get_checkout_order_received_url();
+            //$params["SuccessRedirectUrl"] = untrailingslashit(home_url()).'?wc-api=WC_Gateway_Cardcom&'.('cardcomListener=cardcom_successful&order_id='.$order_id);
+/*
+            $order->payment_complete($this->SPWP->engine->transaction);
+            wc_reduce_stock_levels($order_id);
+			WC()->cart->empty_cart();*/
+            /*$raw_data = json_decode( WC_Pelecard_API::get_raw_data(), true );
+            $transaction = new WC_Pelecard_Transaction( null, $raw_data );
+            $order_id = $transaction->get_order_id();
+            if ( ! $order_id && isset( $raw_data['ResultData']['TransactionId'] ) ) {
+                $transaction_id = wc_clean( $raw_data['ResultData']['TransactionId'] );
+                $transaction = new WC_Pelecard_Transaction( $transaction_id );
+                $order_id = $transaction->get_order_id();
+            }
+            
+            // bail
+            if ( ! $order = wc_get_order( $order_id ) ) {
+                return;
+            }
+            
+            $validated_ipn_response = $transaction->validate( is_callable( array( $order, 'get_order_key' ) ) ? $order->get_order_key() : $order->order_key );
+            if ( apply_filters( 'wc_pelecard_gateway_validate_ipn_response', $validated_ipn_response ) ) {
+                $this->do_payment( $transaction, $order );
+            }*/
+        }
+        
 		public function thankyou_page() {
 			if ( $this->instructions ) {
 				echo wpautop( wptexturize( $this->instructions ) );
@@ -138,36 +277,107 @@ function sp_wc_gateway_init() {
 		}
 	
 		public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-			if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
+			if ($this->instructions && !$sent_to_admin && $this->id === $order->get_payment_method() && $order->has_status( 'on-hold' ) ) {
 				echo wpautop( wptexturize( $this->instructions ) ) . PHP_EOL;
 			}
 		}
-	
+    
+        /**
+         * Enqueues our tokenization script to handle some of the new form options.
+         */
+        public function tokenization_script() {
+            wp_enqueue_script(
+                'woocommerce-tokenization-form',
+                SPWP_PLUGIN_URL.'addons/woocommerce/js/tokenization-form' . ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
+                array( 'jquery' ),
+                $this->SPWP::$version
+            );
+            
+            //wp_enqueue_script('simple-payment-checkoutscript',
+            //    SPWP_PLUGIN_URL.'addons/woocommerce/js/checkout.js'),
+            //    ['jquery'],
+            //    $this->SPWP::$version
+            //);
+
+            //wp_enqueue_script( 'wc-credit-card-form' );
+        }
+        
         public function payment_fields() {
             if (!$this->has_fields) return;
-            $template = $this->get_option('template') ? : 'form-woocommerce';
-            if ($override_template = locate_template($template.'.php')) load_template($override_template);
-            else load_template(SPWP_PLUGIN_DIR.'/templates/'.$template.'.php');
 
-            if ($this->supports('tokenization') && is_checkout()) {
-                wp_enqueue_script('simple-payment-checkoutscript',
-                plugins_url('/simple-payment/addons/woocommerce/checkout.js'),
-                ['jquery'],
-                WC()->version);
-                $this->saved_payment_methods();
-                // TODO: show CVV in case it is tokenixe
-                $this->save_payment_method_checkbox();
-            }            
+            $template = $this->get_option('template') ? : null;
+            if ($template) {
+                if ($override_template = locate_template($template.'.php')) load_template($override_template);
+                else load_template(SPWP_PLUGIN_DIR.'/templates/'.$template.'.php');
+            } else parent::payment_fields();         
         }
 
         public function validate_fields() {
+            $ok = parent::validate_fields();
             if ($this->has_fields) {
-                $validations = $this->SPWP->validate($_REQUEST);
-                    foreach ($validations as $key => $description)
+                $params = $this->params($_REQUEST);
+                $validations = $this->SPWP->validate($params);
+                foreach ($validations as $key => $description) {
                     wc_add_notice( sprintf(__('Payment error: %s', 'simple-payment'), $description, $key), 'error' );
+                    $ok = false;
+                }
             }
+            return($ok);
         }
         
+        protected function params($params) {
+            if (isset($params['billing'])) $params = array_merge($params, $params['billing']);
+            if (!isset($params[$this->SPWP::PRODUCT])) $params[$this->SPWP::PRODUCT] = $this->product($params);
+            if (isset($params['total'])) $params[$this->SPWP::AMOUNT] = $params['total'];
+            if (isset($params['postcode'])) $params[$this->SPWP::ZIPCODE] = $params['postcode'];
+            if (isset($params['address_1'])) $params[$this->SPWP::ADDRESS] = $params['address_1'];
+            if (isset($params['address_2'])) $params[$this->SPWP::ADDRESS2] = $params['address_2'];
+
+            // TODO: support product_code
+            if ($this->has_fields) { 
+                // TODO: when tokenized we do not have this value
+                // TODO: Consider enabling CARD_OWNER_ID
+                if (!isset($params[$this->SPWP::CARD_OWNER])) $params[$this->SPWP::CARD_OWNER] = $params['first_name'].' '.$params['last_name'];
+                if (!isset($params[$this->SPWP::CARD_OWNER]) || !$params[$this->SPWP::CARD_OWNER]) $params[$this->SPWP::CARD_OWNER] = $params['billing_first_name'].' '.$params['billing_last_name'];
+                if (isset($params[$this->id.'-card-number'])) $params[$this->SPWP::CARD_NUMBER] = str_replace(' ', '', $params[$this->id.'-card-number']);
+                if (isset($params[$this->id.'-card-cvc'])) {
+                    $params[$this->SPWP::CARD_CVV] = $params[$this->id.'-card-cvc'];
+                    $expiry = $params[$this->id.'-card-expiry'];
+                    $expiry = explode('/', $expiry);
+                    $century = floor(date('Y') / 1000) * 1000;
+                    $params[$this->SPWP::CARD_EXPIRY_MONTH] = trim($expiry[0]);
+                    $expiry[1] = trim($expiry[1]);
+                    $params[$this->SPWP::CARD_EXPIRY_YEAR] = strlen($expiry[1]) < 4 ? ($century + $expiry[1]) : $expiry[1];
+                }
+            }
+            return($params);
+        }
+
+        public function payment_methods_html( $html ) {
+            global $wp;
+            if ( ! is_checkout_pay_page() ) return $html;
+            $order_id = absint( $wp->query_vars['order-pay'] );
+            $order = wc_get_order( $order_id );
+            $payments = array(
+                'MaxPayments'			=> $this->SPWP->param('installments_min'),
+                'MinPayments'			=> $this->SPWP->param('installments_max'),
+            //    'MinPaymentsForCredit'	=> $this->mincredit
+            );
+            if ( $payments['MaxPayments'] !== $payments['MinPayments'] || 1 == $payments['MinPayments'] ) {
+                //$html .= wc_get_template_html( 'checkout/number-of-payments.php', array( 'payments' => $payments ), null, WC_Pelecard()->plugin_path() . '/templates/' );
+            }
+            return($html);
+        }
+
+        protected function product($params) {
+            $product = sprintf($this->get_option('product'), isset($params['id']) ? $params['id'] : ''); 
+            if (isset($params['line_items']) && count($params['line_items']) == 1 && $this->get_option('single_item_use_name') == 'yes') {
+                $product = array_shift($params['line_items']);
+                $product = $product->get_name();
+            } 
+            return($product);
+        }
+
 		/**
 		 * Process the payment and return the result
 		 *
@@ -176,29 +386,39 @@ function sp_wc_gateway_init() {
 		 */
 		public function process_payment( $order_id ) {
             $order = wc_get_order( $order_id );
-            $data = $order->get_data();
-            $params = $data['billing'];
-            $params = array_merge($params, $_REQUEST);
             $engine = $this->get_option('engine') ? : null;
+
+            $params = $this->params(array_merge($order->get_data(), $_REQUEST));
+            $params['source'] = 'woocommerce';
+            $params['source_id'] = $order_id;
+            wc_reduce_stock_levels($order_id);
             try {
-                // field_name
-                // card-number, card-expiry, card-cvc
-                $params[$this->SPWP::PRODUCT] = sprintf(__('WooCommerce Order %s', 'simple-payment'), $order_id);
-                $params[$this->SPWP::AMOUNT] = $order->get_total();
-                $params[$this->SPWP::ZIPCODE] = $params['postcode'];
-                $params[$this->SPWP::ADDRESS] = $params['address_1'];
-                $params[$this->SPWP::ADDRESS2] = $params['address_2'];
-                if (!$this->has_fields) $params['redirect_url'] = $order->get_checkout_order_received_url();
                 //get_checkout_order_received_url, get_cancel_order_url_raw
+
+                $params['redirect_url'] = WC()->api_request_url( "{$this}" );
+
+                if (version_compare(WOOCOMMERCE_VERSION, '2.2', '<')) $params['redirect_url'] = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), $params['redirect_url']));   
+                else $params['redirect_url'] = add_query_arg(['order-pay' => $order_id], add_query_arg('key', $order->get_order_key(), $params['redirect_url']));
+
+                if (in_array($this->get_option('display'), ['iframe', 'modal'])) {
+                    $params['redirect_url'] = add_query_arg(['target' => '_top'], $params['redirect_url']);
+                }
                 $url = $this->SPWP->payment($params, $engine);
-                $this->view_transaction_url = 'wp-admin/admin.php?page=simple-payments-details&transaction_id='.$this->SPWP->engine->transaction.'&engine='.$engine;
+                if (!$this->has_fields && in_array($this->get_option('display'), ['iframe', 'modal'])) {
+
+                    add_post_meta((int) $order_id, 'sp_provider_url', $url);
+                    
+                    if (version_compare(WOOCOMMERCE_VERSION, '2.2', '<')) $url = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), get_permalink(woocommerce_get_page_id('pay'))));
+                    else $url = add_query_arg(['order-pay' => $order_id], add_query_arg('key', $order->get_order_key(), $order->get_checkout_payment_url(true)));
+                }
+                //    if (version_compare(WOOCOMMERCE_VERSION, '2.2', '<')) $url = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), get_permalink(woocommerce_get_page_id('pay'))));   
+                //    else $url = add_query_arg(['order-pay' => $order_id], add_query_arg('key', $order->get_order_key(), $order->get_checkout_order_received_url()));
+                //}
                 if ($url && $url !== true) {
                     //return(true);
                     //wp_redirect($url);
                     // echo "<script>window.top.location.href = \"$url\";</script>";
                     //die;
-                    //if (version_compare(WOOCOMMERCE_VERSION, '2.2', '<')) $redirect = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), get_permalink(woocommerce_get_page_id('pay'))));
-                    //else $redirect = add_query_arg(['order-pay' => $order_id], add_query_arg('key', $order->get_order_key(), $order->get_checkout_payment_url(true)));
                     
                     return([
                         'result' => 'success',
@@ -220,14 +440,90 @@ function sp_wc_gateway_init() {
             }*/
 			// Mark as on-hold (we're awaiting the payment)
             
-            $order->payment_complete($this->SPWP->engine->transaction);
-            wc_reduce_stock_levels($order_id);
+            $order->payment_complete($this->SPWP->payment_id);
 			WC()->cart->empty_cart();
 			return([
                 'result' => 'success',
                 'redirect'=> $this->get_return_url($order)
             ]);
-		}
+        }
+        
+        public function save_token( $transaction, $user_id = 0 ) {
+            //$token_number 		= $transaction->Token;
+            //$token_card_type 	= $this->get_card_type( $transaction );
+            //$token_last4 		= substr( $transaction->CreditCardNumber, -4 );
+            //$token_expiry_month = substr( $transaction->CreditCardExpDate, 0, 2 );
+            //$token_expiry_year 	= substr( date( 'Y' ), 0, 2 ) . substr( $transaction->CreditCardExpDate, -2 );
+            
+            $token = new WC_Payment_Token_CC();
+            $token->set_token( $token_number );
+            $token->set_gateway_id( $this->id );
+            $token->set_card_type( $token_card_type );
+            $token->set_last4( $token_last4 );
+            $token->set_expiry_month( $token_expiry_month );
+            $token->set_expiry_year( $token_expiry_year );
+            $token->set_user_id( 0 < $user_id ? $user_id : get_current_user_id());
+            
+            if ($token->save()) return($token);
+            return(null);
+        }
+
+        /**
+         * Display selected payment token on checkout pay page.
+         *
+         * @param  array $tokens
+         * @param  int $customer_id
+         * @param  string $gateway_id
+         * @return array
+         */
+        public function selected_customer_payment_token( $tokens, $customer_id, $gateway_id ) {
+            if ( $gateway_id === $this->id && ! empty( WC()->session->selected_token_id ) && is_checkout_pay_page() ) {
+                $selected_token_id = WC()->session->selected_token_id;
+                // bail
+                if ( ! array_key_exists( $selected_token_id, $tokens ) ) {
+                    return $tokens;
+                }
+                $selected_token = $tokens[ $selected_token_id ];
+                $selected_token->set_default( true );
+                $tokens = array( $selected_token_id => $selected_token );
+                
+                // Remove new payment option
+                add_filter( 'woocommerce_payment_gateway_get_new_payment_method_option_html', '__return_empty_string' );
+            }
+            return $tokens;
+        }
+    
+        /**
+         * Display selected payment gateway on checkout pay page.
+         *
+         * @param  array $available_gateways
+         * @return array
+         */
+        public function selected_payment_gateways( $available_gateways ) {
+            $is_checkout_pay_page = is_checkout_pay_page();
+            if ( $is_checkout_pay_page ) {
+                $gateway = $available_gateways[ $this->id ];
+                $gateway->order_button_text = apply_filters( 'sp_wc_order_button_text', __( 'Pay for order', 'simple-payment' ), $is_checkout_pay_page );
+                if ( ! empty( WC()->session->selected_token_id ) ) {
+                    $available_gateways = array( $this->id => $gateway );
+                }
+            }
+            return $available_gateways;
+        }
+    
+        /**
+         * Add credit card types and labels.
+         *
+         * @param  array $labels
+         * @return array
+         */
+        public function credit_card_type_labels( $labels ) {
+            return array_merge( $labels, apply_filters( 'sp_wc_credit_card_type_labels', array(
+                'visa' 		=> __( 'Visa', 'simple-payment' ),
+                'mastercard' 		=> __( 'Mastercard', 'simple-payment' ),
+                'american express' 	=> __( 'American Express', 'simple-payment' )
+            ) ) );
+        }
   } 
 
 }

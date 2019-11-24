@@ -54,6 +54,12 @@ class SimplePayment {
     $this->engine = new $class($settings, $this, $this->sandbox);
   }
 
+  public static function supports($feature, $engine = null) {
+    if (!$engine) $class = get_class($this->engine);
+    else $class = __NAMESPACE__ . '\\Engines\\' . $engine;
+    return(in_array($feature, $class::$supports));
+  }
+
   public static function param($key = null, $default = false) {
     if (!$key) return(self::$params);
     if (!self::$params) return($default);
@@ -213,7 +219,12 @@ class SimplePayment {
           if ($type) break;
         case 'validity':
           if (isset($params[self::CARD_EXPIRY_MONTH])) {
-            $expires = \DateTime::createFromFormat('mY', $params[self::CARD_EXPIRY_MONTH].$params[self::CARD_EXPIRY_YEAR])->modify('+1 month first day of midnight');
+            $expires = \DateTime::createFromFormat('Y-m', $params[self::CARD_EXPIRY_YEAR].'-'.$params[self::CARD_EXPIRY_MONTH]);
+            if (!$expires) {
+              $errors[self::CARD_EXPIRY_MONTH] = 'INVALID_CARD_EXPIRATION';
+              break;
+            }
+            $expires->modify('+1 month first day of midnight');
             $now = new \DateTime('now');
             if ($expires < $now) $errors[self::CARD_EXPIRY_MONTH] = 'INVALID_CARD_EXPIRATION';
           }

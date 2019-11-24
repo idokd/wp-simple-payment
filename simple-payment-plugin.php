@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.6.9
+ * Version: 1.7.0
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -145,14 +145,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   	return($links);
   }
 
-  public function init() {
+  public function init($callback = null) {
     $this->payment_page = self::param('payment_page');
-    $this->callback = $this->payment_page();
+    $this->callback = $this->payment_page($callback);
   }
 
-  public function payment_page() {
+  public function payment_page($callback = null) {
       if ($this->payment_page) $this->callback = get_page_link($this->payment_page);
-      else $this->callback = self::param('callback_url');
+      else $this->callback = $callback? $callback : self::param('callback_url');
       if (!$this->callback) $this->callback = $_SERVER["REQUEST_URI"];
       if (!$this->callback) $this->callback = get_bloginfo('url');
       return($this->callback);
@@ -211,7 +211,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public static function process_verify($mins) {
     global $wpdb;
-    $sql = $wpdb->prepare("SELECT * FROM ".$wpdb->prefix.self::$table_name." WHERE `transaction_id` IS NOT NULL AND `status` = 'pending' AND `archived` = 0 AND `created` < DATE_SUB(NOW(), INTERVAL %d MINUTE)", $mins);
+    $max_retries = 5;
+    $sql = $wpdb->prepare("SELECT * FROM ".$wpdb->prefix.self::$table_name." WHERE `transaction_id` IS NOT NULL AND `retries` <= ".$max_retries." AND (`status` = 'pending' OR (`status` = 'success' AND  `confirmation_code` IS NULL)) AND `archived` = 0 AND `created` < DATE_SUB(NOW(), INTERVAL %d MINUTE)", $mins);
     $transactions = $wpdb->get_results( $sql , 'ARRAY_A' );
     $sp = self::instance();
     foreach($transactions as $transaction) {
@@ -226,9 +227,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
               'confirmation_code' => $status,
             ], true);
           } else {
-            self::update($transaction_id , [
-              'retries' => $transaction['retries'] ? $transaction['retries'] + 1 : 1,
-            ], true);
+            $retries = $transaction['retries'] ? $transaction['retries'] + 1 : 1;
+            $data = null;
+            if ($retries > $max_retries) {
+              if ($transaction['status'] != self::TRANSACTION_SUCCESS) $data = ['status' => self::TRANSACTION_FAILED];
+            } else {
+              $data = ['retries' => $retries];
+            }
+            if ($data) self::update($transaction_id , $data, true);
           }
         } catch (Exception $e) {
           self::update($transaction_id , [
@@ -705,7 +711,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   function pre_process($pre_params = []) {
     $method = isset($pre_params[self::METHOD]) ? strtolower(sanitize_text_field($pre_params[self::METHOD])) : null;
-    $fields = ['concept', 'redirect_url', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
+    $fields = ['target', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
     foreach ($fields as $field) if (isset($pre_params[$field]) && $pre_params[$field]) $params[$field] = $field == 'redirect_url' ? $pre_params[$field] : sanitize_text_field($pre_params[$field]);
     
     $params[self::AMOUNT] = self::tofloat($params[self::AMOUNT]);
@@ -751,10 +757,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     }
     return(false);
   }
+  
+  public static function supports($feature, $engine = null) {
+    return(parent::supports($feature, $engine ? : self::param('engine')));
+  }
 
   function callback() {
-    $info = parse_url($_SERVER["REQUEST_URI"]);
     $callback = parse_url($this->callback);
+    $info = parse_url($_SERVER["REQUEST_URI"]);
     if (isset($info['path']) && isset($callback['path']) && $info['path'] != $callback['path']) return;
     if (!isset($_REQUEST[self::OP])) return;
     $url = null;
@@ -773,6 +783,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
               if (isset($_REQUEST['payment_id']) && $_REQUEST['payment_id']) $params = array_merge($this->fetch($_REQUEST['payment_id']), $_REQUEST);
               else $params = $_REQUEST;
               $this->post_process($params, $engine);
+              do_action('sp_payment_success', $params);
             } catch (Exception $e) {
               $status[self::OP] = self::OPERATION_ERROR;
               $status['status'] = $e->getCode();
@@ -848,7 +859,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     if ($url) {
       if ($op == 'purchase') $target = '';
       else $target = isset($target) && $target ? $target : (isset($_REQUEST['target']) ? $_REQUEST['target'] : null);
-      $targets = explode(':', $target);
+      $this->redirect($url, $target);
+      wp_die(); 
+      /*$targets = explode(':', $target);
       $target = $targets[0];
       switch ($target) {
           case '_self':
@@ -869,8 +882,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             wp_redirect($url); 
             echo '<html><head><script type="text/javascript"> location.replace("'.$url.'"); </script></head><body></body</html>'; 
             break;
-      }
-      die(); 
+      }*/
     }
   }
 
@@ -1009,13 +1021,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
                 $url.'?'.http_build_query($params),
                 esc_html( $title ? $title : 'Buy' ));
             break;
-          default:
           case self::TYPE_HIDDEN:
               $form = 'hidden';
+          default:
           case self::TYPE_FORM:
               $template = 'form-'.$form;
           case self::TYPE_TEMPLATE:
             $this->scripts();
+            if (!isset($params['callback'])) $params['callback'] = $this->callback;
             if ($target) $params['callback'] .= (strpos($params['callback'], '?') ? '&' : '?').http_build_query(['target' => $params['target']]);
             foreach ($params as $key => $value) set_query_var($key, $value);
             ob_start();
@@ -1028,7 +1041,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public function scripts() {
     $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
     wp_enqueue_script( 'simple-payment-js', plugin_dir_url( __FILE__ ).'assets/js/simple-payment.js', [], $plugin['Version'], true );
-    wp_enqueue_style( 'simple-payment-css', plugin_dir_url( __FILE__ ).'assets/css/simple-payment.css', [], $plugin['Version'], true );
+    wp_enqueue_style( 'simple-payment-css', plugin_dir_url( __FILE__ ).'assets/css/simple-payment.css', [], $plugin['Version'], 'all' );
     if (self::param('css')) wp_enqueue_style( 'simple-payment-custom-css', $this->callback.'?'.http_build_query([self::OP => self::OPERATION_CSS]), [], md5(self::param('css')), 'all' );
   }
 
@@ -1095,12 +1108,12 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
          'default' => 20,
          'option' => 'sp_per_page'
       ]);
-      if ((!isset($_REQUEST['id']) && !isset($_REQUEST['transaction_id'])) || !isset($_REQUEST['engine'])) throw new Exception(__('Error fetching transaction'), 500);
+      if (!isset($_REQUEST['id']) && !(isset($_REQUEST['transaction_id']) && isset($_REQUEST['engine']))) throw new Exception(__('Error fetching transaction'), 500);
       $id = isset($_REQUEST['transaction_id']) && $_REQUEST['transaction_id'] ? sanitize_text_field($_REQUEST['transaction_id']) : absint($_REQUEST['id']);
-      $engine = sanitize_text_field($_REQUEST['engine']);
+      //$engine = sanitize_text_field($_REQUEST['engine']);
 
       require(SPWP_PLUGIN_DIR.'/admin/transaction-list-table.php');
-      $list = new Transaction_List($engine);
+      $list = new Transaction_List(true);
   }
 
   public function render_transactions() {
@@ -1179,9 +1192,39 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       }
       if (!isset($params['ip_address'])) $params['ip_address'] = $_SERVER['REMOTE_ADDR'];
       if (!isset($params['user_agent'])) $params['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-      // TODO: if id update instead of insert
+      // TODO: if id do update instead of insert
       $result = $wpdb->insert($wpdb->prefix . 'sp_' . $tablename, $params);
       return($result != null ? $wpdb->insert_id : false);
+    }
+
+    public static function redirect($url, $target = '', $return = false) {
+      $targets = explode(':', $target ? $target : '');
+      $target = $targets[0];
+      $redirect = '';
+      switch ($target) {
+        case '_top':
+          $redirect = '<html><head><script type="text/javascript"> top.location.replace("'.$url.'"); </script></head><body></body</html>'; 
+          break;
+        case '_parent':
+          $redirect = '<html><head><script type="text/javascript"> parent.location.replace("'.$url.'"); </script></head><body></body</html>'; 
+          break;
+        case 'javascript':
+          $script = $targets[1];
+          $redirect = '<html><head><script type="text/javascript"> '.$script.' </script></head><body></body</html>'; 
+          break;
+        case '_blank':
+          $redirect = '<html><head><script type="text/javascript"> var win = window.open("'.$url.'", "_blank"); win.focus(); </script></head><body></body</html>'; 
+          break;
+        case '_self':
+        default:
+          $redirect = '<html><head><script type="text/javascript"> location.replace("'.$url.'"); </script></head><body></body</html>'; 
+          if (!$return) {
+            wp_redirect($url);
+            wp_die();
+          }
+      }
+      if (!$return) echo $redirect;
+      else return($redirect);
     }
 }
 

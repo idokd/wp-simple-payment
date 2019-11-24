@@ -249,6 +249,15 @@ $sp_settings = [
     'type' => 'check',
     'section' => 'cardcom_settings'
    ], // IsLoadInfoFromAccountID
+
+   'cardcom.doc_details' => [
+    'title' => __('Information to print on document', 'simple-payment'),
+    'type' => 'select',
+    'auto' => false,
+    'options' => ['full' => 'Full Customer Information', 'address' => 'Address Only', 'contact' => 'Contact Only', 'none' => 'None'],
+    'section' => 'cardcom_document'
+  ],
+   
   'cardcom.show_invoice_info' => [
     'title' => __('Show Invoice Information', 'simple-payment'),
     'type' => 'check',

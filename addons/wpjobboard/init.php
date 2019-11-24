@@ -41,6 +41,7 @@ function sp_wpjb_init() {
 
         $sp = new Wpjb_Payment_SimplePayment;
         $list[$sp->getEngine()] = get_class($sp);
+
         return($list);
     }
 

@@ -6,18 +6,18 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   public static $table_name = 'sp_transactions';
   public static $views_rendered = false;
-  public static $engine;
+  public static $details;
   public static $columns;
 
-  public function __construct($engine = null) {
+  public function __construct($details = false) {
     global $wpdb;
 		parent::__construct( [
 			'singular' => __( 'Transaction', 'simple-payment' ),
 			'plural'   => __( 'Transactions', 'simple-payment' ),
 			'ajax'     => false
 		] );
-    self::$engine = $engine;
-    self::$table_name = $engine ? $wpdb->prefix.'sp_'.strtolower('history') : $wpdb->prefix.self::$table_name;
+    self::$details = $details;
+    self::$table_name = $details ? $wpdb->prefix.'sp_'.strtolower('history') : $wpdb->prefix.self::$table_name;
 	}
 
   protected function is_export() {
@@ -25,7 +25,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   protected function get_views() {
-      if (self::$engine) return;
+      if (self::$details) return;
       $status_links = [
           "all"       => "<a href='?page=simple-payments'>".__("All", 'simple-payment')."</a>",
           "success" => "<a href='?page=simple-payments&status=success'>".__("Success", 'simple-payment')."</a>",
@@ -44,7 +44,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   function extra_tablenav( $which ) {
-      if (self::$engine) return;
+      if (self::$details) return;
       global $wpdb;
       if ($which == "top"){
           ?>
@@ -70,7 +70,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   public static function get_transactions( $per_page = 5, $page_number = 1, $instance = null, $count = false) {
     global $wpdb;
-    if ($instance && !self::$engine) {
+    if ($instance && !self::$details) {
       $orderby = $instance->get_pagination_arg('orderby');
       $order = $instance->get_pagination_arg('order');
     } else {
@@ -80,12 +80,12 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     if ($count) $sql = "SELECT COUNT(*) FROM ".self::$table_name;
     else $sql = "SELECT * FROM ".self::$table_name;
     $where = [];
-    if ( ! empty( $_REQUEST['id'] ) && isset($_REQUEST['engine']) && $_REQUEST['engine'] ) $where[] = "`payment_id` = " .esc_sql(absint($_REQUEST['id']));
-    if ( ! empty( $_REQUEST['transaction_id'] ) ) $where[] = "`transaction_id` =  '" .esc_sql($_REQUEST['transaction_id'])."'";
-
+    if ( ! empty( $_REQUEST['id'] ) ) $where[] = "`payment_id` = " .esc_sql(absint($_REQUEST['id']));
+    if ( ! empty( $_REQUEST['transaction_id'] ) && isset($_REQUEST['engine']) && $_REQUEST['engine'] ) $where[] = "`transaction_id` =  '" .esc_sql($_REQUEST['transaction_id'])."'";
+    
     if ( ! empty( $_REQUEST['status'] ) ) $where[] = "`status` =  '" .esc_sql($_REQUEST['status'])."'";
 
-    if (!self::$engine) {
+    if (!self::$details) {
       $where[] = "`archived` = ".(!empty($_REQUEST['archive']) ? '1' : 0);
       if ( ! empty( $_REQUEST['engine'] ) ) $where[] = "`engine` =  '" .esc_sql($_REQUEST['engine'])."'";
     }
@@ -120,7 +120,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   function column_id( $item ) {
-    if (self::$engine || $this->is_export()) return($item['id']);
+    if (self::$details || $this->is_export()) return($item['id']);
     $title = '<strong>' . $item['id'] . '</strong>';
     if (isset($item['archived']) && $item['archived']) {
       $unarchive_nonce = wp_create_nonce( 'unarchive_'.$this->_args['singular'] );
@@ -146,7 +146,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   protected function get_bulk_actions() {
-    if (self::$engine) return;
+    if (self::$details) return;
     if (isset($_REQUEST['archive']) && $_REQUEST['archive']) {
       $actions = array(
         'bulk-unarchive' => __( 'Unarchive', 'simple-payment' ),
@@ -190,7 +190,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 	}
 
   function get_columns() {
-    if (self::$engine && self::$columns) {
+    if (self::$details && self::$columns) {
       $cols = [];
       foreach (self::$columns as $key) $cols[$key] = __($key, 'simple-payments');
       return($cols);

@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor
 Requires at least: 4.6
 Tested up to: 5.2.4
-Stable tag: 1.6.9
+Stable tag: 1.7.0
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -89,6 +89,16 @@ I hope it is useful for you and look forward to reading your reviews! 😉 Thank
 Checkout for more details [changelog.txt](http://plugins.svn.wordpress.org/simple-payment/trunk/changelog.txt) file
 
 == Changelog ==
+
+= 1.6.8 =
+*Release Date - 24 November 2019*
+* Better support for [WPJobBoard](https://wpjobboard.net/)] & WooCommerce
+* Enable single item receipt in WooCommerce & WPJobBoard
+* Enable customize product name in WooCommerce & WPJobBoard
+* Enable iframe, modal & redirect mode in WooCommerce & WPJobBoard
+* Cardcom flag to minimize information on receipt - will show only minimum necessary information
+* Enables supports() to Engines
+* Bugfix on verification process.
 
 = 1.6.8 =
 *Release Date - 12 November 2019*
