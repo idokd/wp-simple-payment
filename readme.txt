@@ -4,23 +4,25 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor
 Requires at least: 4.6
 Tested up to: 5.2.4
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Simple Payment enables a simple, fast and easy integration to process payments. Convert any Post/Page to a product - easy and powerful tool
+Simple Payment enables a simple, fast and powerful integration to process payments. Convert any Post/Page to a product - easy and very customizable tool
 
 == Description ==
 
-Simple Payment enables a simple, fast and easy integration to process payments, converting any post or page to a Product or Service, no need to install complicated plugins.
+Simple Payment enables a simple, fast and powerful integration to process payments, converting any post or page to a Product or Service, no need to install complicated plugins.
 
-Simple Payment works with many payment processing, and enables you to add you customized gateway easily
+Simple Payment works with many payment gateways, and enables you to add you customized gateway easily
 
 Major features in Simple Payment include:
 
 * Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount)
 * Selection of Payment Forms to choose from (Basic, Bootstrap, Legacy, Donation)
+* Works with plugins such as: Gutenberg Editor, WooCommerce, WPJobBoard, Form Maker.
+* Extend workflow with Zapier - get triggers and preform actions on payments via Zapier.
 * Donation Form for free entry amount
 * PCI-DSS Data Protection Ready (All sensitive are masked in database)
 * Convert Any Post / Page to a Service/ Product
@@ -33,7 +35,7 @@ Major features in Simple Payment include:
 * Enable Multiple Payment Engines
 * Transactions / Payments Log with Filtering
 * Export Transactions to CSV
-* Support for Gutenberg Editor
+
 
 PS: You'll need an [Simple Payment API key for advanced gateways](https://simple-payment.yalla-ya.com/get/) to use it.  Keys are available for personal blogs; single domain, multiple domains, businesses and commercial sites.
 
@@ -90,7 +92,11 @@ Checkout for more details [changelog.txt](http://plugins.svn.wordpress.org/simpl
 
 == Changelog ==
 
-= 1.6.8 =
+= 1.7.1 =
+*Release Date - 24 November 2019*
+* Bugfix on Cardcom special cases.
+
+= 1.7.0 =
 *Release Date - 24 November 2019*
 * Better support for [WPJobBoard](https://wpjobboard.net/)] & WooCommerce
 * Enable single item receipt in WooCommerce & WPJobBoard
