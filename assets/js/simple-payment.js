@@ -4,7 +4,10 @@
     params: {op: 'purchase', classname: 'needs-validation'},
     _validations: [],
     _form: null,
+    bootstrap: null,
+
     init: function(params) {
+      if (SimplePayment.bootstrap == null) SimplePayment.bootstrap = (typeof $().modal == 'function');
       if (typeof(sp_settings) !== 'undefined') SimplePayment.params = {...SimplePayment.params, ...sp_settings};
       if (typeof(params) !== 'undefined' && params) SimplePayment.params = {...SimplePayment.params, ...params};
       window.addEventListener('load', function () {
@@ -116,11 +119,19 @@
     },
 
     modal: function(target) {
-      this._modal = $('<div class="modal fade" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
-      this._modal.append('<div class="modal-dialog modal-dialog-centered" role="document">' 
-        + '<div class="modal-content"><div class="modal-body"><div class="embed-responsive embed-responsive-1by1">'
-        + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="about:blank" class="embed-responsive-item h100 w100"></iframe>'
-        + '</div></div></div></div>');
+      if (this.bootstrap) {
+        this._modal = $('<div class="modal fade" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
+        this._modal.append('<div class="modal-dialog modal-dialog-centered" role="document">' 
+          + '<div class="modal-content"><div class="modal-body"><div class="embed-responsive embed-responsive-1by1">'
+          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="about:blank" class="embed-responsive-item h100 w100"></iframe>'
+          + '</div></div></div></div>');
+      } else {
+        this._modal = $('<div class="sp-legacy-modal" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
+        this._modal.append('<div class="sp-modal-dialog" role="document"><a href="javascript:SimplePayment.close();" class="sp-close">X</a>' 
+          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="about:blank"></iframe>'
+          + '</div>');
+        
+      }
       $('body').append(this._modal);
       return($('[sp-data="modal"]'));
     },
@@ -133,12 +144,35 @@
         $('[name="' + target + '"]').closest(':hidden').show();
       }
       if (SimplePayment.params['display'] == 'modal') {
-        if (SimplePayment.params['modal']) jQuery(SimplePayment.params['modal']).modal('show');
-        else {
-          var modal = jQuery('[name="' + target + '"]').closest('[sp-data="modal"]');
-          if (modal.length) modal.modal('show');
-          else (this.modal(target)).modal('show'); 
+        if (!jQuery.fn.modal) {
+          // We do not have bootstrap, or old and it is not supporting modal
+          jQuery.fn.extend({
+            modal: function( action ) { 
+              return this.each(function() {
+                console.log(this);
+                if (action == 'hide') jQuery(this).hide();
+                else jQuery(this).show();
+              })
+            },
+          });
+        }        
+        target = this.params['type'] == 'hidden' ? 'sp-frame' : target;
+        var modal = SimplePayment.params['modal'] ? jQuery(SimplePayment.params['modal']) : jQuery('[name="' + target + '"]').closest('[sp-data="modal"]');
+        console.log(modal);
+        if (!modal || modal.length == 0) {
+          console.log('modal not found creating..');
+          modal = this.modal(target);
         }
+        modal.modal('show');
+      }
+    },
+
+    close: function(target) {
+      if (SimplePayment.params['modal']) jQuery(SimplePayment.params['modal']).modal('hide');
+      else {
+        var target = typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target'];
+        target = this.params['type'] == 'hidden' ? 'sp-frame' : target;
+        jQuery('[name="' + target + '"]').closest('[sp-data="modal"]').modal('hide');
       }
     },
 

@@ -32,57 +32,31 @@ registerBlockType( 'simple-payment/simple-payment', {
 	icon: 'money', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
 	category: 'common',
 	keywords: [
-		__( 'sSimple Paymnet Block' ),
+		__( 'Simple Paymnet Block' ),
 		__( 'Simple Paymnet' ),
 		__( 'simple-payment' ),
 		__( 'checkout' ),
 		__( 'Payment' ),
 	],
 	attributes: {
-		id: {
-			type: 'integer'
-		},
-		amount: {
-			type: 'string'
-		},
-		product: {
-			type: 'string'
-		},
-		title: {
-			type: 'string'
-		},
-		fixed: {
-			type: 'boolean'
-		},
+		id: { type: 'integer' },
+		amount: { type: 'string' },
+		product: { type: 'string' },
+		title: { type: 'string' },
+		fixed: { type: 'boolean' },
 		type: { // form/temlpate e...
-			type: 'string'
-		},
+			type: 'string' },
 		form: { // form/temlpate e...
-			type: 'string'
-		},
+			type: 'string' },
 		template: { // form/temlpate e...
-			type: 'string'
-		},
-		target: {
-			type: 'string'
-		},
-		engine: {
-			type: 'string'
-		},
-		method: {
-			type: 'string'
-		},
-		redirect_url: {
-			type: 'string'
-		},
-		amount_field: {
-			type: 'string'
-		},
-		product_field: {
-			type: 'string'
-		},
-		enable_query: {
-			type: 'boolean'
+			type: 'string' },
+		target: { type: 'string' },
+		engine: { type: 'string' },
+		method: { type: 'string' },
+		redirect_url: { type: 'string' },
+		amount_field: { type: 'string' },
+		product_field: { type: 'string' },
+		enable_query: { type: 'boolean'
 		}
 	},
 	supports: {

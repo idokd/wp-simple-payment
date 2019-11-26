@@ -3,7 +3,7 @@
 add_action('sp_extension_zapier', 'sp_zapier');
 
 function sp_zapier($params = []) {
-    global $wpdb;
+    global $wpdb, $SPWP;
     header('Content-Type: application/json');
     $method = isset($_REQUEST['method']) ? $_REQUEST['method'] : 'default';
     $api_key = isset($_REQUEST['api_key']) ? $_REQUEST['api_key'] : null;
@@ -16,12 +16,14 @@ function sp_zapier($params = []) {
     switch ($method) {
         case 'archive':
           SimplePaymentPlugin::archive($_REQUEST['id']);
-          $sql = 'SELECT * FROM '.$wpdb->prefix.SimplePaymentPlugin::$table_name.' WHERE `id` = '.$_REQUEST['id'];
-          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          //$sql = 'SELECT * FROM '.$wpdb->prefix.SimplePaymentPlugin::$table_name.' WHERE `id` = '.$_REQUEST['id'];
+          //$zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          $zapier = $SPWP->fetch($_REQUEST['id']);
           break;
         case 'transaction':
-          $sql = 'SELECT * FROM '.$wpdb->prefix.SimplePaymentPlugin::$table_name.' WHERE `id` = '.$_REQUEST['id'];
-          $zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          //$sql = 'SELECT * FROM '.$wpdb->prefix.SimplePaymentPlugin::$table_name.' WHERE `id` = '.$_REQUEST['id'];
+          //$zapier = $wpdb->get_results( $sql , 'ARRAY_A' );
+          $zapier = $SPWP->fetch($_REQUEST['id']);
           break;
         case 'transactions':
           $sql = 'SELECT * FROM '.$wpdb->prefix.SimplePaymentPlugin::$table_name.' WHERE `archived` = 0';
