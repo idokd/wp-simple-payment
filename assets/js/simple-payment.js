@@ -156,7 +156,7 @@
             },
           });
         }        
-        target = this.params['type'] == 'hidden' ? 'sp-frame' : target;
+        target = this.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         var modal = SimplePayment.params['modal'] ? jQuery(SimplePayment.params['modal']) : jQuery('[name="' + target + '"]').closest('[sp-data="modal"]');
         console.log(modal);
         if (!modal || modal.length == 0) {
@@ -171,7 +171,7 @@
       if (SimplePayment.params['modal']) jQuery(SimplePayment.params['modal']).modal('hide');
       else {
         var target = typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target'];
-        target = this.params['type'] == 'hidden' ? 'sp-frame' : target;
+        target = this.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         jQuery('[name="' + target + '"]').closest('[sp-data="modal"]').modal('hide');
       }
     },
