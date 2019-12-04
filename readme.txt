@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor
 Requires at least: 4.6
 Tested up to: 5.3
-Stable tag: 1.7.4
+Stable tag: 1.7.5
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -85,10 +85,6 @@ Please let me know through [support forums](https://wordpress.org/support/plugin
 Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.org/support/users/idokd/) or even visit [Github](https://github.com/idokd/wp-simple-payment) of Simple Payment where you can find all the development code of this plugin.
 
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
-
-== Changelog ==
-
-Checkout for more details [changelog.txt](http://plugins.svn.wordpress.org/simple-payment/trunk/changelog.txt) file
 
 == Changelog ==
 

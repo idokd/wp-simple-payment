@@ -1,7 +1,7 @@
 <?php
 //var $product, $price, $id, $fixed;
 $SPWP = SimplePaymentPlugin::instance();
-require_once(SPWP_PLUGIN_DIR.'/settings.php');
+require(SPWP_PLUGIN_DIR.'/settings.php');
 $installments = isset($installments) ? $installments : 0;
 $year_today = date('Y'); $year_max = $year_today + 10;
 $installments_min = $SPWP->param('installments_min');
