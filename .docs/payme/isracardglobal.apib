@@ -1,0 +1,818 @@
+FORMAT: 1A
+
+# Payments Integration API
+
+This API is designed to allow platforms to offer a full payment solution as part of their product.
+
+Using the API you can:
+<ul>
+<li>Create standard transactions</li>
+<li>Create recurring payments</li>
+<li>Use our secured payment page</li>
+<li>Use Tokenization for delayed & future payments</li>
+<li>Charge a platform fee from every transaction</li>
+<li>Query data regarding transactions, subscriptions, withdrawals and more</li>
+</ul>
+
+**PCI compliant and want to use the direct credit card API?**
+Let us know via the Help widget at the bottom!
+
+## API Capabilities and Structure
+By using the API you will be able to handle all transactions on your website without dealing with sensitive credit card details, processing difficulties or PCI compliancy. 
+
+
+**The basics are simple.** You **POST** required information to our target URL's using **JSON** format and get replies structured in **JSON** format. You are free to use whatever programming language you prefer.
+
+**Note:** Do not forget to add the header `Content-Type: application/json` to your requests!
+
+**Callbacks** - We have an option to send out a server to server notifications, also known as "IPN". For example: a customer successfully paying using the IFRAME; a successful subscription iteration. The format and details are described throughout this document. 
+The callback is a **POST** request of type `x-www-form-urlencoded` to your provided target URL.
+
+## Getting Started and Connection Details
+Please review the API document. Below each API call description are listed the relevant target URL's for the **staging** and **production** enviroments and a link to view an example of the API call and potential responses on the right panel.
+<br /><br />
+
+Your credentials are located in your account's Setting page.
+
+**Do not share your key or secret!**
+
+## Service URLs
+In order to work with the API, you should use the service URLs according to the required environments, **Staging** or **Production**.
+
+When interacting with the API, make sure you point to the correct environment, with the correct credentials. Both URLs will be stated next to each function.
+
+| Environment   | URL           |
+|:--------------|:--------------|
+| Staging       | `https://preprod.paymeservice.com/api/` |
+| Production    | `https://ng.paymeservice.com/api/` |
+
+## Credit Card Numbers for Testing Purposes
+Please use the following credit card when integrating only in the **Staging** environment.
+
+**Main credit card numbers for testing**
+
+| Credit Card | Details   |
+|:------------|:----------|
+| Card Number: `4580458045804580`<br/>Expiration: `Any future date`<br/>CVV: `Any 3 digits` | Acts as an _international non-Israeli_ card.<br/>Accepts sales with only *one* installment.<br/>Accepts sales in `ILS`, `USD`, `EUR`. |
+| Card Number: `4580000000000000`<br/>Expiration: `Any future date`<br/>CVV: `Any 3 digits` | Acts as an _international Israeli_ card.<br/>Accepts sales with *multiple* installments.<br/>Accepts sales in `ILS`, `USD`, `EUR`. |
+| Card Number: `12312312`<br/>Expiration: `Any future date`<br/>CVV: `Any 3 digits`         | Acts as a _local Israeli_ card.<br/>Accepts sales with *multiple* installments.<br/>Accepts sales in `ILS` only. |
+
+**Secondary credit card numbers for testing**
+
+| Credit Card Type  | Credit Card Number    |
+|:------------------|:----------------------|
+| Visa              | 4111111111111111<br/>4200000000000000 |
+| Mastercard        | 5555555555554444<br/>5454545454545454 |
+| AmericanExpress   | 378282246310005<br/>377777777777770   |
+| Diners            | 38520000023237        |
+| Discover          | 6011000990139424      |
+| JCB               | 3530111333300000      |
+| Isracard          | 12312312              |
+
+**Credit card numbers for testing specific responses and errors**
+
+| Card Number      | Description    |
+|:-----------------|:---------------|
+| 4000000000000002 | Payment is declined with a card declined error          |
+| 4000000000000051 | Payment is declined with a card blocked error           |
+| 4000000000000085 | Payment is declined with a card stolen error            |
+| 4000000000000069 | Payment is declined with a card expired error           |
+| 4000000000000101 | Payment is declined with a required CVV error           |
+| 4000000000000127 | Payment is declined with an incorrect CVV               |
+| 4000000000000135 | Payment is declined with a credit limit reached error   |
+| 4242424242424241 | Payment is declined with an incorrect card number error |
+
+[//]: # ( Expiration | CVV |)
+[//]: # (------------|-----|)
+[//]: # ( 01/2019    | 123 |)
+
+## One-stop-shop solution for Marketplaces
+
+Using our dedicated Marketplace API you will be able to:
+<ul>
+<li>Create and manage sellers on your platform</li>
+<li>Allow your sellers to accept credit card payments</li>
+<li>Charge a platform fee from every transaction</li>
+</ul>
+
+**Would you like to use our Marketplace API?**
+Let us know via the Help widget at the bottom!
+
+
+# Group Sales
+## Generate Sale [/generate-sale]
+
+#### **Target URLs**
+| Environment   | URL           |
+|:--------------|:--------------|
+| Staging       | `https://preprod.paymeservice.com/api/generate-sale` |
+| Production    | `https://ng.paymeservice.com/api/generate-sale` |
+
+#### **Notes**
+
+**Note 1:** You can manually set the number of installments or to specify a top limit of installments for the buyer to choose from while paying.
+
+Setting a <u>fixed</u> number of installments is simply entering a number between 1 and 12.  The sale will be initiated with this number of installments and the buyer will not be able to change it.
+
+To set a <u>range</u> for the buyer to choose from, enter the following:
+
+`103` - allow up to 3 installments
+
+`106` - allow up to 6 installments
+
+`109` - allow up to 9 installments
+
+`112` - allow up to 12 installments
+
+#### <a name="sale-tokens"></a> **Using Tokens**
+Please note that you can receive a token representing the buyer (including credit card information) as part of the generate-sale API call. This token can be used to generate future server-to-server sales without requiring the buyer to re-enter his credit card information.
+The token will be returned only as part of the callback.
+
+<u>Getting Tokens</u>
+
+There are two ways of getting a token:
+
+1. In order to receive a token **in addition to charging the credit card** use the `capture_buyer` attribute.
+2. In order to receive a token **without charging the credit card** use the dedicated `sale_type` attribute and set the value to `token`.
+
+| Attribute             | Description |
+|:----------------------|:------------|
+| capture_buyer         | `1` Flag for requesting the buyer's token in addition to charging the credit card (0 - do not capture token, 1 - capture token) |
+| sale_type     | `token` Flag for requesting the buyer's token without charging the credit card |
+
+<u>Charging Tokens</u>
+
+After generating a token you may charge the buyer at any point by using the `buyer_key` attribute when generating a new sale.
+
+| Attribute             | Description |
+|:----------------------|:------------|
+| buyer_key             | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` Buyer key for an instant-payment with the token |
+
+#### <a name="sale-authorize"></a> **Authorization**
+Also known as “Pre-Authorization”. The requested amount gets reserved (blocked) on the credit card of the buyer for up to 48 hours. A following Capture request will trigger the actual settlement of the funds.
+Please note that attempting to Capture after the allowed period of time (48 hours) will result in an error.
+
+In order to authorize a payment a sale should be generated with the sale_type="authorize" parameter, and the returned IFRAME displayed to the buyer for credit card information filling.
+
+| Attribute             | Description |
+|:----------------------|:------------|
+| sale_type     | `authorize` Creates a new sale as authorization. The authorization is reserved for up to 48 hours |
+
+#### <a name="sale-capture"></a> **Capture**
+
+When you decide to capture the authorized sale and charge the credit card, you can do so by using the API function
+capture-sale.
+
+#### **Target URLs**
+| Environment   | URL           |
+|:--------------|:--------------|
+| Staging       | `https://preprod.paymeservice.com/api/capture-sale` |
+| Production    | `https://ng.paymeservice.com/api/capture-sale` |
+
+| Attribute         | Description |
+|:------------------|:------------|
+| payme_sale_id     | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` Our unique sale ID |
+| sale_price             | `10000` Capturing sale final price. It can be lower or equal to the original price. For example, if the price is 50.75 (max 2 decimal points) the value that needs to be sent is 5075 |
+| installments | `1` (required, number) - Amount of installments for the sale. 
+
++ Attributes (Generate Sale Request)
+
+### Generate Sale [POST]
+
+#### <a name="pre-fill"></a> **Pre-Fill payment page (IFRAME)**
+
+You can pass your buyer's details to the payment page in order to pre-fill the form, for the buyer's convenience.
+
+Simply concatenate the optional parameters to the end of the received `sale_url`.
+
+These are the supported fields:
+| Parameter     | Description |
+|:--------------|:------------|
+| first_name    | Card holder's first name |
+| last_name     | Card holder's last name |
+| phone         | Card holder's phone number |
+| email         | Card holder's email address | 
+| social_id     | Card holder's social ID - needed only for cards issued in Israel |
+
+Here is an example of a pre-filled payment page:
+
+`urlWithParameters = sale_url + "?first_name=First&last_name=Last&phone=0501234567&email=test@example.com&social_id=123456782`
+
+**Note 1:** For security reasons, credit card information related fields cannot be pre-filled.
+
+**Note 2:** Passed values which will be found invalid, won't be displayed on the form.
+
+#### <a name="sale-success-redirect"></a> **Success Redirect (IFRAME)**
+Once the sale is paid successfully, the buyer will be redirected to the provided `sale_return_url`, with the sale details as **GET** parameters. Example redirect URL:
+
+`https://www.example.com/payment/success?payme_status=success&payme_sale_id=XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX&payme_transaction_id=XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX&price=10000&currency=USD&transaction_id=12345&is_token_sale=0`
+
+| Parameter         | Description |
+|:------------------|:------------|
+| payme_status      | `success` Status of the request (`success`, `error`) |
+| payme_sale_id     | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` Our unique sale ID |
+| payme_transaction_id | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` Our unique transaction ID | 
+| price             | `10000` Sale final price. For example, if the price is 50.75 (max 2 decimal points) the value that needs to be sent is 5075 |
+| currency          | `USD` Sale currency. 3-letter ISO 4217 name |
+| transaction_id    | `12345` Marketplace-Integrator unique sale ID for your internal correlation |
+| is_token_sale     | `0` |
+
+[//]: # (#### **Failure** \(IFRAME users only\))
+
+[//]: # (In case the payment has failed, we will **redirect** the user to the `sale_error_url`, with the error details as **GET** parameters.)
+
+[//]: # (Example:)
+[//]: # (`https://www.example.com/payment/error?payme_status=error&cg_error=162&cg_error_text=תקרה+0+לסוג+כרטיס+זה+בעסקת+תשלומים&payme_sale_id=XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX&transaction_id=12345`)
+
+[//]: # (| Parameter         | Description |)
+[//]: # (|:------------------|:------------|)
+[//]: # (| payme_status      | `error` Status of the request \(`success` - success, `error` - error\) |)
+[//]: # (| cg_error          | `162` Error code |)
+[//]: # (| cg_error_text     | `תקרה 0 לסוג כרטיס זה בעסקת תשלומים` Error message |)
+[//]: # (| payme_sale_id     | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` Our unique sale ID |)
+[//]: # (| transaction_id    | `12345` Marketplace-Integrator unique sale ID for your internal correlation |)
+
+#### <a name="sale-callback"></a> **Callback**
+
+Once the sale is paid successfully, we will update the marketplace with the sale details with a **POST** of type `x-www-form-urlencoded` request to the marketplace **Callback URL**.
+
+| Attribute             | Description |
+|:----------------------|:------------|
+| status_code           | `0` Status of the request (0 - success, 1 - error) |
+| status_error_code     | In case of an error, the error code |
+| status_error_details  | In case of an error, the error message |
+| notify_type           | `sale-complete` [Sale notification types](#sale-notification-types) |
+| sale_created          | `2016-01-01 15:15:15` |
+| transaction_id        | `12345` Marketplace-Integrator unique sale ID for your internal correlation |
+| payme_sale_id         | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` Our unique sale ID |
+| payme_sale_code       | `12345678` Our unique sale code, for an optional user-friendly display |
+| payme_transaction_id  | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` Our unique transaction ID |
+| price                 | `1000` Sale final price. For example, if the price is 50.75 (max 2 decimal points) the value that needs to be sent is 5075 |
+| currency              | `USD` Sale currency. 3-letter ISO 4217 name |
+| sale_status           | `completed` [Sale statuses](#sale-statuses) |
+| payme_transaction_card_brand  | `Visa` |
+| payme_transaction_auth_number | `01A2B3C` Sale authorization number from the credit company |
+| buyer_card_mask       | `458045******4580` Buyer's credit card mask |
+| buyer_card_exp        | `0118` Buyer's credit card expiry date |
+| buyer_name            | `First Last` Buyer's full name |
+| buyer_email           | `buyer@example.com` Buyer's eMail address |
+| buyer_phone           | `0540000000` Buyer's phone number |
+| buyer_social_id       | `000000001` Buyer's social id |
+| buyer_key             | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` Buyer key for future token payments. This key is returned only if `capture_buyer` attribute was set in the request ([Using Tokens](#sale-tokens)) |
+| installments          | `1` Amount of installments for the sale |
+| sale_paid_date        | `2016-01-01 15:16:15` |
+| sale_release_date     | `2016-01-08 15:15:15` |
+| is_token_sale         | `false` |
+| sale_invoice_url      | `https://www.example.com/XXXXXX.pdf` Sale invoice URL, if the seller has enabled the invoices module in his account panel |
+
+[//]: # (| sale_invoice_number   | `3210` Sale invoice number, if the seller has enabled the invoices module in his account panel |)
+
+#### <a name="sale-statuses"></a> Sale Statuses
+| Status            | Description   |
+|:------------------|:--------------|
+| `initial`         | Creation status, a payment was not attempted |
+| `completed`       | The sale was paid successfully |
+| `refunded`        | The sale was fully refunded |
+| `partial-refund`  | The sale was partially refunded |
+| `authorized`      | The sale was authorized successfully |
+| `voided`          | The authorization was fully voided |
+| `partial-void`    | The authorization was partially voided |
+| `failed`          | There was an error with the sale |
+| `chargeback`      | The sale was chargedbacked |
+
+#### <a name="sale-notification-types"></a> Sale Notification Types
+| Notification      | Description   |
+|:------------------|:--------------|
+| `sale-complete`   | The sale was paid successfully |
+| `sale-authorized` | The sale was authorized successfully |
+| `refund`          | The sale was refunded |
+| `sale-failure`    | There was an error with the sale |
+| `sale-chargeback` | The sale was charged back |
+
++ Attributes (Generate Sale Request)
+
++ Request (application/json)
+    + Body
+
+            {
+                "seller_payme_id": "XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX",
+                "sale_price": 10000,
+                "currency": "USD",
+                "product_name": "Baby Duck",
+                "transaction_id": "12345",
+                "installments": 1,
+                "sale_callback_url": "https://www.example.com/payment/callback",
+                "sale_return_url": "https://www.example.com/payment/success",
+                "capture_buyer": 0
+            }
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + status_code: `0` (number) - Status of the request (0 - success, 1 - error)
+        + sale_url: `https://preprod.paymeservice.com/sale/generate/XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` - The URL of the IFRAME secured payment form to display to the buyer
+        + payme_sale_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (string) - Our unique sale ID
+        + payme_sale_code: `12345678` (number) - Our unique sale code, for an optional user-friendly display
+        + price: `10000` (number) - Sale final price. For example, if the price is 50.75 (max 2 decimal points) the value that needs to be sent is 5075
+        + transaction_id: `12345` (string) - Marketplace-Integrator unique sale ID for your internal correlation
+        + currency: `USD` (string) - Sale currency. 3-letter ISO 4217 name
+            
++ Response 500 (application/json)
+    + Attributes (object)
+        + status_code: `1` (number) - Status of the request (0 - success, 1 - error)
+        + status_error_details: `קישור משתמש לא נמצא` (string) - Error message
+        + status_additional_info (string) - Additional error information
+        + status_error_code: `251` (number) - the error code 
+
+    + Body
+    
+            {
+              "status_code": 1,
+              "status_error_details": "קישור משתמש לא נמצא",
+              "status_additional_info": null,
+              "status_error_code": 251
+            }
+
+## Refund Sale [/refund-sale]
+
+#### **Target URLs**
+| Environment   | URL           |
+|:--------------|:--------------|
+| Staging       | `https://preprod.paymeservice.com/api/refund-sale` |
+| Production    | `https://ng.paymeservice.com/api/refund-sale` |
+
+#### **Notes**
+
+**Note 1:** It is possible to partially refund a single sale an unlimited amount of times.
+
++ Attributes (Refund Sale Request)
+
+### Refund Sale [POST]
+
+#### **Callback**
+
+Once the sale is refunded successfully, we will update the marketplace with the sale details with a **POST** request of type `x-www-form-urlencoded` to the marketplace **Callback URL**.
+
+[Callback Attributes](#sale-callback)
+
++ Attributes (Refund Sale Request)
+
++ Request (application/json)
+    + Attributes (Refund Sale Request)
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + status_code: `0` (number) - Status of the request (0 - success, 1 - error)
+        + status_error_code: `0` (number) - the error code
+        + refunded_from_creditcard: `false` (boolean) - Return true if seller has not enough money for refund and we complete the refund from the seller credit card
+        + sale_invoice_url: `https://www.example.com/XXXXXX.pdf` (string) - Sale invoice URL, if the seller has enabled the invoices module in his account panel
+        + sale_refund_buffer:  `8000` (number) - The refund buffer of this sale
+        + sale_status: `refunded` (string) - Refund status. All available **[Sale statuses](#sale-statuses)**
+        + payme_transaction_total:  `2000` (number) - The refund amount that the buyer will get
+        + payme_transaction_total_aft_deduction:  `2000` (number) - The amount that the seller will be charge.
+        + payme_transaction_id:  `XXXXXX-XXXXXX-XXXXXX-XXXXXX` (string) - The transaction unique id.
+        + payme_transaction_card_brand: `XXXXXX` (string) - Card brand
+        + payme_transaction_auth_number: `XXXXXX` (string) - Authorization number from credit company
+        
+    + Body
+    
+            {
+                "status_code": 0,
+                "status_error_code": 0,
+                "refunded_from_creditcard": false,
+                "sale_invoice_url": null,
+                "sale_refund_buffer": 8000,
+                "sale_status": "refunded",
+                "payme_transaction_total": 2000,
+                "payme_transaction_total_aft_deduction": 2000,
+                "payme_transaction_id": "XXXXXX-XXXXXX-XXXXXX-XXXXXX",
+                "payme_transaction_card_brand": "Visa",
+                "payme_transaction_auth_number": "1192457"
+            }
+            
++ Response 500 (application/json)
+    + Attributes (object)
+        + status_code: `1` (number) - Status of the request (0 - success, 1 - error)
+        + status_error_details: `Could not access sale` (string) - Error message
+        + status_additional_info (string) - Additional error information
+        + status_error_code: `303` (number) - the error code
+
+    + Body
+    
+            {
+              "status_code": 1,
+              "status_error_details": "Could not access sale",
+              "status_additional_info": null,
+              "status_error_code": 303
+            }
+
+
+# Group Subscription
+We provides an easy way to for subscription generation. A subscription allows the seller to create a recurring payment for pre-defined payments over a set of iterations in days/weeks/months (e.g. 100 USD for 10 months, which totals to 1000 USD).
+
+The Subscription, unlike an installment sale, does not authorize for the entire subscription amount upfront (e.g. 1000 USD per previous example), but it only captures the single payment amount each month.
+
+![GenerateSale](http://i.imgur.com/jf9lmr8.png)
+
+## Generate Subscription [/generate-Subscription]
+
+#### **Target URLs**
+| Environment   | URL           |
+|:--------------|:--------------|
+| Staging       | `https://preprod.paymeservice.com/api/generate-subscription` |
+| Production    | `https://ng.paymeservice.com/api/generate-subscription` |
+
++ Attributes(Generate Subscription Request)
+
+### Generate Subscription [POST]
+
+#### <a name="subscription-callback"></a> **Callbacks**
+
+We provide the option to notify of any status or action updates regarding the subscription. To use the feature it is required to provide a **sub_callback_url** parameter to the `generate-subscription` call. This URL will receive all callbacks using a **POST** request of type `x-www-form-urlencoded`.
+
+![Subscription life cycle](http://i.imgur.com/WgYqJ2b.png?1)
+
+Callback payload
+| Attribute                 | Description |
+|:--------------------------|:------------|
+| notify_type               | `sub-iteration-success` [Subscription notification types](#subscription-notification-types) |
+| status_error_code         | In case of an error, our unique error code |
+| sub_error_text            | In case of an error, the error message |
+| status_code               | `0` Status of the request (0 - success, 1 - error) |
+| seller_payme_id           | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (string) - Our unique seller ID |
+| seller_id                 | `12345` (string) - Marketplace-Integrator unique seller ID for your internal correlation |
+| sub_payme_id              | `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (string) - Our unique Subscription ID |
+| sub_payme_code            | `1234` (number) - Our unique Subscription code |
+| sub_created               | `2016-01-01 15:15:15` (string) - Subscription creation date and time. ISO-8601 formatted |
+| sub_payment_date          | `2016-01-01 18:32:23` (string) - Subscription payment date and time. ISO-8601 formatted  |
+| sub_start_date            | `2016-01-02 00:00:00` (string) - Subscription date and time when the first iteration was executed. ISO-8601 formatted |
+| sub_next_date             | `2016-01-03 00:00:00` (string) - Subscription next iteration date and time. ISO-8601 formatted |
+| sub_status                | `1` (string) - Subscription status [Subscription Statuses Types](#subscription-statuses) |
+| sub_iteration_type        | `1` (number) - Subscription type [Subscription Iteration Types](#subscription-iteration-types) |
+| sub_currency              | `USD` (string) - Subscription currency. 3-letter ISO 4217 name |
+| sub_price                 | `10000` (number) - Subscription final price. For example, if the price is 50.75 (max 2 decimal points) the value that needs to be sent is 5075 |
+| sub_iterations            | `4` (number) - Amount of iterations |
+| sub_iterations_completed  | `4` (number) - Amount of completed iterations |
+| sub_iterations_left       | `4` (number) - Amount of remaining iterations |
+| buyer_card_mask           | `458045******4580` (string) - Buyer's credit card mask |
+| buyer_name                | `First Last` (string) - Buyer's full name |
+| buyer_email               | `buyer@example.com` (string) - Buyer's eMail address |
+| buyer_phone               | `0540000000` (string) - Buyer's phone number |
+| buyer_social_id           | `000000001` (string) - Buyer's social id |
+
+#### <a name="subscription-iteration-types"></a> **Subscription Iteration Types**
+| ID    | Description   |
+|:-----:|:--------------|
+| `1`   | Daily         |
+| `2`   | Weekly        |
+| `3`   | Monthly       |
+| `4`   | Yearly        |
+
+#### <a name="subscription-statuses"></a> **Subscription Statuses**
+| ID    | Description                     |
+|:-----:|:--------------------------------|
+| `1`   | Initial (not yet paid)          |
+| `2`   | Active (paid successfully)      |
+| `4`   | Failed                          |
+| `5`   | Canceled                        |
+| `6`   | Completed                       |
+| `7`   | Failed, pending automatic retry |
+
+#### <a name="subscription-notification-types"></a> Subscription Callback Notification Types
+| Notification               | Description   |
+|:---------------------------|:--------------|
+| `sub-create`               | The subscription was created |
+| `sub-active`               | The subscription was paid |
+| `sub-iteration-success`    | Subscription iteretion passed successfully |
+| `sub-complete`             | The subscription's iteretations have reached its predetermined max and finished  |
+| `sub-cancel`               | The subscription was canceled |
+| `sub-failure`              | An error happened and the subscription payment was failed |
+
++ Attributes(Generate Subscription Request)
+
++ Request (application/json)
+    + Attributes(Generate Subscription Request)
+    
++ Response 200 (application/json)
+    + Attributes (object)
+        + sub_url: `https://preprod.paymeservice.com/subscription/generate/XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX`
+        + status_code: 0
+        + payme_status: `success`
+        + status_error_code: 0
+        + seller_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX`
+        + seller_id: `XXXXXX`
+        + sub_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX`
+        + sub_payme_code: 1
+        + subscription_id: null
+        + sub_created: `2016-09-08 18:11:13`
+        + sub_start_date: `2016-11-05 15:04:23`
+        + sub_prev_date: null
+        + sub_next_date: `2016-11-05 15:04:23`
+        + sub_status: 1
+        + sub_iteration_type: `3`
+        + sub_currency: `USD`
+        + sub_price: `500`
+        + sub_description: `Subscription for something`
+        + sub_iterations: `12`
+        + sub_iterations_completed: 0
+        + sub_iterations_left: `12`
+        + sub_paid: false
+        + sub_error_text: null
+        
+   
+## Cancel Subscription [/cancel-Subscription]
+
+#### **Target URLs**
+| Environment   | URL           |
+|:--------------|:--------------|
+| Staging       | `https://preprod.paymeservice.com/api/cancel-subscription` |
+| Production    | `https://ng.paymeservice.com/api/cancel-subscription` |
+
++ Attributes(Cancel Subscription Request)
+
+### Cancel Subscription [POST]
+
++ Attributes(Cancel Subscription Request)
+
++ Request (application/json)
+    + Attributes(Cancel Subscription Request)
+    
++ Response 200 (application/json)
+    + Attributes (object)
+        + status_code: 0
+
+# Group Queries
+It is possible to query information, using your unique `seller_payme_id`.
+
+## Query Sales [/get-sales]
+Every attribute can also receive an `array` of values, for a multi-value search.
+
+#### **Target URLs**
+| Environment   | URL           |
+|:--------------|:--------------|
+| Staging       | `https://preprod.paymeservice.com/api/get-sales` |
+| Production    | `https://ng.paymeservice.com/api/get-sales` |
+
++ Attributes (Get Sales Request)
+
+### Get Sales [POST]
+
++ Attributes (Get Sales Request)
+
++ Request (application/json)
+
+        {
+            "seller_payme_id": "XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX",
+            "sale_payme_id": "XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX"
+        }
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + items_count: `1` (number) - Amount of returned items
+        + items (array) - The returned items
+        + status_code: `0` (number) - Status of the request (0 - success, 1 - error)
+        
+
+    + Body
+    
+            {
+              "items_count": 1,
+              "items": [
+                {
+                  "seller_payme_id": "XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX",
+                  "seller_id": "12345",
+                  "sale_payme_id": "XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX",
+                  "sale_payme_code": "12345678",
+                  "transaction_id": "12345",
+                  "sale_created": "2016-01-01 15:15:15",
+                  "sale_status": "completed",
+                  "sale_currency": "USD",
+                  "sale_price": 10000,
+                  "sale_price_after_fees": 8970,
+                  "sale_description": "A duck",
+                  "sale_installments": 1,
+                  "sale_vat": "0.17",
+                  "sale_paid_date": "2016-01-01 15:16:15",
+                  "sale_auth_number": "01A2B3C",
+                  "sale_release_date": "2016-01-08 15:15:15",
+                  "sale_error_code": "",
+                  "sale_error_text": "",
+                  "sale_fees": {
+                    "sale_processing_fee": "3.50",
+                    "sale_processing_charge": "1.20",
+                    "sale_discount_fee": "0.50",
+                    "sale_rapid_settlement_fee": "0.30",
+                    "sale_market_fee": "0.00"
+                  },
+                  "sale_buyer_details": {
+                    "buyer_card_mask": "458045******4580",
+                    "buyer_card_expiry": "1022",
+                    "buyer_card_brand": "Visa",
+                    "buyer_card_is_foreign": true,
+                    "buyer_name": "First Last",
+                    "buyer_email": "buyer@example.com",
+                    "buyer_phone": "0540000000",
+                    "buyer_social_id": "000000001"
+                  },
+                  "sale_invoices": []
+                }
+              ],
+              "status_code": 0
+            }
+
+## Query Subscriptions [/get-subscriptions]
+Every attribute can also receive an `array` of values, for a multi-value search.
+
+#### **Target URLs**
+| Environment   | URL           |
+|:--------------|:--------------|
+| Staging       | `https://preprod.paymeservice.com/api/get-subscriptions` |
+| Production    | `https://ng.paymeservice.com/api/get-subscriptions` |
+
+#### **Subscription Iteration Types**
+| ID    | Description   |
+|:-----:|:--------------|
+| `1`   | Daily         |
+| `2`   | Weekly        |
+| `3`   | Monthly       |
+| `4`   | Yearly        |
+
+#### **Subscription Statuses**
+| ID    | Description                     |
+|:-----:|:--------------------------------|
+| `1`   | Initial (not yet paid)          |
+| `2`   | Active (paid successfully)      |
+| `4`   | Failed                          |
+| `5`   | Canceled                        |
+| `6`   | Completed                       |
+| `7`   | Failed, pending automatic retry |
+
++ Attributes (Get Subscriptions Request)
+
+### Get Subscriptions [POST]
+
++ Attributes (Get Subscriptions Request)
+
++ Request (application/json)
+
+        {
+            "seller_payme_id": "XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX",
+            "sub_payme_code": "1234"
+        }
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + items_count: `1` (number) - Amount of returned items
+        + items (array) - The returned items
+        + status_code: `0` (number) - Status of the request (0 - success, 1 - error)
+        
+
+    + Body
+    
+            {
+              "items_count": 1,
+              "items": [
+                {
+                  "seller_payme_id": "XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX",
+                  "seller_id": "12345",
+                  "sub_payme_id": "XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX",
+                  "sub_payme_code": "1234",
+                  "sub_created": "2016-01-01 15:15:15",
+                  "sub_start_date": "2016-01-10 08:00:00",
+                  "sub_prev_date": null,
+                  "sub_next_date": null,
+                  "sub_status": "2",
+                  "sub_iteration_type": "3",
+                  "sub_price": "10000",
+                  "sub_description": "Monthly Test Subscription",
+                  "sub_iterations": "4",
+                  "sub_iterations_completed": "0",
+                  "sub_iterations_left": "4",
+                  "sub_payment_date": "2016-01-02 10:10:10",
+                  "sub_error_text": "",
+                  "sub_currency": "USD",
+                  "sub_paid": true,
+                  "sub_buyer_details": {
+                    "buyer_card_mask": "458045******4580",
+                    "buyer_name": "First Last",
+                    "buyer_email": "buyer@example.com",
+                    "buyer_phone": "0540000000",
+                    "buyer_social_id": "000000001"
+                  }
+                }
+              ],
+              "status_code": 0
+            }
+
+# Group Integrations
+We provide additional integration options to easily connect to our services.
+
+## Hosted Fields - JSAPI
+A fully PCI compliant way for you to design you own payment page, without the need to be PCI compliant!
+
+You can start by visiting our [examples page](https://paymeservice.github.io/payme-jsapi/) for a quick start.
+
+The full documentation can be found [here](https://github.com/PayMeService/payme-jsapi).
+
+## IFRAME
+In order to achieve a seamless payment experience, we offer an IFRAME payment option, allowing the consumer a smooth payment experience, without ever leaving your website.
+![IFRAME integration](http://i.imgur.com/z2Pmwvs.png?1)
+
+## Android SDK
+Android SDK is open source, you can see instructions and more info in the [project repositiry](https://bitbucket.org/paymeservice/isracard-global-android-sdk).
+
+## iOS SDK
+iOS SDK is open source, you can see instructions and more info in the [project repository](https://bitbucket.org/paymeservice/isracard-global-ios-sdk).
+
+## Direct API
+If you are PCI compliant and would like to use our direct credit card API, feel free to contact us!
+
+## Data Structures
+
+### Generate Sale Request
++ Attributes (object)
+    + seller_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (required, string) - Our unique seller ID
+    + sale_price: `10000` (required, number) - Sale final price. For example, if the price is 50.75 (max 2 decimal points) the value that needs to be sent is 5075. Note that the minimum value is **500**
+    + currency: `USD` (required, string) - Sale currency. 3-letter ISO 4217 name
+    + product_name: `Baby Duck` (required, string) - Short name and description of the product/service. This text will be shown in the invoice as well, if the seller has enabled the invoices module in his account panel
+    + transaction_id: `12345` (string) - Marketplace-Integrator unique sale ID for your internal correlation
+    + installments: `1` (required, number) - Amount of installments for the sale. For additional information see Note 1 below
+    + market_fee: `2.50` (number) - A decimal between 0.00 and 60.00 representing the percent of the sale price that is collected for the marketplace (includes VAT). This fee is added on top of our fees and transferred to the marketplace once a month. Default value is the `market fee` of the Seller, as set upon Seller creation
+    + sale_callback_url: `https://www.example.com/payment/callback` (string) - Callback response to your page regarding call to our API. Default value is taken from the Marketplace-Integrator settings. Note that you may not send a "localhost" URL as value
+    + sale_return_url: `https://www.example.com/payment/success` (string) - We will redirect the IFRAME and the buyer to this URL upon payment success. Default value is taken from theMarketplace-Integrator settings
+    + sale_send_notification: `true` (boolean) - Flag to send email and/or SMS notifications
+    + sale_email: `duckshop@example.com` (string) - In case *sale send notification* is true provide the address to send email notification
+    + sale_mobile: `123456789` (string) - In case *sale send notification* is true, provide the phone number to send SMS notification, if the seller has enabled the SMS module in his account panel
+    + sale_name: `John` (string) - The name that will be displayed when sending a notification
+    + capture_buyer: `0` (number) - Flag for requesting the buyer's token for this payment (0 - do not capture token, 1 - capture token). For additional information see Tokens explanation below
+    + `buyer_key`: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (string) - Buyer key for an instant-payment with the token. This key is received through the use of capture_buyer. Note that this attribute cannot co-exist with the capture_buyer parameter in the same request
+    + sale_payment_method: `credit-card` (string) - Sale payment method. Available methods are: credit-card, paypal, alipay-qr, funds-transfer. Default value is credit-card
+    + language: `en` (string) - Changes the language of the payment IFRAME to English, as well as the error messages. Default value is Hebrew (`he`)
+
+[//]: # (layout: `dynamic` (required, string) - Sale's IFRAME layout name which indicates the design and language of the secured payment page. For an English layout add the following parameter to the request - `"language": "en"`)
+[//]: # (sale_error_url: `https://www.example.com/payment/error` (string) - We will redirect the IFRAME and the buyer to this URL upon payment failure. Default value is taken from the Marketplace-Integrator settings)
+[//]: # (sale_cancel_url: `https://www.example.com/payment/cancel` (string) - We will redirect to this URL in case user cancels the sale. This function is not in use at the moment, please provide the same URL as in sale_error_url)
+
+### Refund Sale Request
++ Attributes (object)
+    + seller_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (required, string) - Our unique seller ID
+    + payme_sale_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` Our unique sale ID
+    + sale_refund_amount: `10000` (number) - Used only for partial refunds, for a full refund exclude this attribute. Refund amount in Cents/Agorot. Note that the minimum refund amount is 500 Cents/Agorot.
+    + language: `en` (string) - Changes the error message language to English. Default value is Hebrew (`he`)
+
+### Generate Subscription Request
++ Attributes (object)
+    + seller_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (required, string) - Our unique seller ID
+    + sub_price: 500 (required, number) - A single iteration final price. For example, if the price is 50.75 (max 2 decimal points) the value that needs to be sent is 5075. Note that the minimum value is **500**
+    + sub_currency: `USD` (required, string) - Subscription currency. 3-letter ISO 4217 name
+    + sub_description: `Subscription for something` (required, string) Subscription description. Limited to 300 characters
+    + sub_iteration_type: `3` (string) - 1 - Daily, 2 - Weekly, 3 - Monthly, 4 - Yearly
+    + sub_iterations: 12 (number) - If not set, creates an infinite subscription
+    + sub_start_date: 1440354488 (required, string) - Format: dd/mm/yyyy or Epoch
+    + sub_callback_url: `https://www.example.com/payment/callback` (string) - Callback response to your page regarding call to our API. Default value is taken from the Marketplace-Integrator settings. Note that you may not send a "localhost" URL as value
+    + sub_return_url: `https://www.example.com/payment/success` (string) - We will redirect the IFRAME and the buyer to this URL upon payment success. 
+    + buyer_key: `XXXXXXXX` (string) - A token you generated beforehand (If not provided, an iframe URL will be returned)
+    + language: `en` (string) - Changes the error message language to English. Default value is Hebrew (`he`)
+
+### Cancel Subscription Request
++ Attributes (object)
+    + seller_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (required, string) - Our unique seller ID
+    + sub_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (required, string) - Our unique subscription ID
+    + language: `en` (string) - Changes the error message language to English. Default value is Hebrew (`he`)
+
+### Get Sales Request
++ Attributes (object)
+    + seller_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (string) - Our unique seller ID
+    + seller_id: `12345` (string) - Marketplace-Integrator unique seller ID for your internal correlation
+    + sale_payme_code: `12345678` (number) - Our unique sale code, for an optional user-friendly display
+    + sale_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (string) - Our unique sale ID
+    + sale_created: `2016-01-01 15:15:15` (string) - Exact creation date and time for which to retrieve sales. ISO-8601 formatted
+    + sale_created_min: `2016-01-01 00:00:00` (string) - Earliest creation date and time for which to retrieve sales. ISO-8601 formatted
+    + sale_created_max: `2016-01-02 00:00:00` (string) - Latest date and time for which to retrieve sales. ISO-8601 formatted
+    + sale_status: `completed` (string) - Sale status. All available **[Sale statuses](#sale-statuses)**
+    + sale_price: `10000` (number) - Sale final price. For example, if the price is 50.75 (max 2 decimal points) the value that needs to be sent is 5075
+    + sale_currency: `USD` (string) - Sale currency. 3-letter ISO 4217 name
+    + sale_auth_number: `01A2B3C` (string) - Sale authorization number from the credit company
+    + buyer_card_mask: `458045******4580` (string) - Buyer's credit card mask
+    + buyer_card_last_four_digits: `4580` (string) - Buyer's credit card last four digits
+    + buyer_name: `First Last` (string) - Buyer's full name
+    + buyer_email: `buyer@example.com` (string) - Buyer's eMail address
+    + buyer_phone: `0540000000` (string) - Buyer's phone number
+    + buyer_social_id: `000000001` (string) - Buyer's social id
+    + buyer_card_is_foreign: `true` (boolean) - Is the buyer's credit card foreign
+
+### Get Subscriptions Request
++ Attributes (object)
+    + seller_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (string) - Our unique seller ID
+    + seller_id: `12345` (string) - Marketplace-Integrator unique seller ID for your internal correlation
+    + sub_payme_code: `1234` (number) - Our unique subscription code, for an optional user-friendly display
+    + sub_payme_id: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX` (string) - Our unique subscription ID
+    + sub_created: `2016-01-01 15:15:15` (string) - Exact creation date and time for which to retrieve subscriptions. ISO-8601 formatted
+    + sub_created_min: `2016-01-01 00:00:00` (string) - Earliest creation date and time for which to retrieve subscriptions. ISO-8601 formatted
+    + sub_created_max: `2016-01-02 00:00:00` (string) - Latest date and time for which to retrieve subscriptions. ISO-8601 formatted
+    + sub_status: `1` (string) - Subscription status (for more info about the statuses, see table below)
+    + sub_iteration_type: `1` (number) - Subscription type ID (for more info about the types, see table below)
+    + sub_price: `10000` (number) - Subscription final price. For example, if the price is 50.75 (max 2 decimal points) the value that needs to be sent is 5075
+    + sub_currency: `USD` (string) - Subscription currency. 3-letter ISO 4217 name
+    + sub_iterations: `4` (number) - Subscription amount of iterations
+    + sub_start_date: `2016-01-01 00:00:00` (string) - Exact start date and time for which to retrieve subscriptions. ISO-8601 formatted
+    + sub_paid: `true` (boolean) - Was the subscription paid

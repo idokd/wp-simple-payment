@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.7.3
+ * Version: 1.7.4
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -711,7 +711,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   function pre_process($pre_params = []) {
     $method = isset($pre_params[self::METHOD]) ? strtolower(sanitize_text_field($pre_params[self::METHOD])) : null;
-    $fields = ['target', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
+    $fields = ['target', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
     foreach ($fields as $field) if (isset($pre_params[$field]) && $pre_params[$field]) $params[$field] = $field == 'redirect_url' ? $pre_params[$field] : sanitize_text_field($pre_params[$field]);
     
     $params[self::AMOUNT] = self::tofloat($params[self::AMOUNT]);
@@ -993,9 +993,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           'target' => $target,
           'template' => $template,
           'type' => $type,
-          'display' => $this->supports($display, $engine) ? $display : null,
+          'display' => isset($display) && $this->supports($display, $engine ? $engine : self::param('engine')) ? $display : null,
           'redirect_url' => $redirect_url,
-          'installments' => $installments,
+          'installments' => $installments && $installments == 'true' ? true : false,
           'currency' => $currency ? $currency : null,
           'callback' => $this->callback,
           'title' => $title ? : null,

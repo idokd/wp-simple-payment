@@ -28,7 +28,7 @@ class SimplePayment {
 
   const ADDRESS = 'address'; const ADDRESS2 = 'address2'; const CITY = 'city'; const STATE = 'state'; const COUNTRY = 'country'; const ZIPCODE = 'zipcode';
 
-  const PAYMENTS = 'payments';  const TAX_ID = 'tax_id';
+  const PAYMENTS = 'payments';  const COMPANY = 'company'; const TAX_ID = 'tax_id';
 
   const LANGUAGE = 'language'; const COMMENT = 'comment'; const INSTALLMENTS = 'installments';
   

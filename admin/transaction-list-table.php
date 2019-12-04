@@ -80,7 +80,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     if ($count) $sql = "SELECT COUNT(*) FROM ".self::$table_name;
     else $sql = "SELECT * FROM ".self::$table_name;
     $where = [];
-    if ( ! empty( $_REQUEST['id'] ) ) $where[] = "`payment_id` = " .esc_sql(absint($_REQUEST['id']));
+    if ( ! empty( $_REQUEST['id'] ) && empty( $_REQUEST['action'] ) ) $where[] = "`payment_id` = " .esc_sql(absint($_REQUEST['id']));
     if ( ! empty( $_REQUEST['transaction_id'] ) && isset($_REQUEST['engine']) && $_REQUEST['engine'] ) $where[] = "`transaction_id` =  '" .esc_sql($_REQUEST['transaction_id'])."'";
     
     if ( ! empty( $_REQUEST['status'] ) ) $where[] = "`status` =  '" .esc_sql($_REQUEST['status'])."'";

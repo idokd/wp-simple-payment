@@ -127,7 +127,7 @@
           + '</div></div></div></div>');
       } else {
         this._modal = $('<div class="sp-legacy-modal" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
-        this._modal.append('<div class="sp-modal-dialog" role="document"><a href="javascript:SimplePayment.close();" class="sp-close">X</a>' 
+        this._modal.append('<div class="sp-modal-dialog" role="document"><a href="javascript:SimplePayment.close(' + (target ? "'" + target + "'" : '') + ');" class="sp-close">X</a>' 
           + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="about:blank"></iframe>'
           + '</div>');
         
@@ -149,7 +149,6 @@
           jQuery.fn.extend({
             modal: function( action ) { 
               return this.each(function() {
-                console.log(this);
                 if (action == 'hide') jQuery(this).hide();
                 else jQuery(this).show();
               })
@@ -158,7 +157,6 @@
         }        
         target = this.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         var modal = SimplePayment.params['modal'] ? jQuery(SimplePayment.params['modal']) : jQuery('[name="' + target + '"]').closest('[sp-data="modal"]');
-        console.log(modal);
         if (!modal || modal.length == 0) {
           console.log('modal not found creating..');
           modal = this.modal(target);

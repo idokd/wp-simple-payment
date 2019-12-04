@@ -1,5 +1,5 @@
 <?php
-global $SPWP_COUNTRIES;
+global $SPWP_COUNTRIES, $SPWP_CURRENCIES;
 
 $SPWP_CARCOM_LANGUAGES = [ 'he' => __('Hebrew', 'simple-payment'), 'en' => __('English', 'simple-payment') ];
 $SPWP_CARCOM_OPERATIONS = [ 1 => __('Charge', 'simple-payment'), 2 => __('Charge & Token', 'simple-payment'), 3 => __('Token (Charge Pending)', 'simple-payment'), 4 => __('Suspended Deal', 'simple-payment') ];

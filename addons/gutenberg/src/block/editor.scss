@@ -1,0 +1,9 @@
+.simple-payment-block .simple-payment-block-form,
+.simple-payment-block .simple-payment-block-template { display: none; }
+
+.simple-payment-block-id input, .simple-payment-block-amount input { text-align: right; }
+
+.simple-payment-block[data-block-type="form"] .simple-payment-block-form { display: block; }
+.simple-payment-block[data-block-type="template"] .simple-payment-block-template { display: block; }
+
+.simple-payment-block .components-base-control+.components-base-control { margin-bottom: 0; }

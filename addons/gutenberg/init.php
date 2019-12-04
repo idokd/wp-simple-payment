@@ -16,6 +16,9 @@ register_block_type(
 add_action('init', 'sp_gutenberg_assets');
 
 function sp_gutenberg_assets() { // phpcs:ignore
+    require_once(SPWP_PLUGIN_DIR.'/settings.php');
+    global $SPWP_CURRENCIES;
+
     wp_register_style(
         'simple-payment-gb-style-css', 
         plugin_dir_url( __FILE__ ).'blocks.style.build.css', // Block style CSS.
@@ -35,13 +38,15 @@ function sp_gutenberg_assets() { // phpcs:ignore
         array( 'wp-edit-blocks' ), 
         null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' ) // Version: 1.6.4File modification time.
     );
+
     wp_localize_script(
         'simple-payment-gb-block-js',
         'spGlobal', // Array containing dynamic data for a JS Global.
         [
             'pluginDirPath' => plugin_dir_path( __DIR__ ),
             'pluginDirUrl'  => plugin_dir_url( __DIR__ ),
-        // Add more data here that you want to access from `cgbGlobal` object.
+            'Currencies' => $SPWP_CURRENCIES,
+			'Engines' => SimplePaymentPlugin::$engines,
         ]
     );
     

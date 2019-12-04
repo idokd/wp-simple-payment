@@ -100,7 +100,15 @@ class Cardcom extends Engine {
 
   public function status($params) {
     parent::status($params);
-    $this->transation = $params['lowprofilecode'];
+    $this->transaction = $params['lowprofilecode'];
+    $this->save([
+      'transaction_id' => $this->transaction,
+      'url' => $_SERVER["REQUEST_URI"],
+      'status' => isset($params['OperationResponse']) ? $params['OperationResponse'] : $params['DealResponse'],
+      'description' => isset($params['OperationResponseText']) ? $params['OperationResponseText'] : $params['Description'],
+      'request' => json_encode($_REQUEST),
+      'response' => null
+    ]);
     $post = [];
     if (!$this->sandbox) {
       $post['terminalnumber'] = $this->param_part($params);
@@ -113,7 +121,7 @@ class Cardcom extends Engine {
     $status = $this->post($this->api['indicator_request'], $post);
     parse_str($status, $status);
     //$this->record($params, $status);
-    $this->transaction = $params['lowprofilecode'];
+    //$this->transaction = $params['lowprofilecode'];
     $this->confirmation_code = $status['TokenApprovalNumber'];
     $response = $status;
     $this->save([
@@ -255,7 +263,8 @@ class Cardcom extends Engine {
     
     if ((!isset($params['payments']) || $params['payments'] != "monthly") && $this->param('hide_user_id')) $post['HideCreditCardUserId'] = $this->param('hide_user_id') == 'true' ? 'true' : 'false';
 
-    if (isset($params['full_name']) && $params['full_name']) $post['InvoiceHead.CustName'] = $params['full_name'];
+    if (isset($params['company']) && $params['company']) $post['InvoiceHead.CustName'] = $params['company'];
+    if (!isset($post['InvoiceHead.CustName']) && isset($params['full_name']) && $params['full_name']) $post['InvoiceHead.CustName'] = $params['full_name'];
 
     $post = array_merge($post, $this->document(array_merge($params, ['language' => $language, 'currency' => $currency])));
 

@@ -329,6 +329,7 @@ function sp_wc_gateway_init() {
             if (isset($params['billing'])) $params = array_merge($params, $params['billing']);
             if (!isset($params[$this->SPWP::PRODUCT])) $params[$this->SPWP::PRODUCT] = $this->product($params);
             if (isset($params['total'])) $params[$this->SPWP::AMOUNT] = $params['total'];
+            if (isset($params['company'])) $params[$this->SPWP::TAX_ID] = $params['company'];
             if (isset($params['postcode'])) $params[$this->SPWP::ZIPCODE] = $params['postcode'];
             if (isset($params['address_1'])) $params[$this->SPWP::ADDRESS] = $params['address_1'];
             if (isset($params['address_2'])) $params[$this->SPWP::ADDRESS2] = $params['address_2'];
@@ -406,8 +407,9 @@ function sp_wc_gateway_init() {
                 $url = $this->SPWP->payment($params, $engine);
                 if (!$this->has_fields && in_array($this->get_option('display'), ['iframe', 'modal'])) {
 
-                    add_post_meta((int) $order_id, 'sp_provider_url', $url);
-                    
+                    if (!add_post_meta((int) $order_id, 'sp_provider_url', $url, true)) { 
+                        update_post_meta((int) $order_id, 'sp_provider_url', $url);
+                     }
                     if (version_compare(WOOCOMMERCE_VERSION, '2.2', '<')) $url = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), get_permalink(woocommerce_get_page_id('pay'))));
                     else $url = add_query_arg(['order-pay' => $order_id], add_query_arg('key', $order->get_order_key(), $order->get_checkout_payment_url(true)));
                 }
