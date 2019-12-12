@@ -81,7 +81,7 @@ class Cardcom extends Engine {
     $code = isset($response['OperationResponse']) ? $response['OperationResponse'] : 999;
     switch($operation) {
       case 1:
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0) return($response['InternalDealNumber']);
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0) return($response['TokenApprovalNumber']);
         $code = $response['DealResponse'];
         break;
       case 2:

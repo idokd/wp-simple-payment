@@ -1,10 +1,10 @@
 === Simple Payment ===
 Contributors: idokd
 Donate link: https://simple-payment.yalla-ya.com/get
-Tags: credit card, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor
+Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal
 Requires at least: 4.6
 Tested up to: 5.3
-Stable tag: 1.7.5
+Stable tag: 1.7.6
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -19,7 +19,7 @@ Simple Payment works with many payment gateways, and enables you to add you cust
 
 Major features in Simple Payment include:
 
-* Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount)
+* Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount, PayMe, iCredit)
 * Selection of Payment Forms to choose from (Basic, Bootstrap, Legacy, Donation)
 * Works with plugins such as: Gutenberg Editor, WooCommerce, WPJobBoard, Form Maker.
 * Extend workflow with Zapier - get triggers and preform actions on payments via Zapier.
@@ -36,6 +36,9 @@ Major features in Simple Payment include:
 * Transactions / Payments Log with Filtering
 * Export Transactions to CSV
 
+Currently on Beta: iCredit, PayMe - please contact if require assistance.
+
+Soon to be released: Pelecard, Tranzilla, CreditGuard
 
 PS: You'll need an [Simple Payment API key for advanced gateways](https://simple-payment.yalla-ya.com/get/) to use it.  Keys are available for personal blogs; single domain, multiple domains, businesses and commercial sites.
 
@@ -55,7 +58,7 @@ PS: You'll need an [Simple Payment API key for advanced gateways](https://simple
 
 = Which Payment Gateway this plugin support? =
 
-Currently it supports PayPal, Cardcom, iCount, with another new payment gateway added every month.
+Currently it supports PayPal, Cardcom, iCount, PayMe, iCredit, with another new payment gateway added every month.
 
 = How does Simple Payment complies with PCI-DSS =
 
@@ -87,6 +90,14 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 1.7.6 =
+*Release Date - 11 December 2019*
+* Adding support to iCredit & PayMe
+* Support for Elementor Page Builder
+* Internet Explorer bug fix
+* Improvement of Gutenberg Editor block type
+* General bug fixes and improvements
 
 = 1.7.4 =
 *Release Date - 4 December 2019*

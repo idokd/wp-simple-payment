@@ -144,7 +144,7 @@ class Wpjb_Payment_SimplePayment extends Wpjb_Payment_Abstract {
             $html.= "<script>
                 var form = jQuery('#wpjb-checkout-success');
                 form.find('.wpjb-flash-info').remove();
-                SimplePayment.submit('".json_encode($params)."', '".($params['display'] ? 'sp-'.$params['display'] : '')."');
+                SimplePayment.submit(".json_encode($params).", '".($params['display'] ? 'sp-'.$params['display'] : '')."');
             </script>";
         } else {
             $html = SimplePaymentPlugin::redirect($url, null, true);

@@ -4,6 +4,7 @@
  *
  *  */
 
+ // TODO: implement a specific form
  class Wpjb_Form_Payment_SimplePayment extends Daq_Form_Abstract {
 
     public function __construct($options = array()) {
@@ -38,8 +39,7 @@
         
         $id = get_user_meta(get_current_user_id(), "_wpjb_stripe_customer_id", true);
         $cards = array();
-        
-        if($id) {
+        if ($id) {
             ///if(!class_exists('simple-payment')) {
                 //include_once Wpjb_List_Path::getPath("vendor")."/Stripe/Stripe.php";
                // include_once Wpjb_List_Path::getPath("vendor")."/stripe/init.php";
@@ -60,6 +60,8 @@
             $pricing = new Wpjb_Model_Pricing( $defaults['pricing_id'] );
         }
         
+        // TODO: support cvv engine types
+
         $e = $this->create("card_number");
         if( !isset( $pricing ) || $pricing->meta->is_recurring->value() != 1 ) {
             $e->setLabel(__("Card Number", 'simple-payment'));

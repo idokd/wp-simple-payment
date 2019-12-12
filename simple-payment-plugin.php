@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.7.5
+ * Version: 1.7.6
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -35,8 +35,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public static $instance;
 
   public static $table_name = 'sp_transactions';
-  public static $engines = ['PayPal', 'Cardcom', 'iCount', 'Custom'];
-  public static $interactives = ['Cardcom'];
+  public static $engines = ['PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'Custom'];
+
+  public static $fields = ['target', 'display', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
 
   public $payment_id = null;
 
@@ -373,6 +374,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             <a id="paypal" href="options-general.php?page=sp&tab=paypal" class="nav-tab <?php echo $tab == 'paypal' ? 'nav-tab-active' : ''; ?>"><?php _e('PayPal', 'simple-payment'); ?></a>
             <a id="cardcom" href="options-general.php?page=sp&tab=cardcom" class="nav-tab <?php echo $tab == 'cardcom' ? 'nav-tab-active' : ''; ?>"><?php _e('Cardcom', 'simple-payment'); ?></a>
             <a id="icount" href="options-general.php?page=sp&tab=icount" class="nav-tab <?php echo $tab == 'icount' ? 'nav-tab-active' : ''; ?>"><?php _e('iCount', 'simple-payment'); ?></a>
+            <a id="payme" href="options-general.php?page=sp&tab=payme" class="nav-tab <?php echo $tab == 'payme' ? 'nav-tab-active' : ''; ?>"><?php _e('PayMe', 'simple-payment'); ?></a>
+            <a id="icredit" href="options-general.php?page=sp&tab=icredit" class="nav-tab <?php echo $tab == 'icredit' ? 'nav-tab-active' : ''; ?>"><?php _e('iCredit', 'simple-payment'); ?></a>
             <a id="license" href="options-general.php?page=sp&tab=license" class="nav-tab <?php echo $tab == 'license' ? 'nav-tab-active' : ''; ?>"><?php _e('License', 'simple-payment'); ?></a>
             <a id="extensions" href="options-general.php?page=sp&tab=extensions" class="nav-tab <?php echo $tab == 'extensions' ? 'nav-tab-active' : ''; ?>"><?php _e('Extensions', 'simple-payment'); ?></a>
             <a id="shortcode" href="options-general.php?page=sp&tab=shortcode" class="nav-tab <?php echo $tab == 'shortcode' ? 'nav-tab-active' : ''; ?>"><?php _e('Shortcode', 'simple-payment'); ?></a>
@@ -711,8 +714,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   function pre_process($pre_params = []) {
     $method = isset($pre_params[self::METHOD]) ? strtolower(sanitize_text_field($pre_params[self::METHOD])) : null;
-    $fields = ['target', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
-    foreach ($fields as $field) if (isset($pre_params[$field]) && $pre_params[$field]) $params[$field] = $field == 'redirect_url' ? $pre_params[$field] : sanitize_text_field($pre_params[$field]);
+    foreach (self::$fields as $field) if (isset($pre_params[$field]) && $pre_params[$field]) $params[$field] = $field == 'redirect_url' ? $pre_params[$field] : sanitize_text_field($pre_params[$field]);
     
     $params[self::AMOUNT] = self::tofloat($params[self::AMOUNT]);
     $secrets = [ self::CARD_NUMBER, self::CARD_CVV ];
@@ -976,7 +978,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             'display' => null,
             'form' => self::param('form_type'),
             'template' => null,
-            'installments' => 1,
+            'installments' => false,
             'amount_field' => self::param('amount_field'),
             'product_field' => null,
       ), $atts ) );
@@ -988,19 +990,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $params = [
           'amount' => $amount,
           'product' => $product,
-          'engine' => $engine ? $engine : self::param('engine'),
+          'engine' => $engine ? : self::param('engine'),
           'method' => $method,
           'target' => $target,
           'template' => $template,
           'type' => $type,
-          'display' => isset($display) && $this->supports($display, $engine ? $engine : self::param('engine')) ? $display : null,
+          'display' => isset($display) && $this->supports($display, $engine ? : self::param('engine')) ? $display : null,
           'redirect_url' => $redirect_url,
           'installments' => $installments && $installments == 'true' ? true : false,
-          'currency' => $currency ? $currency : null,
+          'currency' => $currency ? : null,
           'callback' => $this->callback,
           'title' => $title ? : null,
           'form' => $form ? : null
       ];
+
       if ($enable_query) {
         if (isset($_REQUEST[self::FULL_NAME])) $params[self::FULL_NAME] = sanitize_text_field($_REQUEST[self::FULL_NAME]);
         if (isset($_REQUEST[self::PHONE])) $params[self::PHONE] = sanitize_text_field($_REQUEST[self::PHONE]);
@@ -1032,12 +1035,20 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             $this->scripts();
             if (!isset($params['callback'])) $params['callback'] = $this->callback;
             if ($target) $params['callback'] .= (strpos($params['callback'], '?') ? '&' : '?').http_build_query(['target' => $params['target']]);
-            foreach ($params as $key => $value) set_query_var($key, $value);
+            $this->settings($params);
             ob_start();
             if (!locate_template($template.'.php', true) && file_exists(SPWP_PLUGIN_DIR.'/templates/'.$template.'.php')) load_template(SPWP_PLUGIN_DIR.'/templates/'.$template.'.php');
             return ob_get_clean();
             break;
       }
+  }
+
+  public function settings($params = null) {
+    global $wp_query;
+    if ($params) foreach ($params as $key => $value) set_query_var($key, $value);
+    $params = [];
+    foreach (self::$fields as $field) if (isset($wp_query->query_vars[$field])) $params[$field] = $wp_query->query_vars[$field];
+    return($params);
   }
 
   public function scripts() {
@@ -1239,6 +1250,8 @@ require_once('addons/gutenberg/init.php');
 require_once('addons/zapier/init.php');
 require_once('addons/woocommerce/init.php');
 require_once('addons/wpjobboard/init.php');
+require_once('addons/elementor/init.php');
+
 
 //require_once('addons/recaptcha/init.php');
 

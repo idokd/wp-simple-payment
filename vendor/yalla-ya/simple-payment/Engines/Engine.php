@@ -2,6 +2,7 @@
 namespace SimplePayment\Engines;
 
 use SimplePayment;
+use Exception;
 
 if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
@@ -26,7 +27,7 @@ class Engine {
     self::$params = $params;
     $this->handler = $handler;
     $this->sandbox = $sandbox;
-    $this->password = $this->param('password');
+    $this->password = $this->sandbox ? $this->password : $this->param('password');
   }
 
   protected function param($key) {
@@ -121,19 +122,19 @@ class Engine {
       return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='.$this->name.($qry ? '&'.http_build_query($qry) : ''));
     }
 
-    protected function post($url, $vars) {
+    protected function post($url, $vars, $headers = null, $fail = true) {
       $curl = curl_init();
       curl_setopt($curl, CURLOPT_URL, $url);
       curl_setopt($curl, CURLOPT_POST, 1);
-      curl_setopt($curl, CURLOPT_FAILONERROR, true);
-      curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($vars, null, '&'));
+      curl_setopt($curl, CURLOPT_POSTFIELDS, is_array($vars) ? http_build_query($vars, null, '&') : $vars);
       curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
       curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0); // TODO: consider enabling it
-      curl_setopt($curl, CURLOPT_FAILONERROR, true);
+      curl_setopt($curl, CURLOPT_FAILONERROR, $fail);
+      if ($headers) curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
       $response = curl_exec($curl);
       $error = curl_error($curl);
       # some error , send email to developer // TODO: Handle Error
-      if (!empty( $error )) die($error);
+      if (!empty($error)) throw new Exception($error. ' '.$response, 500);
       curl_close($curl);
       return($response);
     }

@@ -2,11 +2,11 @@
 //var $product, $price, $id, $fixed;
 $SPWP = SimplePaymentPlugin::instance();
 require(SPWP_PLUGIN_DIR.'/settings.php');
-$installments = isset($installments) ? $installments : 0;
+$installments = isset($installments) && $installments ? $installments : 0;
 $year_today = date('Y'); $year_max = $year_today + 10;
 $installments_min = $SPWP->param('installments_min');
 $installments_max = $installments > $SPWP->param('installments_max') ? $installments : $SPWP->param('installments_max');
-$installments = $SPWP->param('installments_default');
+$installments_default = $installments && $installments !== true ? $installments : $SPWP->param('installments_default');
 
 // TODO: valdate 3 digits (or 4 in american express) cvv and further credit card format
 // TODO: Consider adding credit card type

@@ -2,6 +2,9 @@
 require('preparation.php');
 wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL.'assets/js/form-checkout.js', [], $SPWP::$version, true );
 ?>
+<script>
+var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
+</script>
 <div class="col-md-8 order-md-1">
 <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo $SPWP->payment_page(); ?>" method="post"<?php echo $target; ?>>
   <input type="hidden" name="op" value="purchase" />

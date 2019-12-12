@@ -8,17 +8,24 @@
 
     init: function(params) {
       if (SimplePayment.bootstrap == null) SimplePayment.bootstrap = (typeof $().modal == 'function');
-      if (typeof(sp_settings) !== 'undefined') SimplePayment.params = {...SimplePayment.params, ...sp_settings};
-      if (typeof(params) !== 'undefined' && params) SimplePayment.params = {...SimplePayment.params, ...params};
-      window.addEventListener('load', function () {
+      if (typeof(params) !== 'undefined' && params) SimplePayment.params = Object.assign({}, SimplePayment.params, params);
+
+      window.addEventListener('load', function () { 
+        if (typeof(sp_settings) !== 'undefined') SimplePayment.params = Object.assign({}, SimplePayment.params, sp_settings);
         var btn = $("[sp-data='checkout']");
+        var target = null;
         if (btn.length) btn.bind('click', function () {
             SimplePayment.submit();
-        });
-
+        }); else if (SimplePayment.params['display'] == 'modal') {
+          target = SimplePayment.params['target'];
+          target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
+          SimplePayment.modal(target);
+        }
+        
         // Loop over them and prevent submission
         var forms = document.getElementsByClassName(SimplePayment.params['classname']);
         Array.prototype.filter.call(forms, function (form) {
+          if (target && !$(form).attr('target')) $(form).attr('target', target);
           form.addEventListener('submit', function (event) {
             SimplePayment.validate();
             if (form.checkValidity() === false) {
@@ -27,7 +34,7 @@
               return(false);
             }
             form.classList.add('was-validated');
-            SimplePayment.pre();
+            SimplePayment.pre(target);
           }, false);
         });
       }, false);
@@ -119,27 +126,29 @@
     },
 
     modal: function(target) {
-      if (this.bootstrap) {
-        this._modal = $('<div class="modal fade" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
-        this._modal.append('<div class="modal-dialog modal-dialog-centered" role="document">' 
+      var _modal;
+      if (SimplePayment.bootstrap) {
+        _modal = $('<div class="modal" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
+        _modal.append('<div class="modal-dialog modal-dialog-centered" role="document">' 
           + '<div class="modal-content"><div class="modal-body"><div class="embed-responsive embed-responsive-1by1">'
           + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="about:blank" class="embed-responsive-item h100 w100"></iframe>'
           + '</div></div></div></div>');
       } else {
-        this._modal = $('<div class="sp-legacy-modal" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
-        this._modal.append('<div class="sp-modal-dialog" role="document"><a href="javascript:SimplePayment.close(' + (target ? "'" + target + "'" : '') + ');" class="sp-close">X</a>' 
+        _modal = $('<div class="sp-legacy-modal" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
+        _modal.append('<div class="sp-modal-dialog" role="document"><a href="javascript:SimplePayment.close(' + (target ? "'" + target + "'" : '') + ');" class="sp-close">X</a>' 
           + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="about:blank"></iframe>'
           + '</div>');
         
       }
-      $('body').append(this._modal);
+      $('body').append(_modal);
       return($('[sp-data="modal"]'));
     },
 
     pre: function(target) {
       var target = typeof(target) !== 'undefined' ? target : SimplePayment.params['target'];
       if (SimplePayment.params['display'] == 'iframe') {
-        var iframe = $('[name="' + target + '"]');        
+        //target = this.params['type'] == 'hidden' || !target ? 'sp-iframe' : target;
+        var iframe = $('[name="' + target + '"]');
         if (!iframe.length) $('[sp-data="container"]').append('<iframe name="' + target + '" src="about:blank" sp-data="iframe"></iframe>');
         $('[name="' + target + '"]').closest(':hidden').show();
       }

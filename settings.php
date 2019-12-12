@@ -64,14 +64,24 @@ $sp_sections = [
     'title' => __('iCount Gateway Settings', 'simple-payment'),
     'description' => __('Setup your Simple Payment to accept iCount Payments', 'simple-payment'),
     'section' => 'icount'
-  ]
+  ],
+  'payme_settings' => [
+    'title' => __('PayMe Gateway Settings', 'simple-payment'),
+    'description' => __('Setup your Simple Payment to accept PayMe Payments', 'simple-payment'),
+    'section' => 'payme'
+  ],
+  'icredit_settings' => [
+    'title' => __('iCredit Gateway Settings', 'simple-payment'),
+    'description' => __('Setup your Simple Payment to accept iCredit Payments', 'simple-payment'),
+    'section' => 'icredit'
+  ],
 ];
 
 $sp_settings = [
   'engine' => [
     'title' => __('Engine', 'simple-payment'),
     'type' => 'select',
-    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'),  'iCount' => __('iCount', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
+    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
   'mode' => [ //Mode
     'title' => __('Mode', 'simple-payment'),
     'type' => 'radio',
@@ -360,9 +370,64 @@ $sp_settings = [
     'type' => 'check',
     'section' => 'icount_settings'
   ],
+  'payme.password' => [
+    'title' => __('Seller ID', 'simple-payment'),
+    'section' => 'payme_settings',
+    'type' => 'password'
+  ],
+  'payme.client_key' => [
+    'title' => __('Client Key', 'simple-payment'),
+    'section' => 'payme_settings',
+    'type' => 'text'
+  ],
+  'payme.merchant_secret' => [
+    'title' => __('Merchant Secret', 'simple-payment'),
+    'section' => 'payme_settings',
+    'type' => 'password'
+  ],
+  'payme.notify' => [ 
+    'title' => __('Notify Client', 'simple-payment'),
+    'type' => 'check',
+    'section' => 'payme_settings'
+  ],
+
+  'icredit.password' => [
+    'title' => __('Payment Token', 'simple-payment'),
+    'section' => 'icredit_settings',
+    'type' => 'password'
+  ],
+  'icredit.tokenize' => [ 
+    'title' => __('Create Tokens', 'simple-payment'),
+    'type' => 'check',
+    'section' => 'icredit_settings'
+  ],
+  'icredit.box' => [
+    'title' => __('Token Box', 'simple-payment'),
+    'section' => 'icredit_settings',
+  ],
+  'icredit.credit' => [
+    'title' => __('Apply Credit Above Payments', 'simple-payment'),
+    'section' => 'icredit_settings',
+    'type' => 'select',
+    'min' => 0, 'max' => 36,
+  ],
+  'icredit.operation' => [
+    'title' => __('Operation', 'simple-payment'),
+    'section' => 'icredit_settings',
+    'type' => 'select',
+    'options' => [ 1 => 'Charge', 2 => 'Authorize' ],
+  ],
+  'icredit.vat_free' => [
+    'title' => __('VAT Free', 'simple-payment'),
+    'section' => 'icredit_settings',
+    'type' => 'check',
+  ],
+
+
   'api_key' => [
     'title' => __('API KEY', 'simple-payment'),
     'type' => 'random',
     'section' => 'extensions'
   ],
+
 ];
