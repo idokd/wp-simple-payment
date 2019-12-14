@@ -147,7 +147,7 @@
     pre: function(target) {
       var target = typeof(target) !== 'undefined' ? target : SimplePayment.params['target'];
       if (SimplePayment.params['display'] == 'iframe') {
-        //target = this.params['type'] == 'hidden' || !target ? 'sp-iframe' : target;
+        target = this.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         var iframe = $('[name="' + target + '"]');
         if (!iframe.length) $('[sp-data="container"]').append('<iframe name="' + target + '" src="about:blank" sp-data="iframe"></iframe>');
         $('[name="' + target + '"]').closest(':hidden').show();
@@ -188,7 +188,7 @@
       if (!this._setup) this.setup();
       var target = typeof(target) !== 'undefined' && target ? target : this.params['target'];
       if (!this._form) {
-        var target = this.params['type'] == 'hidden' ? 'sp-frame' : target;
+        target = this.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         this._form = $('<form method="post" target="' + target + '" action="' + this.params['callback'] + '"></form>');
       } else this._form.empty();
       this._form._submit_function_ = this._form.submit;
