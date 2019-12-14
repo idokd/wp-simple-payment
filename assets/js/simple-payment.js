@@ -147,7 +147,7 @@
     pre: function(target) {
       var target = typeof(target) !== 'undefined' ? target : SimplePayment.params['target'];
       if (SimplePayment.params['display'] == 'iframe') {
-        target = this.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
+        target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         var iframe = $('[name="' + target + '"]');
         if (!iframe.length) $('[sp-data="container"]').append('<iframe name="' + target + '" src="about:blank" sp-data="iframe"></iframe>');
         $('[name="' + target + '"]').closest(':hidden').show();
@@ -164,7 +164,7 @@
             },
           });
         }        
-        target = this.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
+        target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         var modal = SimplePayment.params['modal'] ? jQuery(SimplePayment.params['modal']) : jQuery('[name="' + target + '"]').closest('[sp-data="modal"]');
         if (!modal || modal.length == 0) {
           console.log('modal not found creating..');
@@ -178,7 +178,7 @@
       if (SimplePayment.params['modal']) jQuery(SimplePayment.params['modal']).modal('hide');
       else {
         var target = typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target'];
-        target = this.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
+        target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         jQuery('[name="' + target + '"]').closest('[sp-data="modal"]').modal('hide');
       }
     },
@@ -186,10 +186,10 @@
     submit: function(params, target) {
       if (typeof(params) !== 'undefined' && params) this.init(params);
       if (!this._setup) this.setup();
-      var target = typeof(target) !== 'undefined' && target ? target : this.params['target'];
+      var target = typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target'];
       if (!this._form) {
-        target = this.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
-        this._form = $('<form method="post" target="' + target + '" action="' + this.params['callback'] + '"></form>');
+        target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
+        this._form = $('<form method="post" target="' + target + '" action="' + (SimplePayment.params['callback'] ? SimplePayment.params['callback'] : '') + '"></form>');
       } else this._form.empty();
       this._form._submit_function_ = this._form.submit;
       Object.keys(this.params).forEach(key => {
