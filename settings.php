@@ -3,7 +3,7 @@ global $SPWP_COUNTRIES, $SPWP_CURRENCIES;
 
 $SPWP_CARCOM_LANGUAGES = [ 'he' => __('Hebrew', 'simple-payment'), 'en' => __('English', 'simple-payment') ];
 $SPWP_CARCOM_OPERATIONS = [ 1 => __('Charge', 'simple-payment'), 2 => __('Charge & Token', 'simple-payment'), 3 => __('Token (Charge Pending)', 'simple-payment'), 4 => __('Suspended Deal', 'simple-payment') ];
-$SPWP_CARCOM_DOC_TYPES = [ 1 => __('Invoice', 'simple-payment'), 3 => __('Donation Receipt', 'simple-payment'), 101 => __('Order Confirmation', 'simple-payment'), 400 => __('Receipt', 'simple-payment') ];
+$SPWP_CARCOM_DOC_TYPES = [ 1 => __('Invoice', 'simple-payment'), 3 => __('Formal Receipt', 'simple-payment'), 101 => __('Order Confirmation', 'simple-payment'), 400 => __('Receipt', 'simple-payment'), 405 => __('Donation', 'simple-payment') ];
 $SPWP_CARCOM_FIELD_STATUS = [ 'require' => __('Shown & Required', 'simple-payment'), 'show' => __('Shown', 'simple-payment'), 'hide' => __('Hidden', 'simple-payment')];
 $SPWP_CARCOM_CREDIT_TYPES = [ 1 => __('Normal', 'simple-payment'), 6 => __('Credit', 'simple-payment')];
 $SPWP_CARCOM_DOC_OPERATIONS = [ 0 => __('No Invoice', 'simple-payment'), 1 => 'Invoice', 2 => __('Forward (Do not show)', 'simple-payment')];

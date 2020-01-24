@@ -43,7 +43,7 @@ class Cardcom extends Engine {
   const LANGUAGES = [ 'he' => 'Hebrew', 'en' => 'English' ];
   const CURRENCIES = [ 'ILS' => 1, 'USD' => 2, 'AUD' => 36,	'CAD' => 124, 'DKK' => 208, 'JPY' => 392, 'NZD' => 554, 'RUB' => 643, 'CHF' => 756, 'GBP' => 826 ];
   const OPERATIONS = [ 1 => 'Charge', 2 => 'Charge & Token', 3 => 'Token (Charge Pending)', 4 => 'Suspended Deal' ];
-  const DOC_TYPES = [ 1 => 'Invoice', 3 => 'Donation Receipt', 101 => 'Order Confirmation', 400 => 'Receipt' ];
+  const DOC_TYPES = [ 1 => 'Invoice', 3 => 'Formal Receipt', 101 => 'Order Confirmation', 400 => 'Receipt' , 405 => 'Donation' ];
   const FIELD_STATUS = [ 'require' => 'Shown & Required', 'show' => 'Shown', 'hide' => 'Hidden'];
   const CREDIT_TYPES = [ 1 => 'Normal', 6 => 'Credit'];
   const DOC_OPERATIONS = [ 0 => 'No Invoice', 1 => 'Invoice', 2 => 'Forward (Do not show)'];

@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal
 Requires at least: 4.6
 Tested up to: 5.3
-Stable tag: 1.7.8
+Stable tag: 1.7.9
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -21,7 +21,7 @@ Major features in Simple Payment include:
 
 * Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount, PayMe, iCredit)
 * Selection of Payment Forms to choose from (Basic, Bootstrap, Legacy, Donation)
-* Works with plugins such as: Gutenberg Editor, WooCommerce, WPJobBoard, Form Maker.
+* Works with plugins such as: Gutenberg Editor, WooCommerce, WPJobBoard, GravityForms, Form Maker.
 * Extend workflow with Zapier - get triggers and preform actions on payments via Zapier.
 * Donation Form for free entry amount
 * PCI-DSS Data Protection Ready (All sensitive are masked in database)
@@ -90,6 +90,11 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 1.7.9 =
+*Release Date - 23 January 2020*
+* Support for GravityForms
+* General bug fixes and improvements
 
 = 1.7.6 =
 *Release Date - 11 December 2019*

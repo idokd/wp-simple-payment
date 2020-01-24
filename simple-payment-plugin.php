@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.7.8
+ * Version: 1.7.9
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -1251,6 +1251,7 @@ require_once('addons/zapier/init.php');
 require_once('addons/woocommerce/init.php');
 require_once('addons/wpjobboard/init.php');
 require_once('addons/elementor/init.php');
+require_once('addons/gravityforms/init.php');
 
 
 //require_once('addons/recaptcha/init.php');
