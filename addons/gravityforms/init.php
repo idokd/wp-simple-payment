@@ -516,8 +516,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 		if ( ! rgempty( 'gf_simplepayment_return', $_GET ) ) {
 			return false;
 		}
-
-		$params = $this->get_settings( $feed );
+		$settings = $this->get_settings( $feed );
+		$params = $settings ? $settings : [];
 		if (isset($params['settings']) && $params['settings']) $params = array_merge($params, $params['settings']);
 		$params = array_merge($params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ));
 		
@@ -529,7 +529,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		
 		GFAPI::update_entry_property( $entry['id'], 'payment_method', 'SimplePayment' );
 		GFAPI::update_entry_property( $entry['id'], 'payment_status', 'Processing' );
-		if (!in_array($params['display'], ['iframe', 'modal'])) {
+		if (!isset($params['display']) || !in_array($params['display'], ['iframe', 'modal']) || !SimplePaymentPlugin::supports($params['display'], $engine)) {
 			try {
 				$this->redirect_url = $this->SPWP->payment($params, $engine);
 				GFAPI::update_entry_property( $entry['id'], 'transaction_id', $this->SPWP->engine->transaction );
@@ -579,7 +579,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 	public function authorize( $feed, $submission_data, $form, $entry ) {
 		$settings = $this->get_settings( $feed );
 		
-		$params = $settings;
+		$params = $settings ? $settings : [];
 		if (isset($params['settings']) && $params['settings']) $params = array_merge($params, $params['settings']);
 		$params = array_merge($params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ));
 		
@@ -626,7 +626,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 			$captured_payment = array(
 				'is_success'     => true,
 				'error_message'  => '',
-				'transaction_id' => $this->SPWP->engine->confirmation_code,
+				'transaction_id' => $this->SPWP->engine->transaction,
 				'amount'         => $params[$this->SPWP::AMOUNT],
 			);
 			$auth = array(
@@ -1069,7 +1069,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 
 		// TODO: Add installments / subscription?
 		if (isset($submission_data['card_number'])) $args[$this->SPWP::CARD_NUMBER] = $submission_data['card_number'];
-		if (isset($submission_data['card_expiration_date'])) {
+		if (isset($submission_data['card_expiration_date']) && $submission_data['card_expiration_date']) {
 			$args[$this->SPWP::CARD_EXPIRY_MONTH] = $submission_data['card_expiration_date'][0];
 			$args[$this->SPWP::CARD_EXPIRY_YEAR] = $submission_data['card_expiration_date'][1];
 		}
@@ -1154,7 +1154,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 				name="_gaddon_setting_' . $name . '" ' .
 				implode( ' ', $attributes ) .
 				'>' .
-					json_encode($value) .
+				($value ? json_encode($value) : '').
 				'</textarea>';
 
 		if ( $this->field_failed_validation( $field ) ) {

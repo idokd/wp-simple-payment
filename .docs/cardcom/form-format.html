@@ -64,6 +64,18 @@
       </div>
     </div>
   
+    <div class="paymentDetailsFlexBox">
+      <div data-bind="visible: !order.showVatInfo">
+              <span datta-bind="text: order.totalVatPayment.label"></span>
+              <span class="num" data-bind="text: order.totalVatPayment.value"></span>
+      </div>
+      <div>
+        <span class="rtl he">סה״כ</span>
+        <span class="ltr en">Total</span>
+        <span class="num" data-bind="text: summaryTotalSign"></span>
+      </div>
+  </div>
+
     <div class="pay-item logo-images">
       <input type="button" class="btn btn-green" value="בצע &gt;" data-bind="value: buttonText, enable: !loadMode(), click: sendData " />
     </div>
