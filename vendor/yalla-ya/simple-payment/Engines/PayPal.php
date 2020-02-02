@@ -77,7 +77,7 @@ class PayPal extends Engine {
       header("Location: ".$params['url']);
       return(true);
     }
-    $post = $params;
+    $post = $params['post'];
     // Process the transaction, for example
     // - Call payment gateway API
     // - Redirect to the payment gateway url with params
@@ -116,7 +116,7 @@ class PayPal extends Engine {
       $redirectUrls = new RedirectUrls();
       $redirectUrls->setReturnUrl($this->url(SimplePayment::OPERATION_SUCCESS, $params))
         ->setCancelUrl($this->url(SimplePayment::OPERATION_CANCEL, $params));
-        // TODO add status usrl
+        // TODO: add status usrl
       $payment = new Payment();
       $payment->setIntent("sale")
           ->setPayer($payer)
@@ -133,18 +133,32 @@ class PayPal extends Engine {
 
     // for Express Checkout tradiaionl form post
     $post = [];
-    $post['cmd'] = '_xclick';
-    $post['hosted_button_id'] = $this->param('hosted_button_id');;
+    $post['cmd'] = '_xclick'; // _cart, _xclick-subscriptions, _donations
+    if ($this->param('hosted_button_id')) $post['hosted_button_id'] = $this->param('hosted_button_id');
+    $post['charset'] = 'UTF-8';
     $post['item_name'] = $concept;
     $post['currency_code'] = $currency;
     $post['business'] = $this->param('business');
-    $post['amount'] = $amount;
+    $post['amount'] = $amount; // a3
     $post['return'] = $this->url(SimplePayment::OPERATION_SUCCESS, $params);
     $post['cancel_return'] = $this->url(SimplePayment::OPERATION_CANCEL, $params);
     $post['notify_url'] = $this->url(SimplePayment::OPERATION_STATUS, $params);
     $post['rm'] = '2';
-    $post['url'] = $this->sandbox ? $this->api['sandbox']['post'] : $this->api['post'];
+
+    if (isset($params['payments']) && $params['payments'] == 'monthly') {
+      $post['cmd'] = '_xclick-subscriptions';
+      $post['src'] = 1;
+      $post['a3'] = $amount;
+      $post['p3'] = 1; // p3=  -- cycle length
+      $post['t3'] = 'M'; // D,W, M, Y
+      $post['sra'] = 1; // Retry if error 
+      // $post['srt'] = 100; // number of recurrences to apply
+      $post['bn'] = 'SimplePayment'; //  we do not have BN (partner account yet)
+
+    }
     $params['post'] = $post;
+
+    $post['url'] = $this->sandbox ? $this->api['sandbox']['post'] : $this->api['post'];
     $this->save([
       'transaction_id' => $this->transaction,
       'url' => $post['url'],
