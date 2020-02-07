@@ -90,7 +90,7 @@ class Engine {
   }
 
   protected function save($params) {
-    if (!isset($params['transaction_id'])) $params['transaction_id'] = $this->transaction;
+    if (!isset($params['transaction_id']) && $this->transaction) $params['transaction_id'] = $this->transaction;
     return($this->handler->save($params, $this->name));
   }
 

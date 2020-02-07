@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.8.1
+ * Version: 1.8.2
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -35,7 +35,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public static $instance;
 
   public static $table_name = 'sp_transactions';
-  public static $engines = ['PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'Custom'];
+  public static $engines = ['PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'Credit2000', 'Custom'];
 
   public static $fields = ['target', 'type', 'callback', 'display', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
 
@@ -241,7 +241,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           self::update($transaction_id , [
             'status' => self::TRANSACTION_FAILED,
             'error_code' => $e->getCode(),
-            'error_description' => $e->getMessage()
+            'error_description' => substr($e->getMessage(), 0, 250)
           ], true);
         }
     }
@@ -376,6 +376,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             <a id="icount" href="options-general.php?page=sp&tab=icount" class="nav-tab <?php echo $tab == 'icount' ? 'nav-tab-active' : ''; ?>"><?php _e('iCount', 'simple-payment'); ?></a>
             <a id="payme" href="options-general.php?page=sp&tab=payme" class="nav-tab <?php echo $tab == 'payme' ? 'nav-tab-active' : ''; ?>"><?php _e('PayMe', 'simple-payment'); ?></a>
             <a id="icredit" href="options-general.php?page=sp&tab=icredit" class="nav-tab <?php echo $tab == 'icredit' ? 'nav-tab-active' : ''; ?>"><?php _e('iCredit', 'simple-payment'); ?></a>
+            <a id="credit2000" href="options-general.php?page=sp&tab=credit2000" class="nav-tab <?php echo $tab == 'icredit' ? 'nav-tab-active' : ''; ?>"><?php _e('Credit2000', 'simple-payment'); ?></a>
             <a id="license" href="options-general.php?page=sp&tab=license" class="nav-tab <?php echo $tab == 'license' ? 'nav-tab-active' : ''; ?>"><?php _e('License', 'simple-payment'); ?></a>
             <a id="extensions" href="options-general.php?page=sp&tab=extensions" class="nav-tab <?php echo $tab == 'extensions' ? 'nav-tab-active' : ''; ?>"><?php _e('Extensions', 'simple-payment'); ?></a>
             <a id="shortcode" href="options-general.php?page=sp&tab=shortcode" class="nav-tab <?php echo $tab == 'shortcode' ? 'nav-tab-active' : ''; ?>"><?php _e('Shortcode', 'simple-payment'); ?></a>
@@ -798,7 +799,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           case 'payment':
           case 'redirect':
             try {
-              //if (isset($_REQUEST['target']) && $_REQUEST['target'] && $_REQUEST['target'] != '_blank') $target = $_REQUEST['target'];
               $url = $this->payment($_REQUEST, $engine);
               if ($url === true) $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
               if (!$url) {
@@ -870,12 +870,17 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $return = false;
     $engine = $engine ? : $this->param('engine');
     $this->setEngine($engine);
+    try {
     if ($process = $this->pre_process($params)) {
       $process = $this->process($process);
       if ($process === true) return(true);
       if (!$process) return(false);
 
       $return = is_array($process) ? $this->post_process($process, $engine) : $process;
+    }
+    } catch (Exception $e) {
+      $this->error($params, $e->getCode(), $e->getMessage());
+      throw $e;
     }
     return($return);
   }
@@ -885,14 +890,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     if (!$url) $url = get_bloginfo('url');
     $url .= (strpos($url, '?') ? '&' : '?').http_build_query($params);
     $url = remove_query_arg(self::OP, $url);
-    $payment_id = isset($params['payment_id']) ? $params['payment_id']: null;
+    $payment_id = isset($params['payment_id']) && $params['payment_id'] ? $params['payment_id'] : $this->payment_id;
     $data = [
       'status' => self::TRANSACTION_FAILED
     ];
     if ($code) $data['error_code'] = $code;
-    if ($description) $data['error_description'] = $description;
+    if ($description) $data['error_description'] = substr($description, 0, 250);
     if ($this->engine->transaction) $data['transaction_id'] = $this->engine->transaction;
-    $this->update($payment_id ? $payment_id : $this->engine->transaction, $data, $payment_id > 0);
+    $this->update($payment_id ? $payment_id : $this->engine->transaction, $data, !$payment_id);
     return($url);
   }
 

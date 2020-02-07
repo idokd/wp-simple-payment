@@ -130,6 +130,11 @@ function sp_wc_gateway_init() {
                     'options' => $engines,
                     'default' => ''
                 ),
+               /* 'cvv' => array(
+					'title'   => __( 'Use CVV', 'simple-payment' ),
+					'type'    => 'checkbox',
+					'label'   => __( 'Use CVV method if available', 'simple-payment' )
+				), */
                 'display' => array(
 					'title'   => __( 'Display Method', 'simple-payment' ),
 					'type'    => 'select',
@@ -196,7 +201,7 @@ function sp_wc_gateway_init() {
             
             set_query_var('display', $this->get_option('display'));
             $params['type'] = 'form';
-            $params['form'] = 'woocommerce-provider';
+            $params['form'] = 'plugin-addon';
             $params['callback'] = $url;
             print $this->SPWP->checkout($params);
         }
@@ -305,6 +310,7 @@ function sp_wc_gateway_init() {
         public function payment_fields() {
             if (!$this->has_fields) return;
 
+            set_query_var('installments', $this->get_option('installments') == 'yes');
             $template = $this->get_option('template') ? : null;
             if ($template) {
                 if ($override_template = locate_template($template.'.php')) load_template($override_template);
@@ -337,7 +343,7 @@ function sp_wc_gateway_init() {
             // TODO: support product_code
             if ($this->has_fields) { 
                 // TODO: when tokenized we do not have this value
-                // TODO: Consider enabling CARD_OWNER_ID
+                if (isset($params[$this->id.'-card-owner-id'])) $params[$this->SPWP::CARD_OWNER_ID] = $params[$this->id.'-card-owner-id'];
                 if (!isset($params[$this->SPWP::CARD_OWNER])) $params[$this->SPWP::CARD_OWNER] = $params['first_name'].' '.$params['last_name'];
                 if (!isset($params[$this->SPWP::CARD_OWNER]) || !$params[$this->SPWP::CARD_OWNER]) $params[$this->SPWP::CARD_OWNER] = $params['billing_first_name'].' '.$params['billing_last_name'];
                 if (isset($params[$this->id.'-card-number'])) $params[$this->SPWP::CARD_NUMBER] = str_replace(' ', '', $params[$this->id.'-card-number']);

@@ -49,7 +49,7 @@ require('preparation.php');
         </div>
       </div>
       <div class="col-md-4 mb-3">
-        <?php if (isset($installments_min) && $installments_min && isset($installments_max) && $installments_max && $installments_max > 1) { ?>
+        <?php if (isset($installments) && $installments && isset($installments_min) && $installments_min && isset($installments_max) && $installments_max && $installments_max > 1) { ?>
         <label for="payments"><?php _e('Installments', 'simple-payment'); ?></label>
         <select class="custom-select d-block w-100" id="payments" name="<?php echo $SPWP::PAYMENTS; ?>" required="">
           <?php for ($installment = $installments_min; $installment <= $installments_max; $installment++) echo '<option'.(isset($installments) && $installment == $installments ? ' selected' : '').'>'.$installment.'</option>'; ?>
@@ -60,6 +60,18 @@ require('preparation.php');
         <?php } ?>
       </div>
     </div>
+    <?php if (isset($owner_id) && $owner_id) { ?>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="cc-card-owner-id"><?php _e('Card Owner ID', 'simple-payment'); ?></label>
+        <input type="text" class="form-control" id="cc-card-owner-id" name="<?php echo $SPWP::CARD_OWNER_ID; ?>" placeholder="">
+        <small class="text-muted"><?php _e('Document ID as registered with card company', 'simple-payment'); ?></small>
+        <div class="invalid-feedback">
+          <?php _e('Card owner Id is required or invalid.', 'simple-payment'); ?>
+        </div>
+      </div>
+    </div>
+    <?php } ?>
 </div>
 <!--script>
 (function () {

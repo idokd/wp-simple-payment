@@ -15,3 +15,7 @@ $amount_formatted = $amount ? number_format((float) $amount, 2) : '';
 
 $target = isset($target) ? $target : $SPWP->param('target');
 $target = $target ? ' target="'.$target.'"' : '';
+
+$cvv = $SPWP->supports('cvv');
+$owner_id = $SPWP->supports('card_owner_id');
+

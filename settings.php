@@ -75,13 +75,18 @@ $sp_sections = [
     'description' => __('Setup your Simple Payment to accept iCredit Payments', 'simple-payment'),
     'section' => 'icredit'
   ],
+  'credit2000_settings' => [
+    'title' => __('Credit 2000 Gateway Settings', 'simple-payment'),
+    'description' => __('Setup your Simple Payment to accept Credit 2000 Payments', 'simple-payment'),
+    'section' => 'credit2000'
+  ],
 ];
 
 $sp_settings = [
   'engine' => [
     'title' => __('Engine', 'simple-payment'),
     'type' => 'select',
-    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
+    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
   'mode' => [ //Mode
     'title' => __('Mode', 'simple-payment'),
     'type' => 'radio',
@@ -422,8 +427,34 @@ $sp_settings = [
     'section' => 'icredit_settings',
     'type' => 'check',
   ],
+  'credit2000.company_name' => [
+    'title' => __('Company Name', 'simple-payment'),
+    'section' => 'credit2000_settings', 
+  ],
+  'credit2000.operation' => [
+    'title' => __('Operation', 'simple-payment'),
+    'section' => 'credit2000_settings',
+    'type' => 'select',
+    'options' => [ 4 => 'Charge', 5 => 'Authorize', 7 => 'Refund' ],  
+  ],
+  'credit2000.vendor_name' => [
+    'title' => __('Vendor Name', 'simple-payment'),
+    'section' => 'credit2000_settings', 
+  ],
+  'credit2000.password' => [
+    'title' => __('Company Key', 'simple-payment'),
+    'section' => 'credit2000_settings', 
+  ],
+  'credit2000.company_logo' => [
+    'title' => __('Company Logo', 'simple-payment'),
+    'section' => 'credit2000_settings', 
+  ],
+  'credit2000.cvv' => [
+    'title' => __('Use CVV', 'simple-payment'),
+    'section' => 'credit2000_settings', 
+    'type' => 'check',
 
-
+  ],
   'api_key' => [
     'title' => __('API KEY', 'simple-payment'),
     'type' => 'random',

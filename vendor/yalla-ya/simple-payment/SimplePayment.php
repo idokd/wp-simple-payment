@@ -55,9 +55,11 @@ class SimplePayment {
   }
 
   public static function supports($feature, $engine = null) {
-    if (!$engine) $class = get_class($this->engine);
-    else $class = __NAMESPACE__ . '\\Engines\\' . $engine;
-    return(in_array($feature, $class::$supports));
+    if (!$engine) {
+      $engine = $this->engine;
+      $class = get_class($this->engine);
+    } else $class = __NAMESPACE__ . '\\Engines\\' . $engine;
+    return(in_array($feature, $class::$supports) || self::param(strtolower($engine).'.'.$feature));
   }
 
   public static function param($key = null, $default = false) {
@@ -103,7 +105,7 @@ class SimplePayment {
 
   function callback() {}
 
-  function save($schema, $params) {
+  function save($params, $schema = null) {
     return(true);
   }
 

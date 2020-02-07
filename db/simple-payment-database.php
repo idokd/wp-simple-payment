@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '22';
+$sp_db_version = '23';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -63,10 +63,10 @@ function sp_install() {
   $sql = "CREATE TABLE $table_name (
     `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
     `payment_id` MEDIUMINT(9) DEFAULT NULL,
-    `transaction_id` VARCHAR(50),
+    `transaction_id` VARCHAR(50) DEFAULT NULL,
     `url` TEXT DEFAULT NULL,
     `status` INT DEFAULT NULL,
-    `description` VARCHAR(50) DEFAULT NULL,
+    `description` TEXT DEFAULT NULL,
     `request` TEXT DEFAULT NULL,
     `response` TEXT DEFAULT NULL,
     `ip_address` VARCHAR(250) DEFAULT NULL,
