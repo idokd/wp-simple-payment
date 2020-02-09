@@ -46,15 +46,16 @@ class Credit2000 extends Engine {
     // if here because we try to charge direct cvv style.
     switch ($this->param('operation')) {
       case 4:
-        $this->charge($params);
+        $response = $this->charge($params);
         break;
       case 5:
-        $this->authorize($params);
+        $response = $this->authorize($params);
         break;
       case 7:
-        $this->refund($params);
+        $response = $this->refund($params);
         break;
     }
+    return($response);
   }
 
   public function post_process($params) {
@@ -63,7 +64,8 @@ class Credit2000 extends Engine {
       $token = $this->token();
       return($token['returnCode'] == 0);
     }
-    return(true);
+    if (isset($params['confirmationNumber']) && $params['confirmationNumber']) $this->confirmation_code = $params['confirmationNumber'];
+    return($params);
   }
 
   public function pre_process($params) {
@@ -293,6 +295,7 @@ class Credit2000 extends Engine {
             try {
                 $response = $soapclient->CreditXMLPro($parameters);
                 $response = json_decode(json_encode($response), true);
+                $this->transaction = $response['cardNumber'];
                 $this->save([
                   'transaction_id' => $this->transaction,
                   'url' => $this->api['wsdl'],
