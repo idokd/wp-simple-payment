@@ -147,11 +147,11 @@ class Credit2000 extends Engine {
   function charge($params, $transaction_id = null, $operation = 4) {
     $post = [];
     if (!$this->sandbox) {
-      $post['vendor_Name'] = $this->param('vendor_name');
-      $post['company_Key'] = $this->password;
+      $post['vendorName'] = $this->param('vendor_name');
+      $post['ClientKey'] = $this->password;
     } else {
-      $post['vendor_Name'] = $this->username; // Cus1802
-      $post['company_Key'] = $this->password; // Bytkebd75ALnhDEthkmjjo==
+      $post['vendorName'] = $this->username; // Cus1802
+      $post['ClientKey'] = $this->password; // Bytkebd75ALnhDEthkmjjo==
     }
     $token = $this->token($transaction_id);
 
@@ -161,13 +161,14 @@ class Credit2000 extends Engine {
       $validation = $token['validDate'];
       $valid = str_split($validation, 2);
       $post['validationMonth'] = $valid[0];
-      $post['validationYear']= '20'.$valid[1];
+      $post['validationYear']= $valid[1]; // 20'.
       $post['cardNumber'] = $token['getTokenAndApproveResult'];
     } else {
       $post['cardNumber'] = $params[SimplePayment::CARD_NUMBER];
       $post['cvvNumber'] = $params[SimplePayment::CARD_CVV];
       $post['validationMonth'] = $params[SimplePayment::CARD_EXPIRY_MONTH];
-      $post['validationYear']= $params[SimplePayment::CARD_EXPIRY_YEAR];
+      $post['validationYear']= $params[SimplePayment::CARD_EXPIRY_YEAR] - 2000;
+      $post['customerId'] = $params['payment_id'];
     }
 
     $post['actionType'] = $operation;
@@ -187,10 +188,12 @@ class Credit2000 extends Engine {
     $post['paymentsNumber'] = $installments;
     
     // TODO: review if required on charge after authorize
-    //$post['firstPayment'] = 100; // TODO: Validate probably 100%
-    //$post['fixedAmmount'] = '000'; // TODO: Probably Recurring Payments amount to recurrenly debit
+    $post['firstPayment'] = $params[SimplePayment::AMOUNT] * 100; // TODO: Validate probably 100%
+    $post['fixedAmmount'] = 0; // TODO: Probably Recurring Payments amount to recurrenly debit
 
-    if (isset($params[SimplePayment::FULL_NAME])) $post['FullName'] = $params[SimplePayment::FULL_NAME];
+    if (isset($params[SimplePayment::CARD_OWNER])) $post['FullName'] = $params[SimplePayment::CARD_OWNER];
+
+    //if (isset($params[SimplePayment::FULL_NAME])) $post['FullName'] = $params[SimplePayment::FULL_NAME];
     if (isset($params[SimplePayment::EMAIL])) $post['Email'] = $params[SimplePayment::EMAIL];
     if (isset($params[SimplePayment::PHONE])) $post['Phone'] = $params[SimplePayment::PHONE];
     if (isset($params[SimplePayment::COMMENT])) $post['Coments'] = $params[SimplePayment::COMMENT];
@@ -198,27 +201,29 @@ class Credit2000 extends Engine {
     $post['cardReader'] = 2;
     $post['readerData'] = '';
 
+    $post['returnCode'] = 888;
+    $post['confirmationSource'] = 0;
+    $post['cardType'] = 0;
+    $post['club'] = 0;
+    $post['stars'] = 0;
 
-    /*$post['cardType'] = '';
-    $post['confirmationNumber'] = '';
-    $post['confirmationSource'] = '';
-
-    $post['purchaseType'] = '';
-    $post['customerId'] = '';
-    $post['club'] = '';
-    $post['stars'] = '';
-    $post['returnCode'] = '';
-    $post['Fax'] = '';*/
+    $post['purchaseType'] = 1;
 
     
-    $response = $this->soap('CreditXMLPro', (object) $post);
+    $post['confirmationNumber'] = 0;
+    $post['confirmationSource'] = 0;
+    $post['Fax'] = '';
+
+    
+    $response = $this->soap('CreditXMLPro', $post);
     if ($response['returnCode'] != 0) throw new Exception('FAILED_CHARGE_WITH_ENGINE', 500);
     return($response);
   }
   
   function soap($action, $params) {
     $soapclient = new SoapClient( $this->api['wsdl'], [
-        'stream_context' => stream_context_create([
+        'trace' => true,
+       /* 'stream_context' => stream_context_create([
             'ssl' => [
                 //'cafile' => __DIR__	. DIRECTORY_SEPARATOR . 'cert.pem',
                 'ciphers' => 'DHE-RSA-AES256-SHA:DHE-DSS-AES256-SHA:AES256-SHA:KRB5-DES-CBC3-MD5:KRB5-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:EDH-DSS-DES-CBC3-SHA:DES-CBC3-SHA:DES-CBC3-MD5:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA:AES128-SHA:RC2-CBC-MD5:KRB5-RC4-MD5:KRB5-RC4-SHA:RC4-SHA:RC4-MD5:RC4-MD5:KRB5-DES-CBC-MD5:KRB5-DES-CBC-SHA:EDH-RSA-DES-CBC-SHA:EDH-DSS-DES-CBC-SHA:DES-CBC-SHA:DES-CBC-MD5:EXP-KRB5-RC2-CBC-MD5:EXP-KRB5-DES-CBC-MD5:EXP-KRB5-RC2-CBC-SHA:EXP-KRB5-DES-CBC-SHA:EXP-EDH-RSA-DES-CBC-SHA:EXP-EDH-DSS-DES-CBC-SHA:EXP-DES-CBC-SHA:EXP-RC2-CBC-MD5:EXP-RC2-CBC-MD5:EXP-KRB5-RC4-MD5:EXP-KRB5-RC4-SHA:EXP-RC4-MD5:EXP-RC4-MD5',
@@ -227,7 +232,7 @@ class Credit2000 extends Engine {
                 'verify_peer' => false, // TODO: Check should be true
                 'verify_peer_name' => false
             ]
-        ])
+        ])*/
     ]);
     $response = [];
     $parameters = [];
@@ -265,6 +270,7 @@ class Credit2000 extends Engine {
         case 'getTokenAndApprove':
             try {
                 $result = $soapclient->getTokenAndApprove($parameters);
+                $response = json_decode(json_encode($response), true);
                 $this->save([
                   'transaction_id' => $this->transaction,
                   'url' => $this->api['wsdl'],
@@ -286,6 +292,7 @@ class Credit2000 extends Engine {
         case 'CreditXMLPro':
             try {
                 $response = $soapclient->CreditXMLPro($parameters);
+                $response = json_decode(json_encode($response), true);
                 $this->save([
                   'transaction_id' => $this->transaction,
                   'url' => $this->api['wsdl'],
@@ -298,9 +305,10 @@ class Credit2000 extends Engine {
               $this->save([
                 'url' => $this->api['wsdl'],
                 'status' => $e->getCode(),
-                'request' => json_encode($parameters),
+                'request' => json_encode(['params' => $parameters, 'xml' => $soapclient->__getLastRequest()]),
                 'response' => $e->getMessage()
               ]);
+             //print $soapclient->__getLastRequest(); die;
               throw $e;
             }
             break;
