@@ -125,7 +125,7 @@ class Credit2000 extends Engine {
   }
 
   function token($transaction_id = null) {
-    $transaction_id = $transaction_id ? $transaction_id : $this->transaction;
+    $transaction_id = $transaction_id ? : $this->transaction;
     if (!$transaction_id) return(false);
     $post = [];
     $post['uid'] = $transaction_id;
@@ -133,7 +133,7 @@ class Credit2000 extends Engine {
     $post['returnCode'] = ''; // ?
     $post['customerId'] = ''; // ?
     $post['cardType'] = ''; // ?
-    $response = $this->soap('getTokenAndApprove', (object) $post);
+    $response = $this->soap('getTokenAndApprove', $post);
     if ($response['returnCode'] != 0) throw new Exception('TOKEN_NOT_FOUND_WITH_ENGINE', 500);
     return($response);
   }
@@ -155,24 +155,18 @@ class Credit2000 extends Engine {
       $post['vendorName'] = $this->username; // Cus1802
       $post['ClientKey'] = $this->password; // Bytkebd75ALnhDEthkmjjo==
     }
-    $token = $this->token($transaction_id);
-
-    if ($token) {
-      $forward = ['approveNum', 'returnCode', 'customerId', 'cardType'];
-      foreach ($forward as $key) $post[$key] = isset($token[$key]) ? $token[$key] : '';
-      $validation = $token['validDate'];
-      $valid = str_split($validation, 2);
-      $post['validationMonth'] = $valid[0];
-      $post['validationYear']= $valid[1]; // 20'.
-      $post['cardNumber'] = $token['getTokenAndApproveResult'];
+    if ($transaction_id) {
+      $post['cvvNumber'] = '000';
+      $post['validationMonth'] = $params[SimplePayment::CARD_EXPIRY_MONTH]; // $valid[0];
+      $post['validationYear']= $params[SimplePayment::CARD_EXPIRY_YEAR] - 2000; //$valid[1]; // 20'.*/
+      $post['cardNumber'] = $transaction_id;
     } else {
       $post['cardNumber'] = $params[SimplePayment::CARD_NUMBER];
       $post['cvvNumber'] = $params[SimplePayment::CARD_CVV];
       $post['validationMonth'] = $params[SimplePayment::CARD_EXPIRY_MONTH];
       $post['validationYear']= $params[SimplePayment::CARD_EXPIRY_YEAR] - 2000;
-      $post['customerId'] = $params['payment_id'];
     }
-
+    $post['customerId'] = isset($params['payment_id']) ? $params['payment_id'] : $params['id'];
     $post['actionType'] = $operation;
 
     $currency = isset($params[SimplePayment::CURRENCY]) && $params[SimplePayment::CURRENCY] ? $params[SimplePayment::CURRENCY] : $this->param('currency');
@@ -210,13 +204,10 @@ class Credit2000 extends Engine {
     $post['stars'] = 0;
 
     $post['purchaseType'] = 1;
-
-    
-    $post['confirmationNumber'] = 0;
+    $post['confirmationNumber'] = isset($params['confirmation_code']) ? $params['confirmation_code'] : 0;
     $post['confirmationSource'] = 0;
     $post['Fax'] = '';
 
-    
     $response = $this->soap('CreditXMLPro', $post);
     if ($response['returnCode'] != 0) throw new Exception('FAILED_CHARGE_WITH_ENGINE', 500);
     return($response);
@@ -311,7 +302,6 @@ class Credit2000 extends Engine {
                 'request' => json_encode(['params' => $parameters, 'xml' => $soapclient->__getLastRequest()]),
                 'response' => $e->getMessage()
               ]);
-             //print $soapclient->__getLastRequest(); die;
               throw $e;
             }
             break;

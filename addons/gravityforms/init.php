@@ -9,9 +9,9 @@ if (!in_array('gravityforms/gravityforms.php', apply_filters('active_plugins', g
 	return;
 
 // If Gravity Forms is loaded, bootstrap the Simple Payment Add-On.
-add_action('gform_loaded', array('GF_SimplePayment_Bootstrap', 'load'), 5);
+add_action('gform_loaded', ['GF_SimplePayment_Bootstrap', 'load'], 5);
 
-add_action('wp', array('GFSimplePayment', 'maybe_thankyou_page'), 5);
+add_action('wp', ['GFSimplePayment', 'maybe_thankyou_page'], 5);
 
 
 class GF_SimplePayment_Bootstrap {
@@ -92,11 +92,17 @@ class GFSimplePayment extends GFPaymentAddOn {
     function pre_init() {
 		parent::pre_init();
 		add_action('sp_payment_success', [$this, 'payment_success']);
+		add_action('gform_enqueue_scripts', [$this, 'load_scripts'], 10, 2);
         $this->SPWP = SimplePaymentPlugin::instance();
 		$this->_version = $this->SPWP::$version;
 		
     }
-
+	
+	function load_scripts( $form, $is_ajax ) {
+		if ( $is_ajax ) {
+			$this->SPWP->scripts();
+		}
+	}
 	// # ADMIN FUNCTIONS -----------------------------------------------------------------------------------------------
 
 	// ------- Plugin settings -------
@@ -548,7 +554,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 			}
 			if (!isset($params['form']) || !$params['form']) {
 				$params['type'] = 'form';
-				$params['form'] = 'plugin-addon';
+				$params['form'] = isset($_REQUEST['gform_ajax']) && $_REQUEST['gform_ajax'] ? 'plugin-addon' : 'plugin-addon';
 			}
 			GFSimplePayment::$params = $params;
 			$this->redirect_url = null;

@@ -16,18 +16,7 @@ use PayPal\Rest\ApiContext;
 if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
-/*
-buttons
-<script
-    src="https://www.paypal.com/sdk/js?client-id=SB_CLIENT_ID">
-  </script>
 
-  <div id="paypal-button-container"></div>
-
-  <script>
-    paypal.Buttons().render('#paypal-button-container');
-  </script>
-  */
 class PayPal extends Engine {
 
   public $name = 'PayPal';
@@ -82,7 +71,7 @@ class PayPal extends Engine {
     // - Call payment gateway API
     // - Redirect to the payment gateway url with params
     // Return FALSE if transaction failed
-    echo '<form id="frm" action="'.($this->sandbox ? $this->api['sandbox']['post'] : $this->api['post']).'" method="post">';
+    echo '<form id="frm" action="'.($this->sandbox ? $this->api['sandbox']['post'] : $this->api['post']).'" target="_top" method="post">';
     foreach ($post as $key => $value) {
         echo '<input type="hidden" name="'.htmlentities($key).'" value="'.htmlentities($value).'">';
     }

@@ -1,6 +1,5 @@
 <?php
 require('preparation.php');
-//wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL.'assets/js/form-checkout.js', [], $SPWP::$version, true );
 ?>
 <div class="col-md-8 order-md-1" id="simple-payment">
     <div class="row">

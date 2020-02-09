@@ -443,7 +443,9 @@ $sp_settings = [
   ],
   'credit2000.password' => [
     'title' => __('Company Key', 'simple-payment'),
-    'section' => 'credit2000_settings', 
+    'section' => 'credit2000_settings',
+    'type' => 'password',
+ 
   ],
   'credit2000.company_logo' => [
     'title' => __('Company Logo', 'simple-payment'),

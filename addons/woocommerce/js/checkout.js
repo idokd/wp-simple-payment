@@ -18,25 +18,20 @@
                     e(":input.woocommerce-SavedPaymentMethods-tokenInput:last", t).prop("checked", !0),
                     0 === t.data("count") &&
                     e(".woocommerce-SavedPaymentMethods-new", t).hide(),
-
-                        e(":input.woocommerce-SavedPaymentMethods-tokenInput:checked", t).trigger("change"),
-
+                    e(":input.woocommerce-SavedPaymentMethods-tokenInput:checked", t).trigger("change"),
                     e("input#createaccount").length &&
                     !e("input#createaccount").is(":checked") &&
                     c.hideSaveNewCheckbox()
                 },
                 this.hideForm = function() {
                     e(".wc-payment-form", n).hide();
-
                     //cardcom validation form
                     e(".payment_method_cardcom_validation",n).show();
                 },
                 this.showForm = function() {
                     e(".wc-payment-form", n).show();
-
                     ////cardcom validation form
                     e(".payment_method_cardcom_validation",n).hide();
-
                 },
                 this.showSaveNewCheckbox = function() {
                     e(".woocommerce-SavedPaymentMethods-saveNew", n).show()
