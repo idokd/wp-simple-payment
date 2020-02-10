@@ -1624,8 +1624,6 @@ msgid "Document ID as registered with card company"
 msgstr "ת.ז. המשוייכת לכרטיס אשראי"
 
 #: templates/form-woocommerce.php:69
-#, fuzzy
-#| msgid "Card owner ID number required."
 msgid "Card owner Id is required or invalid."
 msgstr "מספר זהות - שדה חובה."
 
