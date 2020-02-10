@@ -1,90 +1,556 @@
 msgid ""
 msgstr ""
+"Project-Id-Version: Simple Payment\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
+"POT-Creation-Date: 2019-12-14T23:11:47+00:00\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
-"Project-Id-Version: Simple Payment\n"
-"Language: he\n"
+"X-Generator: Poedit 2.3\n"
 
 #. Plugin Name of the plugin
-#: simple-payment-plugin.php:199
-#: simple-payment-plugin.php:200
+#: addons/elementor/widget.php:31 addons/woocommerce/init.php:51
+#: addons/woocommerce/init.php:107 addons/wpjobboard/config.php:8
+#: simple-payment-plugin.php:329 simple-payment-plugin.php:330
 msgid "Simple Payment"
 msgstr "סימפל פיימנט"
 
+#. Plugin URI of the plugin
+msgid "https://simple-payment.yalla-ya.com"
+msgstr ""
+
 #. Description of the plugin
-#: 
-msgid "This is a Simple Payment to work with Cardom"
-msgstr "סיפמל פיימנט עובד עם קארדקום"
+msgid ""
+"Simple Payment enables integration with multiple payment gateways, and "
+"customize multiple payment forms."
+msgstr ""
+"סימפל פיימנט מאפשר אינטגרציה של מספר מנועי תשלומים ויצירת טפסי תשלום מרובים."
 
 #. Author of the plugin
-#: 
 msgid "Ido Kobelkowsky / yalla ya!"
 msgstr "‫Ido Kobelkowsky / yalla ya!"
 
-#: admin/transaction-list-table.php:15
-#: admin/transaction-list-table.php:16
-msgid "Transaction"
-msgstr "טרנזקציה"
+#. Author URI of the plugin
+msgid "https://github.com/idokd"
+msgstr ""
 
-#: admin/transaction-list-table.php:118
-msgid "No transactions avaliable."
-msgstr "אין טרנזקציות."
+#. translators: 1: Plugin name 2: Elementor
+#: addons/elementor/init.php:170
+msgid "\"%1$s\" requires \"%2$s\" to be installed and activated."
+msgstr "‫“%1$” דורש “%2״ שיהיה מותקן ומפעיל."
 
-#: admin/transaction-list-table.php:130
-#: admin/transaction-list-table.php:140
-msgid "Archive"
-msgstr "ארכיון"
+#: addons/elementor/init.php:171 addons/elementor/init.php:195
+#: addons/elementor/init.php:220
+msgid "Simple Payment Extension"
+msgstr "תוספי סימפל פיימנט"
 
-#: admin/transaction-list-table.php:187
-msgid "ID"
-msgstr "‫ID"
+#: addons/elementor/init.php:172 addons/elementor/init.php:196
+msgid "Elementor"
+msgstr "אלמנטור"
 
-#: admin/transaction-list-table.php:188
-msgid "Concept"
-msgstr "קונספט"
+#. translators: 1: Plugin name 2: Elementor 3: Required Elementor version
+#. translators: 1: Plugin name 2: PHP 3: Required PHP version
+#: addons/elementor/init.php:194 addons/elementor/init.php:219
+msgid "\"%1$s\" requires \"%2$s\" version %3$s or greater."
+msgstr ""
 
-#: admin/transaction-list-table.php:189
+#: addons/elementor/init.php:221
+msgid "PHP"
+msgstr ""
+
+#: addons/elementor/widget.php:90
+msgid "Basic"
+msgstr "בסיסי"
+
+#: addons/elementor/widget.php:97 addons/woocommerce/init.php:143
+#: addons/wpjobboard/config.php:34
+msgid "Product"
+msgstr "מוצר"
+
+#: addons/elementor/widget.php:103 admin/transaction-list-table.php:206
 msgid "Amount"
 msgstr "סכום"
 
-#: admin/transaction-list-table.php:190
-#: settings.php:67
+#: addons/elementor/widget.php:111
+msgid "Product ID"
+msgstr "קוד מוצר"
+
+#: addons/elementor/widget.php:118
+msgid "Type"
+msgstr "סוג"
+
+#: addons/elementor/widget.php:122
+msgid "Button"
+msgstr "כפתור"
+
+#: addons/elementor/widget.php:123 addons/elementor/widget.php:137
+#: settings.php:103
+msgid "Bootstrap Basic"
+msgstr "בוטסטראפ בסיסי"
+
+#: addons/elementor/widget.php:124 addons/elementor/widget.php:147
+#: addons/woocommerce/init.php:167 addons/wpjobboard/config.php:47
+#, fuzzy
+#| msgid "Form Template"
+msgid "Template"
+msgstr "טמפלט טופס"
+
+#: addons/elementor/widget.php:125 settings.php:7
+msgid "Hidden"
+msgstr "מוסתר"
+
+#: addons/elementor/widget.php:132
+msgid "Form"
+msgstr "טופס"
+
+#: addons/elementor/widget.php:136 settings.php:103
+msgid "Legacy"
+msgstr "לגאסי"
+
+#: addons/elementor/widget.php:138 settings.php:103
+msgid "Bootstrap"
+msgstr "בוטסטראפ"
+
+#: addons/elementor/widget.php:139
+msgid "Donation"
+msgstr "תרומה"
+
+#: addons/elementor/widget.php:155
+msgid "Display"
+msgstr "תצוגה"
+
+#: addons/elementor/widget.php:159
+#, fuzzy
+#| msgid "Redirect URL"
+msgid "Redirct"
+msgstr "כתובת רידירקט"
+
+#: addons/elementor/widget.php:160
+msgid "IFRAME"
+msgstr ""
+
+#: addons/elementor/widget.php:161
+msgid "Modal"
+msgstr ""
+
+#: addons/elementor/widget.php:169
+msgid "Target"
+msgstr "חלון"
+
+#: addons/elementor/widget.php:173
+msgid "_top"
+msgstr ""
+
+#: addons/elementor/widget.php:174
+msgid "_parent"
+msgstr ""
+
+#: addons/elementor/widget.php:175
+msgid "_self"
+msgstr ""
+
+#: addons/elementor/widget.php:176
+msgid "_blank"
+msgstr ""
+
+#: addons/elementor/widget.php:184 settings.php:99
+msgid "Redirect URL"
+msgstr "כתובת רידירקט"
+
+#: addons/elementor/widget.php:194
+msgid "Advanced"
+msgstr "מתקדם"
+
+#: addons/elementor/widget.php:204 addons/woocommerce/init.php:125
+#: addons/wpjobboard/config.php:12 admin/transaction-list-table.php:207
+#: settings.php:82
 msgid "Engine"
 msgstr "מנוע"
 
-#: admin/transaction-list-table.php:191
+#: addons/elementor/widget.php:213
+msgid "Payment Gateway Method"
+msgstr "פעולת מנוע סליקה"
+
+#: addons/elementor/widget.php:221 addons/woocommerce/init.php:159
+#: addons/wpjobboard/config.php:41 templates/form-bootstrap-basic-id.php:76
+#: templates/form-bootstrap-basic.php:82 templates/form-bootstrap.php:192
+#: templates/form-cardcom-example.php:133 templates/form-donation.php:204
+#: templates/form-experimental.php:192 templates/form-woocommerce.php:53
+msgid "Installments"
+msgstr "תשלומים"
+
+#: addons/elementor/widget.php:230
+msgid "Enable Query Params"
+msgstr "הפעל פרמטרי URL"
+
+#: addons/elementor/widget.php:239
+msgid "Product Field"
+msgstr "שדה מוצר"
+
+#: addons/elementor/widget.php:247
+#, fuzzy
+#| msgid "Amount"
+msgid "Amount Field"
+msgstr "סכום"
+
+#: addons/woocommerce/init.php:17
+msgid "Configure"
+msgstr "הגדרות"
+
+#: addons/woocommerce/init.php:52
+msgid "Allows integration of Simple Payment gateways into woocommerce"
+msgstr "אפשר התקנה של מנועי סימפל פיימנט בווקומרס"
+
+#: addons/woocommerce/init.php:57
+msgid "new payment method"
+msgstr "מנוע תשלום חדש"
+
+#: addons/woocommerce/init.php:98
+msgid "Enable/Disable"
+msgstr "פעיל/מבוטל"
+
+#: addons/woocommerce/init.php:100
+#, fuzzy
+#| msgid "Simple Payment"
+msgid "Enable Simple Payment"
+msgstr "סימפל פיימנט"
+
+#: addons/woocommerce/init.php:104
+msgid "Title"
+msgstr "כותרת"
+
+#: addons/woocommerce/init.php:106
+msgid ""
+"This controls the title for the payment method the customer sees during "
+"checkout."
+msgstr "הגדרה של הכותרת המוצגת ללקוח בזמן התשלום."
+
+#: addons/woocommerce/init.php:111
+#, fuzzy
+#| msgid "Operation"
+msgid "Description"
+msgstr "פעולה"
+
+#: addons/woocommerce/init.php:113
+msgid "Payment method description that the customer will see on your checkout."
+msgstr "תאור מנוע התשלום שמוצג למשתמש בזמן הרכישה."
+
+#: addons/woocommerce/init.php:114
+msgid "Please remit payment to Store Name upon pickup or delivery."
+msgstr "לבקשת הפקדה לשם החנות בזמן קבלת מוצר."
+
+#: addons/woocommerce/init.php:118 simple-payment-plugin.php:382
+msgid "Instructions"
+msgstr "הוראות"
+
+#: addons/woocommerce/init.php:120
+msgid "Instructions that will be added to the thank you page and emails."
+msgstr "הודעה שתופיע בדף התודה."
+
+#: addons/woocommerce/init.php:127
+#, fuzzy
+#| msgid "Simple Payment"
+msgid "Select Payment Gateway"
+msgstr "סימפל פיימנט"
+
+#: addons/woocommerce/init.php:128 addons/woocommerce/init.php:137
+#: addons/wpjobboard/config.php:13 addons/wpjobboard/config.php:24
+msgid "If none selected it will use Simple Payment default."
+msgstr "אם לא נבחר, יתבצע השימוש בברירת המחדל של סימפל פיימנט."
+
+#: addons/woocommerce/init.php:134 addons/woocommerce/init.php:136
+#: addons/wpjobboard/config.php:23
+msgid "Display Method"
+msgstr "תצורת הצגה"
+
+#: addons/woocommerce/init.php:145
+msgid "Custom product name to use in Simple Payment"
+msgstr "הגדרת שם מוצר שיופיע בסימפל פיימנט"
+
+#: addons/woocommerce/init.php:146
+msgid ""
+"Simple Payment globalize the purchase to single product on the Payment "
+"Gateway."
+msgstr "סיימפל פיימנט מאחד את הרכישה למוצר אחד המנועי התשלום."
+
+#: addons/woocommerce/init.php:147
+msgid "WooCommerce Order %s"
+msgstr "הזמנת ווקומרס  %s"
+
+#: addons/woocommerce/init.php:151
+msgid "Single Item Orders"
+msgstr "הזמנות מוצר יחיד"
+
+#: addons/woocommerce/init.php:153
+msgid "Single Item Order use as Product Name"
+msgstr "השתמש במוצר יחיד כשם המוצר"
+
+#: addons/woocommerce/init.php:155
+msgid "When order has a single item use item name as product name"
+msgstr "השתמש בשם המוצר כאשר ההזמנה מכילה מוצר יחיד"
+
+#: addons/woocommerce/init.php:161
+#, fuzzy
+#| msgid "Installments"
+msgid "Enable Insallments"
+msgstr "תשלומים"
+
+#: addons/woocommerce/init.php:163 addons/wpjobboard/config.php:42
+msgid "Enable installments on checkout page"
+msgstr "אפשר תשלומים בדף הרכישה"
+
+#: addons/woocommerce/init.php:169 addons/wpjobboard/config.php:48
+msgid "Custom checkout template form"
+msgstr "טופס טמפלט מוגדר אישית"
+
+#: addons/woocommerce/init.php:170
+msgid "If you wish to use a custom form template."
+msgstr "האם אתה רוצה להשתמש בטמפלט לטופס מוגדר אישית."
+
+#: addons/woocommerce/init.php:175 addons/wpjobboard/config.php:53
+msgid "Settings"
+msgstr "הגדרות"
+
+#: addons/woocommerce/init.php:177 addons/wpjobboard/config.php:54
+msgid "Custom & advanced checkout settings"
+msgstr "הגדרות נוספות"
+
+#: addons/woocommerce/init.php:178
+msgid "Use if carefully"
+msgstr "השתמש בזהירות"
+
+#: addons/woocommerce/init.php:321
+#, fuzzy
+#| msgid "Payments"
+msgid "Payment error: %s"
+msgstr "תשלומים"
+
+#: addons/woocommerce/init.php:432
+msgid "Payment error: "
+msgstr "שגיאת תשלום:"
+
+#: addons/woocommerce/init.php:508
+msgid "Pay for order"
+msgstr "שלם על ההזמנה"
+
+#: addons/woocommerce/init.php:524
+msgid "Visa"
+msgstr "ויזה"
+
+#: addons/woocommerce/init.php:525
+msgid "Mastercard"
+msgstr "מאסטרכרד"
+
+#: addons/woocommerce/init.php:526
+msgid "American Express"
+msgstr "אמריקן אקספרס"
+
+#: addons/woocommerce/metabox.php:61
+msgid "Simple Payment Transaction Data"
+msgstr "פרטי טרנזקצית סימפל פיימנט"
+
+#: addons/wpjobboard/config.php:6
+msgid "Default"
+msgstr "ברירת מחדל"
+
+#: addons/wpjobboard/config.php:35
+msgid "Custom product name to use in Simple Payment."
+msgstr "תאור מוצר לשימוש בסימפל פיימנט."
+
+#: addons/wpjobboard/config.php:40
+msgid "Enable"
+msgstr "הפעל"
+
+#: addons/wpjobboard/form.php:29
+msgid "Full Name"
+msgstr "שם מלא"
+
+#: addons/wpjobboard/form.php:34 templates/form-basic.php:19
+#: templates/form-bootstrap.php:52 templates/form-cardcom-example.php:52
+#: templates/form-donation.php:64 templates/form-experimental.php:52
+#: templates/form-legacy.php:18
+msgid "Email"
+msgstr "אימייל"
+
+#: addons/wpjobboard/form.php:38
+msgid "Credit Card"
+msgstr "כרטיס אשראי"
+
+#: addons/wpjobboard/form.php:67
+#, fuzzy
+#| msgid "Credit card number"
+msgid "Card Number"
+msgstr "מספר כרטיס"
+
+#: addons/wpjobboard/form.php:69
+msgid "Subscribe for plan"
+msgstr "הרשם לתוכנית"
+
+#: addons/wpjobboard/form.php:125
+msgid "Subscribe"
+msgstr "הרשם"
+
+#: addons/wpjobboard/form.php:198
+msgid "Make Default"
+msgstr "הפוך לברירת מחדל"
+
+#: addons/wpjobboard/form.php:199
+msgid "Delete This Credit Card"
+msgstr "מחק את כרטיס זה"
+
+#: addons/wpjobboard/form.php:203
+msgid "Delete?"
+msgstr "בצע מחיקה?"
+
+#: addons/wpjobboard/form.php:204
+msgid "Yes"
+msgstr "כן"
+
+#: addons/wpjobboard/form.php:205
+msgid "No"
+msgstr "לא"
+
+#: addons/wpjobboard/form.php:214
+msgid "+ Use Different Credit Card"
+msgstr "+ השתמש בכרטיס אשראי אחר"
+
+#: addons/wpjobboard/form.php:221 addons/wpjobboard/form.php:239
+msgid "Save card for later use"
+msgstr "שמור כרטיס אשראי לשימוש בעתיד"
+
+#: addons/wpjobboard/form.php:224
+msgid "Cancel"
+msgstr "ביטול"
+
+#: addons/zapier/init.php:12
+msgid "API KEY Invalid"
+msgstr "‫API KEY שגוי"
+
+#: admin/transaction-list-table.php:15
+msgid "Transaction"
+msgstr "טרנזקציה"
+
+#: admin/transaction-list-table.php:16
+msgid "Transactions"
+msgstr "טרנזקציות"
+
+#: admin/transaction-list-table.php:30
+msgid "All"
+msgstr "כולם"
+
+#: admin/transaction-list-table.php:31
+msgid "Success"
+msgstr "הצלחה"
+
+#: admin/transaction-list-table.php:32
+msgid "Failed"
+msgstr "כישלון"
+
+#: admin/transaction-list-table.php:33
+msgid "Cancelled"
+msgstr "מבוטלים"
+
+#: admin/transaction-list-table.php:34
+msgid "Pending"
+msgstr "בתהליך"
+
+#: admin/transaction-list-table.php:35
+msgid "Archived"
+msgstr "ארכיון"
+
+#: admin/transaction-list-table.php:56
+msgid "All Engines"
+msgstr "הכל"
+
+#: admin/transaction-list-table.php:119
+msgid "No transactions avaliable."
+msgstr "אין טרנזקציות."
+
+#: admin/transaction-list-table.php:132 admin/transaction-list-table.php:152
+msgid "Unarchive"
+msgstr "שחזור"
+
+#: admin/transaction-list-table.php:141 admin/transaction-list-table.php:156
+#: settings.php:132
+msgid "Archive"
+msgstr "ארכיון"
+
+#: admin/transaction-list-table.php:144
+msgid "Details"
+msgstr "פרטים"
+
+#: admin/transaction-list-table.php:204
+msgid "ID"
+msgstr "‫ID"
+
+#: admin/transaction-list-table.php:205
+msgid "Concept"
+msgstr "קונספט"
+
+#: admin/transaction-list-table.php:208
 msgid "Status"
 msgstr "סטטוס"
 
-#: admin/transaction-list-table.php:193
+#: admin/transaction-list-table.php:209 simple-payment-plugin.php:337
+#: simple-payment-plugin.php:338
+msgid "Payments"
+msgstr "תשלומים"
+
+#: admin/transaction-list-table.php:210
 msgid "Transaction ID"
 msgstr "קוד טרנזקציה"
 
-#: admin/transaction-list-table.php:194
+#: admin/transaction-list-table.php:211
+msgid "Confirmation Code"
+msgstr "קוד אישור"
+
+#: admin/transaction-list-table.php:212
 msgid "User"
 msgstr "משתמש"
 
-#: admin/transaction-list-table.php:195
+#: admin/transaction-list-table.php:213
 msgid "URL"
 msgstr "כתובת"
 
-#: admin/transaction-list-table.php:196
+#: admin/transaction-list-table.php:214
 msgid "Parameters"
 msgstr "פרמטרים"
 
-#: admin/transaction-list-table.php:197
+#: admin/transaction-list-table.php:215
+msgid "IP Address"
+msgstr "כתובת IP"
+
+#: admin/transaction-list-table.php:216
+msgid "User Agent"
+msgstr "פרטי דפדפן"
+
+#: admin/transaction-list-table.php:217
 msgid "Error"
 msgstr "שגיאה"
 
-#: admin/transaction-list-table.php:199
+#: admin/transaction-list-table.php:218 settings.php:88
+msgid "Sandbox"
+msgstr "בדיקות"
+
+#: admin/transaction-list-table.php:219
 msgid "Modified"
 msgstr "שונה"
 
-#: admin/transaction-list-table.php:200
+#: admin/transaction-list-table.php:220
 msgid "Created"
 msgstr "נוצר"
+
+#: admin/transaction-log.php:7 admin/transactions.php:8
+msgid "Payments Transactions"
+msgstr "טרנזקציות תשלום"
+
+#: admin/transactions.php:20
+msgid "Search"
+msgstr "חיפוש"
 
 #: settings.php:4
 msgid "Hebrew"
@@ -110,8 +576,7 @@ msgstr "יצירת אסימון בלבד"
 msgid "Suspended Deal"
 msgstr "עסקה מושהית"
 
-#: settings.php:6
-#: settings.php:316
+#: settings.php:6 settings.php:360
 msgid "Invoice"
 msgstr "חשבונית מס קבלה"
 
@@ -123,10 +588,9 @@ msgstr "קבלה מלכ\"ר"
 msgid "Order Confirmation"
 msgstr "אישור הזמנה מאתר"
 
-#: settings.php:6
-#: settings.php:316
+#: settings.php:6 settings.php:360
 msgid "Receipt"
-msgstr "קבלה רגילה (לחשבונית) "
+msgstr "קבלה רגילה (לחשבונית)"
 
 #: settings.php:7
 msgid "Shown & Required"
@@ -135,10 +599,6 @@ msgstr "מוצג וחובה"
 #: settings.php:7
 msgid "Shown"
 msgstr "מוצג"
-
-#: settings.php:7
-msgid "Hidden"
-msgstr "מוסתר"
 
 #: settings.php:8
 msgid "Normal"
@@ -156,13 +616,29 @@ msgstr "לא ליצור חשבוניות ולא להציג"
 msgid "Forward (Do not show)"
 msgstr "צור חשבונית לפי פרטי החשבונית שהועברו"
 
+#: settings.php:11
+msgid "New and Update"
+msgstr "חדש ועדכון"
+
+#: settings.php:11
+msgid "Only Update"
+msgstr "רק עדכון"
+
 #: settings.php:20
 msgid "Licensing Information"
 msgstr "קוד רשיון"
 
 #: settings.php:21
-msgid "Obtain a license <a href=\"mailto:ido@yalla-ya.com\" target=\"_blank\">here</a> to use in production mode"
-msgstr "קבל קוד רשיון  <a href=“mailto:ido@yalla-ya.com” target=“_blank”>כאן</a> לשימוש בסביבת אמת"
+#, fuzzy
+#| msgid ""
+#| "Obtain a license <a href=\"mailto:ido@yalla-ya.com\" target=\"_blank"
+#| "\">here</a> to use in production mode"
+msgid ""
+"Obtain a license <a href=\"https://simple-payment.yalla-ya.com/get\" target="
+"\"_blank\">here</a> to use in production mode"
+msgstr ""
+"קבל קוד רשיון  <a href=“mailto:ido@yalla-ya.com” target=“_blank”>כאן</a> "
+"לשימוש בסביבת אמת"
 
 #: settings.php:25
 msgid "General Settings"
@@ -172,823 +648,869 @@ msgstr "הגדרות כלליות"
 msgid "Setup how Simple Payment should operate the payments below:"
 msgstr "הגדרה איך סימפל פיימנט יעבד תשלומים:"
 
-#: settings.php:39
-msgid "Cardcom Operation"
-msgstr "אופרצית קארדקום"
-
-#: settings.php:40
-msgid "Setup how Cardcom should operate the payment below:"
-msgstr "הגדרה איך קארדקום יבצע תשלומים:"
-
-#: settings.php:44
-msgid "Cardcom Page Display Information"
-msgstr "קארדקום דף תשלום"
-
-#: settings.php:45
-msgid "Configure the Cardcom Page, which data should be displayed"
-msgstr "קארדרום - הגדרת נתונים בדף תשלום"
-
-#: settings.php:49
-msgid "Cardcom Document Processing"
-msgstr "מסמכי קארדקום"
-
-#: settings.php:50
-msgid "Cardcom can create a document "
-msgstr "קארדקום יכול לייצר מסמכים אוטמטית "
-
-#: settings.php:71
-msgid "Mode"
-msgstr "מצב"
-
-#: settings.php:84
-msgid "Redirect URL"
-msgstr "כתובת רידירקט"
-
-#: settings.php:86
-msgid "Form Template"
-msgstr "טמפלט טופס"
-
-#: settings.php:88
-msgid "Bootstrap"
-msgstr "בוטסטראפ"
-
-#: settings.php:88
-msgid "Experimental"
-msgstr "נסיוני"
-
-#: settings.php:88
-msgid "Legacy"
-msgstr "לגאסי"
-
-#: settings.php:134
-msgid "Terminal ID"
-msgstr "טרמינל"
-
-#: settings.php:138
-#: settings.php:300
-msgid "Username"
-msgstr "שם משתמש"
-
-#: settings.php:142
-msgid "API Password"
-msgstr "סיסמאת API"
-
-#: settings.php:147
-msgid "Operation"
-msgstr "פעולה"
-
-#: settings.php:75
-msgid "Currency"
-msgstr "מטבע"
-
-#: settings.php:153
-msgid "Force Language Interface"
-msgstr "שפת ממשק"
-
-#: settings.php:160
-msgid "Credit Type"
-msgstr "סוק קרדיט"
-
-#: settings.php:168
-msgid "Name field settings"
-msgstr "הגדרת שדה שם"
-
-#: settings.php:174
-msgid "Phone field settings"
-msgstr "‫הגדרת שדה טלפון"
-
-#: settings.php:180
-msgid "Email field settings"
-msgstr "‫‫הגדרת שדה איימיל"
-
-#: settings.php:191
-msgid "Invoice Processing"
-msgstr "יצירת חשבונית"
-
-#: settings.php:198
-#: settings.php:314
-msgid "Document Type Upon Success"
-msgstr "סוג מסמך לייצירה"
-
-#: settings.php:206
-msgid "Auto Create/Update Account"
-msgstr "יצירת/עדכון חשבון לקוח"
-
-#: settings.php:211
-msgid "Load Account Info to Invoice"
-msgstr "טעינה של נתוני לקוח לחשבונית"
-
-#: settings.php:216
-msgid "Show Invoice Information"
-msgstr "הצג פרטי חשבונית"
-
-#: settings.php:101
-#: settings.php:221
-msgid "Min # of Payments"
-msgstr "מינימום תשלומים"
-
-#: settings.php:107
-#: settings.php:227
-msgid "Max # of Payments"
-msgstr "מקסימום תשלומים"
-
-#: settings.php:113
-#: settings.php:233
-msgid "Default # of Payments"
-msgstr "תשלומים ברירת מחדל"
-
-#: settings.php:90
-#: settings.php:240
-msgid "CSS"
-msgstr "‫CSS"
-
-#: settings.php:246
-msgid "Prices Globally VAT Free"
-msgstr "מחירים ללא מע״מ"
-
-#: settings.php:251
-msgid "Email Invoice to Client"
-msgstr "שלח חשבונית ללקוח"
-
-#: settings.php:256
-msgid "Site ID"
-msgstr "קוד אתר"
-
-#: settings.php:260
-msgid "Department ID"
-msgstr "קוד מחלקה"
-
-#: settings.php:262
-msgid "Numeric ID"
-msgstr "קוד נומרי"
-
-#: settings.php:79
-#: simple-payment-plugin.php:159
-#: simple-payment-plugin.php:192
-msgid "Payment Page"
-msgstr "דף תשלום"
-
-#: admin/transaction-list-table.php:192
-#: simple-payment-plugin.php:207
-#: simple-payment-plugin.php:208
-msgid "Payments"
-msgstr "תשלומים"
-
-#: simple-payment-plugin.php:241
-msgid "Simple Payment Settings"
-msgstr "הגדרות סימפל פיימנט"
-
-#: settings.php:69
-#: simple-payment-plugin.php:245
-msgid "Cardcom"
-msgstr "קארדקום"
-
-#: simple-payment-plugin.php:247
-msgid "License"
-msgstr "רשיון"
-
-#: simple-payment-plugin.php:248
-msgid "Shortcode"
-msgstr "שורטקוד"
-
-#: simple-payment-plugin.php:279
-msgid "License Key"
-msgstr "קוד רשיון"
-
-#: simple-payment-plugin.php:381
-msgid "License is not valid on the current domain"
-msgstr "רשיון לא תקף לדומיין הנוכחי"
-
-#: simple-payment-plugin.php:389
-msgid "License has not been activated"
-msgstr "רשיון לא הופעל"
-
-#: simple-payment-plugin.php:394
-msgid "License key was not found"
-msgstr "קוד רשיון לא נמצא"
-
-#: simple-payment-plugin.php:398
-msgid "Unhandled error:"
-msgstr "שגיאה לא מוגדרת:"
-
-#: simple-payment-plugin.php:466
-msgid "Auto"
-msgstr "אוטומטי"
-
-#: admin/transaction-log.php:7
-#: admin/transactions.php:8
-msgid "Payments Transactions"
-msgstr "טרנזקציות תשלום"
-
-#: templates/form-bootstrap.php:19
-msgid "Purchase Information"
-msgstr "פרטי רכישה"
-
-#: templates/form-bootstrap.php:26
-#: templates/form-donation.php:38
-#: templates/form-experimental.php:26
-msgid "Billing Information"
-msgstr "פרטי תשלום"
-
-#: templates/form-bootstrap.php:29
-#: templates/form-donation.php:41
-#: templates/form-experimental.php:29
-msgid "First name"
-msgstr "שם פרטי"
-
-#: templates/form-bootstrap.php:32
-#: templates/form-donation.php:44
-#: templates/form-experimental.php:32
-msgid "Valid first name is required."
-msgstr "שם פרטי - שדה חובה."
-
-#: templates/form-bootstrap.php:36
-#: templates/form-donation.php:48
-#: templates/form-experimental.php:36
-msgid "Last name"
-msgstr "שם משפחה"
-
-#: templates/form-bootstrap.php:39
-#: templates/form-donation.php:51
-#: templates/form-experimental.php:39
-msgid "Valid last name is required."
-msgstr "‫שם משפחה - שדה חובה."
-
-#: templates/form-bootstrap.php:46
-#: templates/form-donation.php:58
-#: templates/form-experimental.php:46
-msgid "Phone"
-msgstr "טלפון"
-
-#: templates/form-bootstrap.php:49
-#: templates/form-donation.php:61
-#: templates/form-experimental.php:49
-msgid "Valid phone is required."
-msgstr "טלפון - שדה חובה."
-
-#: templates/form-bootstrap.php:53
-#: templates/form-donation.php:65
-#: templates/form-experimental.php:53
-msgid "Mobile"
-msgstr "נייד"
-
-#: templates/form-bootstrap.php:56
-#: templates/form-donation.php:68
-#: templates/form-experimental.php:56
-msgid "Valid mobile is required."
-msgstr "‫נייד - שדה חובה."
-
-#: templates/form-bootstrap.php:62
-#: templates/form-donation.php:74
-#: templates/form-experimental.php:62
-#: templates/form-legacy.php:23
-msgid "Email"
-msgstr "אימייל"
-
-#: templates/form-bootstrap.php:63
-#: templates/form-donation.php:75
-#: templates/form-experimental.php:63
-#: templates/form-legacy.php:24
-msgid "you@example.com"
-msgstr "‫you@example.com"
-
-#: templates/form-bootstrap.php:65
-#: templates/form-donation.php:77
-#: templates/form-experimental.php:65
-#: templates/form-legacy.php:26
-msgid "Please enter a valid email address."
-msgstr "איימיל - שדה חובה."
-
-#: templates/form-bootstrap.php:70
-#: templates/form-donation.php:82
-#: templates/form-experimental.php:70
-msgid "Address"
-msgstr "כתובת"
-
-#: templates/form-bootstrap.php:71
-#: templates/form-donation.php:83
-#: templates/form-experimental.php:71
-msgid "1234 Main St."
-msgstr "רחוב, מספר."
-
-#: templates/form-bootstrap.php:73
-#: templates/form-donation.php:85
-#: templates/form-experimental.php:73
-msgid "Please enter your address."
-msgstr "כתובת - שדה חובה."
-
-#: templates/form-bootstrap.php:78
-#: templates/form-donation.php:90
-#: templates/form-experimental.php:78
-msgid "Address 2"
-msgstr "כתובת (נוסף)"
-
-#: templates/form-bootstrap.php:78
-#: templates/form-donation.php:90
-#: templates/form-experimental.php:78
-msgid "(Optional)"
-msgstr "(אופציונלי)"
-
-#: templates/form-bootstrap.php:79
-#: templates/form-donation.php:91
-#: templates/form-experimental.php:79
-msgid "Apartment or suite"
-msgstr "דירה/קומה"
-
-#: templates/form-bootstrap.php:83
-#: templates/form-donation.php:95
-#: templates/form-experimental.php:83
-msgid "City"
-msgstr "עיר"
-
-#: templates/form-bootstrap.php:86
-#: templates/form-donation.php:98
-#: templates/form-experimental.php:86
-msgid "Please enter your city."
-msgstr "עיר - שדה חובה."
-
-#: templates/form-bootstrap.php:92
-#: templates/form-donation.php:104
-#: templates/form-experimental.php:92
-msgid "Country"
-msgstr "ארץ"
-
-#: templates/form-bootstrap.php:94
-#: templates/form-donation.php:106
-#: templates/form-experimental.php:94
-msgid "Choose"
-msgstr "בחר"
-
-#: templates/form-bootstrap.php:93
-#: templates/form-donation.php:100
-msgid "United States"
-msgstr "ארצות הברית"
-
-#: templates/form-bootstrap.php:98
-#: templates/form-donation.php:110
-#: templates/form-experimental.php:98
-msgid "Please select a valid country."
-msgstr "בחר ארץ."
-
-#: templates/form-bootstrap.php:102
-#: templates/form-donation.php:114
-#: templates/form-experimental.php:102
-msgid "State"
-msgstr "מדינה"
-
-#: templates/form-bootstrap.php:105
-#: templates/form-donation.php:117
-#: templates/form-experimental.php:105
-msgid "State required."
-msgstr "מדינה - שדה חובה."
-
-#: templates/form-bootstrap.php:109
-#: templates/form-donation.php:121
-#: templates/form-experimental.php:109
-msgid "Zip Code"
-msgstr "מיקוד"
-
-#: templates/form-bootstrap.php:112
-#: templates/form-donation.php:124
-#: templates/form-experimental.php:112
-msgid "Zip code required."
-msgstr "מיקוד - שדה חובה."
-
-#: templates/form-bootstrap.php:118
-#: templates/form-bootstrap.php:119
-#: templates/form-donation.php:130
-#: templates/form-donation.php:131
-#: templates/form-experimental.php:118
-#: templates/form-experimental.php:119
-msgid "Tax ID"
-msgstr "מספר מס (ח״פ/ת.ז)"
-
-#: templates/form-bootstrap.php:121
-#: templates/form-donation.php:133
-#: templates/form-experimental.php:121
-msgid "Valid tax id is required."
-msgstr "מספר מס - שדה חובה."
-
-#: templates/form-bootstrap.php:126
-#: templates/form-donation.php:138
-#: templates/form-experimental.php:126
-msgid "Comment"
-msgstr "הערה"
-
-#: templates/form-bootstrap.php:129
-#: templates/form-donation.php:141
-#: templates/form-experimental.php:129
-msgid "Please enter your comment for invoicing or shipping."
-msgstr "הערה לחשבונית או משלוח."
-
-#: templates/form-bootstrap-basic.php:25
-#: templates/form-bootstrap.php:139
-#: templates/form-donation.php:151
-#: templates/form-experimental.php:139
-#: templates/form-legacy.php:30
-msgid "Payment"
-msgstr "תשלום"
-
-#: templates/form-bootstrap-basic.php:29
-#: templates/form-bootstrap.php:144
-#: templates/form-donation.php:156
-#: templates/form-experimental.php:144
-#: templates/form-legacy.php:35
-msgid "Credit card"
-msgstr "כרטיס אשראי"
-
-#: templates/form-bootstrap-basic.php:33
-#: templates/form-bootstrap.php:148
-#: templates/form-donation.php:160
-#: templates/form-experimental.php:148
-#: templates/form-legacy.php:39
-msgid "Debit card"
-msgstr "כרטיס דביט"
-
-#: settings.php:69
-#: simple-payment-plugin.php:244
-#: templates/form-bootstrap.php:152
-#: templates/form-donation.php:164
-#: templates/form-experimental.php:152
-#: templates/form-legacy.php:43
-msgid "PayPal"
-msgstr "פאי-פאל"
-
-#: templates/form-bootstrap-basic.php:38
-#: templates/form-bootstrap.php:157
-#: templates/form-donation.php:169
-#: templates/form-experimental.php:157
-#: templates/form-legacy.php:48
-msgid "Name on card"
-msgstr "בעל הכרטיס"
-
-#: templates/form-bootstrap-basic.php:40
-#: templates/form-bootstrap.php:159
-#: templates/form-donation.php:171
-#: templates/form-experimental.php:159
-#: templates/form-legacy.php:50
-msgid "Full name as displayed on card"
-msgstr "שם מלא המופיע על הכרטיס"
-
-#: templates/form-bootstrap-basic.php:42
-#: templates/form-bootstrap.php:161
-#: templates/form-donation.php:173
-#: templates/form-experimental.php:161
-#: templates/form-legacy.php:52
-msgid "Name on card is required."
-msgstr "בעל הכרטיס - שדה חובה."
-
-#: templates/form-bootstrap-basic.php:46
-#: templates/form-bootstrap.php:165
-#: templates/form-donation.php:177
-#: templates/form-experimental.php:165
-#: templates/form-legacy.php:56
-msgid "Credit card number"
-msgstr "מספר כרטיס"
-
-#: templates/form-bootstrap-basic.php:49
-#: templates/form-bootstrap.php:168
-#: templates/form-donation.php:180
-#: templates/form-experimental.php:168
-#: templates/form-legacy.php:59
-msgid "Credit card number is required."
-msgstr "מספר כרטיס - שדה חובה."
-
-#: templates/form-bootstrap-basic.php:55
-#: templates/form-bootstrap.php:174
-#: templates/form-donation.php:186
-#: templates/form-experimental.php:174
-#: templates/form-legacy.php:65
-msgid "Expiration"
-msgstr "תוקף"
-
-#: templates/form-legacy.php:68
-msgid "Expiration date required."
-msgstr "תוקף - שדה חובה."
-
-#: templates/form-bootstrap-basic.php:75
-#: templates/form-bootstrap.php:194
-#: templates/form-donation.php:206
-#: templates/form-experimental.php:194
-#: templates/form-legacy.php:72
-msgid "CVV"
-msgstr "‫CVV"
-
-#: templates/form-legacy.php:75
-msgid "Security code required."
-msgstr "‫CVV - שדה חובה."
-
-#: templates/form-bootstrap-basic.php:83
-#: templates/form-bootstrap.php:202
-#: templates/form-donation.php:214
-#: templates/form-experimental.php:202
-msgid "Installments"
-msgstr "תשלומים"
-
-#: templates/form-bootstrap.php:189
-#: templates/form-donation.php:196
-msgid "Single Payment"
-msgstr "תשלום אחד"
-
-#: templates/form-bootstrap-basic.php:88
-#: templates/form-bootstrap.php:207
-#: templates/form-donation.php:219
-#: templates/form-experimental.php:208
-msgid "Number of Installments is required."
-msgstr "תשלומים - שדה חובה."
-
-#: templates/form-donation.php:224
-msgid "Process Payment"
-msgstr "בצע תשלום"
-
-#: templates/form-donation.php:12
-msgid "For"
-msgstr "עבור"
-
-#: templates/form-donation.php:24
-msgid "Donation Information"
-msgstr "פרטי תרומה"
-
-#: templates/form-donation.php:144
-msgid "Donation"
-msgstr "תרומה"
-
-#: templates/form-donation.php:13
-msgid "General Donation"
-msgstr "תרומה כללית"
-
-#. Plugin URI of the plugin
-#: 
-msgid "https://simple-payment.yalla-ya.com"
-msgstr ""
-
-#. Author URI of the plugin
-#: 
-msgid "https://github.com/idokd"
-msgstr ""
-
-#: admin/transaction-list-table.php:30
-msgid "All"
-msgstr "כולם"
-
-#: admin/transaction-list-table.php:31
-msgid "Success"
-msgstr "הצלחה"
-
-#: admin/transaction-list-table.php:32
-msgid "Failed"
-msgstr "כישלון"
-
-#: admin/transaction-list-table.php:33
-msgid "Cancelled"
-msgstr "מבוטלים"
-
-#: admin/transaction-list-table.php:34
-msgid "Pending"
-msgstr "בתהליך"
-
-#: admin/transaction-list-table.php:56
-msgid "All Engines"
-msgstr "הכל"
-
-#: admin/transactions.php:20
-msgid "Search"
-msgstr "חיפוש"
+#: settings.php:29 simple-payment-plugin.php:380
+msgid "Extensions"
+msgstr "תוספים"
+
+#: settings.php:30
+msgid "Setup how Simple Payment extends and connects via API:"
+msgstr "הגדרות הרחבת סימפל פיימנו עם חיבור דרך API:"
 
 #: settings.php:34
-msgid "PayPal Settings"
-msgstr "הגדרות פאייפאל"
-
-#: settings.php:35
-msgid "Setup how PayPal should operate the payment below:"
-msgstr "הגדר איך פאייפאל יבצע חיובים:"
-
-#: settings.php:69
-msgid "Custom"
-msgstr "קאסטום"
-
-#: settings.php:73
-msgid "Live"
-msgstr "ייצור"
-
-#: admin/transaction-list-table.php:198
-#: settings.php:73
-msgid "Sandbox"
-msgstr "בדיקות"
-
-#: settings.php:82
-msgid "Callback URL"
-msgstr "כתובת חזרה"
-
-#: settings.php:120
-msgid "Client ID"
-msgstr "קוד לקוח"
-
-#: settings.php:123
-msgid "Client Secret"
-msgstr "סיסמאת לקוח"
-
-#: settings.php:127
-msgid "Business"
-msgstr "עסק"
-
-#: settings.php:130
-msgid "Hosted Button ID"
-msgstr "קוד כפתור אירוח"
-
-#: simple-payment-plugin.php:243
-msgid "General"
-msgstr "כללי"
-
-#: simple-payment-plugin.php:249
-msgid "Instructions"
-msgstr "הוראות"
-
-#: simple-payment-plugin.php:358
-msgid "License key is required"
-msgstr "דרוש קוד רשיון"
-
-#: templates/form-donation.php:14
-msgid "Direct Debit"
-msgstr "הוראת קבע"
-
-#: templates/form-donation.php:15
-msgid "Number of Installments "
-msgstr "מספר תשלומים"
-
-#: templates/form-donation.php:16
-msgid "Number of Payments"
-msgstr "מספר תשלומים"
-
-#: admin/transaction-list-table.php:35
-msgid "Archived"
-msgstr "ארכיון"
-
-#: admin/transaction-list-table.php:131
-msgid "Details"
-msgstr "פרטים"
-
-#: settings.php:11
-msgid "New and Update"
-msgstr "חדש ועדכון"
-
-#: settings.php:11
-msgid "Only Update"
-msgstr "רק עדכון"
-
-#: settings.php:29
 msgid "Installments Settings"
 msgstr "הגדרות תשלומים"
 
-#: settings.php:30
-msgid "Setup how Simple Payment should operate installments and recurring payments:"
+#: settings.php:35
+msgid ""
+"Setup how Simple Payment should operate installments and recurring payments:"
 msgstr "הגדרות אופרצית תשלומים וחיובים קבועים:"
 
+#: settings.php:39
+msgid "PayPal Settings"
+msgstr "הגדרות פאייפאל"
+
+#: settings.php:40
+msgid "Setup how PayPal should operate the payment below:"
+msgstr "הגדר איך פאייפאל יבצע חיובים:"
+
+#: settings.php:44
+msgid "Cardcom Operation"
+msgstr "אופרצית קארדקום"
+
+#: settings.php:45
+msgid "Setup how Cardcom should operate the payment below:"
+msgstr "הגדרה איך קארדקום יבצע תשלומים:"
+
+#: settings.php:49
+msgid "Cardcom Page Display Information"
+msgstr "קארדקום דף תשלום"
+
+#: settings.php:50
+msgid "Configure the Cardcom Page, which data should be displayed"
+msgstr "קארדרום - הגדרת נתונים בדף תשלום"
+
 #: settings.php:54
+msgid "Cardcom Document Processing"
+msgstr "מסמכי קארדקום"
+
+#: settings.php:55
+msgid "Cardcom can create a document "
+msgstr "קארדקום יכול לייצר מסמכים אוטמטית "
+
+#: settings.php:59
 msgid "Cardcom Recurring Payments"
 msgstr "חיובים קבועים קארדקום"
 
-#: settings.php:55
+#: settings.php:60
 msgid "Cardcom accepts recurring payments (monthly), required settings below"
 msgstr "קארדקום מאפשר קבלת חיובי הוראת קבע (חודשיים), הגדרות ספצפיות לפעולה"
 
-#: settings.php:59
+#: settings.php:64
 msgid "iCount Gateway Settings"
 msgstr "איקונט הגדרות"
 
-#: settings.php:60
+#: settings.php:65
 msgid "Setup your Simple Payment to accept iCount Payments"
 msgstr "הגדר את סימפל פיימנט לעבודה עם איקונט תשלומים"
 
 #: settings.php:69
-#: simple-payment-plugin.php:246
+msgid "PayMe Gateway Settings"
+msgstr "פיימי הגדרות"
+
+#: settings.php:70
+msgid "Setup your Simple Payment to accept PayMe Payments"
+msgstr "הגדר את סימפל פיימנט לעבודה עם פיימי תשלומים"
+
+#: settings.php:74
+msgid "iCredit Gateway Settings"
+msgstr "איקונט הגדרות"
+
+#: settings.php:75
+msgid "Setup your Simple Payment to accept iCredit Payments"
+msgstr "הגדר את סימפל פיימנט לעבודה עם איקונט תשלומים"
+
+#: settings.php:84 simple-payment-plugin.php:374
+#: templates/form-bootstrap.php:142 templates/form-donation.php:154
+#: templates/form-experimental.php:142 templates/form-legacy.php:38
+msgid "PayPal"
+msgstr "פאי-פאל"
+
+#: settings.php:84 simple-payment-plugin.php:375
+msgid "Cardcom"
+msgstr "קארדקום"
+
+#: settings.php:84 simple-payment-plugin.php:376
 msgid "iCount"
-msgstr ""
+msgstr "אייקוטנט"
+
+#: settings.php:84 simple-payment-plugin.php:377
+msgid "PayMe"
+msgstr "פיימי"
+
+#: settings.php:84 simple-payment-plugin.php:378
+#, fuzzy
+#| msgid "Credit"
+msgid "iCredit"
+msgstr "קרדיט בתשלומים"
+
+#: settings.php:84
+msgid "Custom"
+msgstr "קאסטום"
+
+#: settings.php:86
+msgid "Mode"
+msgstr "מצב"
 
 #: settings.php:88
-msgid "Bootstrap Basic"
-msgstr "בוטסטראפ בסיסי"
+msgid "Live"
+msgstr "ייצור"
 
-#: settings.php:94
-msgid "Upon Uninstall"
-msgstr "בעת הסרה"
+#: settings.php:90
+msgid "Currency"
+msgstr "מטבע"
 
-#: settings.php:98
-msgid "Keep Database & Settings"
-msgstr "שמור מסד נתונים והגדרות"
+#: settings.php:94 simple-payment-plugin.php:289 simple-payment-plugin.php:322
+msgid "Payment Page"
+msgstr "דף תשלום"
 
-#: settings.php:98
-msgid "Erase Settings"
-msgstr "מחק הגדרות"
+#: settings.php:97
+msgid "Callback URL"
+msgstr "כתובת חזרה"
 
-#: settings.php:98
-msgid "Erase Database"
-msgstr "מחק מסד נתונים"
+#: settings.php:101
+msgid "Form Template"
+msgstr "טמפלט טופס"
 
-#: settings.php:98
-msgid "Erase All Database & Settings"
-msgstr "מחק הכל - מסד נתונים והגדרות"
+#: settings.php:103
+msgid "Experimental"
+msgstr "נסיוני"
 
-#: settings.php:186
-msgid "Hide Credit Card User ID"
-msgstr "הסתר ת.ז של בעל הכרטיס"
+#: settings.php:105
+msgid "Create Wordpress User"
+msgstr "יצירת משתמש וורדפרס"
 
-#: settings.php:267
-msgid "Enable Recurring Payments"
-msgstr "הפעל תשלומים קבועים"
+#: settings.php:107
+#, fuzzy
+#| msgid "Donation"
+msgid "No Creation"
+msgstr "תרומה"
 
-#: settings.php:270
+#: settings.php:107
+msgid "Silent Creation"
+msgstr "יצירה שקטה"
+
+#: settings.php:107
+#, fuzzy
+#| msgid "Operation"
+msgid "Registration"
+msgstr "פעולה"
+
+#: settings.php:109
+msgid "Create User Upon"
+msgstr "יצירת משתמש הזמן"
+
+#: settings.php:111
+msgid "Preprocessing"
+msgstr "לפי עיבוד"
+
+#: settings.php:111
+msgid "Post processing"
+msgstr "אחרי עיבוד"
+
+#: settings.php:114
+msgid "Cron Schedule"
+msgstr "תזמון Cron"
+
+#: settings.php:116 settings.php:121 settings.php:127
+msgid "10 Min"
+msgstr "10 דקות"
+
+#: settings.php:116 settings.php:121 settings.php:127
+msgid "30 Min"
+msgstr "‫20 דקות"
+
+#: settings.php:116 settings.php:121 settings.php:127
+msgid "1 Hour"
+msgstr "שעה"
+
+#: settings.php:116 settings.php:121 settings.php:127
+msgid "12 Hours"
+msgstr "12 שעות"
+
+#: settings.php:116 settings.php:121 settings.php:127
+msgid "1 Day"
+msgstr "יום"
+
+#: settings.php:116 settings.php:121 settings.php:127
+msgid "3 Days"
+msgstr "3 ימים"
+
+#: settings.php:116 settings.php:121 settings.php:127
+msgid "7 Days"
+msgstr "7 ימים"
+
+#: settings.php:116 settings.php:121 settings.php:127
+msgid "30 Days"
+msgstr "30 ימים"
+
+#: settings.php:119
+#, fuzzy
+#| msgid "Transaction Details"
+msgid "Auto Transaction Verification"
+msgstr "פרטי עסקה"
+
+#: settings.php:125
+msgid "Fail Pending Transaction"
+msgstr "כשלון תשלום"
+
+#: settings.php:130
+msgid "Purge Transactions"
+msgstr "מחיקת טרנזקציות"
+
+#: settings.php:132 settings.php:307
 msgid "Disabled"
 msgstr "מבוטל"
 
-#: settings.php:270
+#: settings.php:132
+msgid "Purge"
+msgstr "מחיקה"
+
+#: settings.php:132
+msgid "Archive & Purge"
+msgstr "ארכיון ומחיקה"
+
+#: settings.php:134
+msgid "Purge Period (days)"
+msgstr "תקופת למחיקה (בימים)"
+
+#: settings.php:137 settings.php:277
+msgid "CSS"
+msgstr "‫CSS"
+
+#: settings.php:141
+msgid "Upon Uninstall"
+msgstr "בעת הסרה"
+
+#: settings.php:145
+msgid "Keep Database & Settings"
+msgstr "שמור מסד נתונים והגדרות"
+
+#: settings.php:145
+msgid "Erase Settings"
+msgstr "מחק הגדרות"
+
+#: settings.php:145
+msgid "Erase Database"
+msgstr "מחק מסד נתונים"
+
+#: settings.php:145
+msgid "Erase All Database & Settings"
+msgstr "מחק הכל - מסד נתונים והגדרות"
+
+#: settings.php:148
+msgid "Min # of Payments"
+msgstr "מינימום תשלומים"
+
+#: settings.php:154
+msgid "Max # of Payments"
+msgstr "מקסימום תשלומים"
+
+#: settings.php:160
+msgid "Default # of Payments"
+msgstr "תשלומים ברירת מחדל"
+
+#: settings.php:167
+msgid "Client ID"
+msgstr "קוד לקוח"
+
+#: settings.php:170
+msgid "Client Secret"
+msgstr "סיסמאת לקוח"
+
+#: settings.php:174
+msgid "Business"
+msgstr "עסק"
+
+#: settings.php:177
+msgid "Hosted Button ID"
+msgstr "קוד כפתור אירוח"
+
+#: settings.php:181
+msgid "Terminal ID"
+msgstr "טרמינל"
+
+#: settings.php:185 settings.php:344
+msgid "Username"
+msgstr "שם משתמש"
+
+#: settings.php:189
+msgid "API Password"
+msgstr "סיסמאת API"
+
+#: settings.php:194 settings.php:415
+msgid "Operation"
+msgstr "פעולה"
+
+#: settings.php:200
+msgid "Force Language Interface"
+msgstr "שפת ממשק"
+
+#: settings.php:207
+msgid "Credit Type"
+msgstr "סוק קרדיט"
+
+#: settings.php:215
+msgid "Name field settings"
+msgstr "הגדרת שדה שם"
+
+#: settings.php:221
+msgid "Phone field settings"
+msgstr "‫הגדרת שדה טלפון"
+
+#: settings.php:227
+msgid "Email field settings"
+msgstr "‫‫הגדרת שדה איימיל"
+
+#: settings.php:233
+msgid "Hide Credit Card User ID"
+msgstr "הסתר ת.ז של בעל הכרטיס"
+
+#: settings.php:238
+msgid "Invoice Processing"
+msgstr "יצירת חשבונית"
+
+#: settings.php:245 settings.php:358
+msgid "Document Type Upon Success"
+msgstr "סוג מסמך לייצירה"
+
+#: settings.php:253
+msgid "Auto Create/Update Account"
+msgstr "יצירת/עדכון חשבון לקוח"
+
+#: settings.php:258
+msgid "Load Account Info to Invoice"
+msgstr "טעינה של נתוני לקוח לחשבונית"
+
+#: settings.php:264
+msgid "Information to print on document"
+msgstr "הדפס נתונים על מסמך"
+
+#: settings.php:272
+msgid "Show Invoice Information"
+msgstr "הצג פרטי חשבונית"
+
+#: settings.php:283
+msgid "Prices Globally VAT Free"
+msgstr "מחירים ללא מע״מ"
+
+#: settings.php:288
+msgid "Email Invoice to Client"
+msgstr "שלח חשבונית ללקוח"
+
+#: settings.php:293
+msgid "Site ID"
+msgstr "קוד אתר"
+
+#: settings.php:297
+msgid "Department ID"
+msgstr "קוד מחלקה"
+
+#: settings.php:299
+msgid "Numeric ID"
+msgstr "קוד נומרי"
+
+#: settings.php:304
+msgid "Enable Recurring (Direct Debit) Payments"
+msgstr "הפעל תשלומים קבועים (הוראת קבע)"
+
+#: settings.php:307
 msgid "Provider"
 msgstr "ספק"
 
-#: settings.php:274
-#: settings.php:286
+#: settings.php:311
+#, fuzzy
+#| msgid "Recurring Operation"
+msgid "Process Recurring Upon"
+msgstr "פעול הוראת קבע"
+
+#: settings.php:314
+msgid "Post Process"
+msgstr "אחר תהליך"
+
+#: settings.php:314
+#, fuzzy
+#| msgid "Status"
+msgid "Status Process"
+msgstr "סטטוס"
+
+#: settings.php:318
+msgid "Direct Debit Terminal"
+msgstr "הוראת קבע"
+
+#: settings.php:323
+msgid "Direct Debit Operation"
+msgstr "פעולת הוראת קבע"
+
+#: settings.php:330
 msgid "Repeated Recurring"
 msgstr "מספר הוראות קבע"
 
-#: settings.php:279
-msgid "Recurring Operation"
-msgstr "פעול הוראת קבע"
-
-#: settings.php:291
+#: settings.php:335
 msgid "Recurring Interval ID"
 msgstr "הוראת קבע לאינטרבל חיוב"
 
-#: settings.php:296
+#: settings.php:340
 msgid "Business ID"
 msgstr "קוד עסק"
 
-#: settings.php:304
+#: settings.php:348
 msgid "Password"
 msgstr "סיסמא"
 
-#: settings.php:309
+#: settings.php:353
 msgid "Use CC Storage"
 msgstr "השתמש באחסון כרטיסי אשראי"
 
-#: settings.php:316
+#: settings.php:360
 msgid "None"
 msgstr "ללא"
 
-#: settings.php:316
+#: settings.php:360
 msgid "Invoice / Receipt"
 msgstr "חשבונית-קבלה"
 
-#: settings.php:316
+#: settings.php:360
 msgid "Deal"
 msgstr "עסקה"
 
-#: settings.php:316
+#: settings.php:360
 msgid "Offer"
 msgstr "הצעה"
 
-#: settings.php:316
+#: settings.php:360
 msgid "Order"
 msgstr "הזמנה"
 
-#: settings.php:320
+#: settings.php:364
 msgid "Auto invoice on installments"
 msgstr "יצירת חשבונית על תשלומים"
 
-#: settings.php:325
+#: settings.php:369
 msgid "Email Document to Client"
 msgstr "שלח מסמך באיימיל ללקוח"
 
-#: simple-payment-plugin.php:218
+#: settings.php:374
+msgid "Seller ID"
+msgstr "קוד מוכר"
+
+#: settings.php:379
+#, fuzzy
+#| msgid "Client ID"
+msgid "Client Key"
+msgstr "קוד לקוח"
+
+#: settings.php:384
+#, fuzzy
+#| msgid "Client Secret"
+msgid "Merchant Secret"
+msgstr "סיסמאת לקוח"
+
+#: settings.php:389
+msgid "Notify Client"
+msgstr "הודעה ללקוח"
+
+#: settings.php:395
+msgid "Payment Token"
+msgstr "אסימון תשלום"
+
+#: settings.php:400
+msgid "Create Tokens"
+msgstr "יצירת אסימונים"
+
+#: settings.php:405
+msgid "Token Box"
+msgstr "קופסאת טוקן"
+
+#: settings.php:409
+msgid "Apply Credit Above Payments"
+msgstr "הפעלת קרדיט מעל מספר תשלומים"
+
+#: settings.php:421
+msgid "VAT Free"
+msgstr "ללא מע״מ"
+
+#: settings.php:428
+msgid "API KEY"
+msgstr ""
+
+#: simple-payment-plugin.php:348
 msgid "Transaction Details"
 msgstr "פרטי עסקה"
 
-#: templates/form-bootstrap-basic.php:62
-#: templates/form-bootstrap-basic.php:71
-#: templates/form-bootstrap-basic.php:78
-#: templates/form-bootstrap.php:181
-#: templates/form-bootstrap.php:190
-#: templates/form-bootstrap.php:197
-#: templates/form-donation.php:193
-#: templates/form-donation.php:202
-#: templates/form-donation.php:209
-#: templates/form-experimental.php:181
-#: templates/form-experimental.php:190
-#: templates/form-experimental.php:197
-msgid "Required."
-msgstr "שדה חובה."
+#: simple-payment-plugin.php:371
+msgid "Simple Payment Settings"
+msgstr "הגדרות סימפל פיימנט"
 
-#: templates/form-bootstrap-basic.php:93
-#: templates/form-bootstrap.php:212
-#: templates/form-experimental.php:213
-#: templates/form-legacy.php:80
+#: simple-payment-plugin.php:373
+msgid "General"
+msgstr "כללי"
+
+#: simple-payment-plugin.php:379
+msgid "License"
+msgstr "רשיון"
+
+#: simple-payment-plugin.php:381
+msgid "Shortcode"
+msgstr "שורטקוד"
+
+#: simple-payment-plugin.php:412
+msgid "License Key"
+msgstr "קוד רשיון"
+
+#: simple-payment-plugin.php:509
+msgid "License key is required"
+msgstr "דרוש קוד רשיון"
+
+#: simple-payment-plugin.php:532
+msgid "License is not valid on the current domain"
+msgstr "רשיון לא תקף לדומיין הנוכחי"
+
+#: simple-payment-plugin.php:540
+msgid "License has not been activated"
+msgstr "רשיון לא הופעל"
+
+#: simple-payment-plugin.php:545
+msgid "License key was not found"
+msgstr "קוד רשיון לא נמצא"
+
+#: simple-payment-plugin.php:549
+msgid "Unhandled error:"
+msgstr "שגיאה לא מוגדרת:"
+
+#: simple-payment-plugin.php:620
+msgid "Auto"
+msgstr "אוטומטי"
+
+#: templates/form-basic.php:20 templates/form-bootstrap.php:53
+#: templates/form-cardcom-example.php:53 templates/form-donation.php:65
+#: templates/form-experimental.php:53 templates/form-legacy.php:19
+msgid "you@example.com"
+msgstr "‫you@example.com"
+
+#: templates/form-basic.php:22 templates/form-bootstrap.php:55
+#: templates/form-cardcom-example.php:55 templates/form-donation.php:67
+#: templates/form-experimental.php:55 templates/form-legacy.php:21
+msgid "Please enter a valid email address."
+msgstr "איימיל - שדה חובה."
+
+#: templates/form-basic.php:27 templates/form-bootstrap-basic-id.php:96
+#: templates/form-bootstrap-basic.php:103 templates/form-bootstrap.php:202
+#: templates/form-cardcom-example.php:143 templates/form-experimental.php:203
+#: templates/form-legacy.php:75
 msgid "Process Payment [%s]"
 msgstr "בצע חיוב [%s]"
 
-#: templates/form-donation.php:28
+#: templates/form-bootstrap-basic-id.php:18
+#: templates/form-bootstrap-basic.php:18 templates/form-bootstrap.php:129
+#: templates/form-donation.php:141 templates/form-experimental.php:129
+#: templates/form-legacy.php:25
+msgid "Payment"
+msgstr "תשלום"
+
+#: templates/form-bootstrap-basic-id.php:22
+#: templates/form-bootstrap-basic.php:23 templates/form-bootstrap.php:134
+#: templates/form-donation.php:146 templates/form-experimental.php:134
+#: templates/form-legacy.php:30
+msgid "Credit card"
+msgstr "כרטיס אשראי"
+
+#: templates/form-bootstrap-basic-id.php:26
+#: templates/form-bootstrap-basic.php:27 templates/form-bootstrap.php:138
+#: templates/form-donation.php:150 templates/form-experimental.php:138
+#: templates/form-legacy.php:34
+msgid "Debit card"
+msgstr "כרטיס דביט"
+
+#: templates/form-bootstrap-basic-id.php:31
+#: templates/form-bootstrap-basic.php:34 templates/form-bootstrap.php:147
+#: templates/form-donation.php:159 templates/form-experimental.php:147
+#: templates/form-legacy.php:43 templates/form-woocommerce.php:8
+msgid "Name on card"
+msgstr "בעל הכרטיס"
+
+#: templates/form-bootstrap-basic-id.php:33
+#: templates/form-bootstrap-basic.php:36 templates/form-bootstrap.php:149
+#: templates/form-donation.php:161 templates/form-experimental.php:149
+#: templates/form-legacy.php:45 templates/form-woocommerce.php:10
+msgid "Full name as displayed on card"
+msgstr "שם מלא המופיע על הכרטיס"
+
+#: templates/form-bootstrap-basic-id.php:35
+#: templates/form-bootstrap-basic.php:38 templates/form-bootstrap.php:151
+#: templates/form-donation.php:163 templates/form-experimental.php:151
+#: templates/form-legacy.php:47 templates/form-woocommerce.php:12
+msgid "Name on card is required."
+msgstr "בעל הכרטיס - שדה חובה."
+
+#: templates/form-bootstrap-basic-id.php:39
+#: templates/form-bootstrap-basic.php:42 templates/form-bootstrap.php:155
+#: templates/form-donation.php:167 templates/form-experimental.php:155
+#: templates/form-legacy.php:51 templates/form-woocommerce.php:16
+msgid "Credit card number"
+msgstr "מספר כרטיס"
+
+#: templates/form-bootstrap-basic-id.php:42
+#: templates/form-bootstrap-basic.php:45 templates/form-bootstrap.php:158
+#: templates/form-donation.php:170 templates/form-experimental.php:158
+#: templates/form-legacy.php:54 templates/form-woocommerce.php:19
+msgid "Credit card number is required."
+msgstr "מספר כרטיס - שדה חובה."
+
+#: templates/form-bootstrap-basic-id.php:48
+#: templates/form-bootstrap-basic.php:51 templates/form-bootstrap.php:164
+#: templates/form-donation.php:176 templates/form-experimental.php:164
+#: templates/form-legacy.php:60 templates/form-woocommerce.php:25
+msgid "Expiration"
+msgstr "תוקף"
+
+#: templates/form-bootstrap-basic-id.php:55
+#: templates/form-bootstrap-basic-id.php:64
+#: templates/form-bootstrap-basic-id.php:71
+#: templates/form-bootstrap-basic.php:58 templates/form-bootstrap-basic.php:67
+#: templates/form-bootstrap-basic.php:74 templates/form-bootstrap.php:171
+#: templates/form-bootstrap.php:180 templates/form-bootstrap.php:187
+#: templates/form-donation.php:183 templates/form-donation.php:192
+#: templates/form-donation.php:199 templates/form-experimental.php:171
+#: templates/form-experimental.php:180 templates/form-experimental.php:187
+#: templates/form-woocommerce.php:32 templates/form-woocommerce.php:41
+#: templates/form-woocommerce.php:48
+msgid "Required."
+msgstr "שדה חובה."
+
+#: templates/form-bootstrap-basic-id.php:68
+#: templates/form-bootstrap-basic.php:71 templates/form-bootstrap.php:184
+#: templates/form-donation.php:196 templates/form-experimental.php:184
+#: templates/form-legacy.php:67 templates/form-woocommerce.php:45
+msgid "CVV"
+msgstr "‫CVV"
+
+#: templates/form-bootstrap-basic-id.php:81
+#: templates/form-bootstrap-basic.php:88 templates/form-bootstrap.php:197
+#: templates/form-cardcom-example.php:138 templates/form-donation.php:209
+#: templates/form-experimental.php:198 templates/form-woocommerce.php:58
+msgid "Number of Installments is required."
+msgstr "תשלומים - שדה חובה."
+
+#: templates/form-bootstrap-basic-id.php:88
+#: templates/form-bootstrap-basic.php:95
+msgid "Card Owner ID Number"
+msgstr "ת.ז. בעל הכרטיס"
+
+#: templates/form-bootstrap-basic-id.php:90
+#: templates/form-bootstrap-basic.php:97
+msgid "Card owner ID (official ID)"
+msgstr "‫ת.ז. בעל הכרטי"
+
+#: templates/form-bootstrap-basic-id.php:92
+#: templates/form-bootstrap-basic.php:99
+msgid "Card owner ID number required."
+msgstr "מספר זהות - שדה חובה."
+
+#: templates/form-bootstrap.php:16 templates/form-cardcom-example.php:16
+#: templates/form-donation.php:28 templates/form-experimental.php:16
+msgid "Billing Information"
+msgstr "פרטי תשלום"
+
+#: templates/form-bootstrap.php:19 templates/form-cardcom-example.php:19
+#: templates/form-donation.php:31 templates/form-experimental.php:19
+msgid "First name"
+msgstr "שם פרטי"
+
+#: templates/form-bootstrap.php:22 templates/form-cardcom-example.php:22
+#: templates/form-donation.php:34 templates/form-experimental.php:22
+msgid "Valid first name is required."
+msgstr "שם פרטי - שדה חובה."
+
+#: templates/form-bootstrap.php:26 templates/form-cardcom-example.php:26
+#: templates/form-donation.php:38 templates/form-experimental.php:26
+msgid "Last name"
+msgstr "שם משפחה"
+
+#: templates/form-bootstrap.php:29 templates/form-cardcom-example.php:29
+#: templates/form-donation.php:41 templates/form-experimental.php:29
+msgid "Valid last name is required."
+msgstr "‫שם משפחה - שדה חובה."
+
+#: templates/form-bootstrap.php:36 templates/form-cardcom-example.php:36
+#: templates/form-donation.php:48 templates/form-experimental.php:36
+msgid "Phone"
+msgstr "טלפון"
+
+#: templates/form-bootstrap.php:39 templates/form-cardcom-example.php:39
+#: templates/form-donation.php:51 templates/form-experimental.php:39
+msgid "Valid phone is required."
+msgstr "טלפון - שדה חובה."
+
+#: templates/form-bootstrap.php:43 templates/form-cardcom-example.php:43
+#: templates/form-donation.php:55 templates/form-experimental.php:43
+msgid "Mobile"
+msgstr "נייד"
+
+#: templates/form-bootstrap.php:46 templates/form-cardcom-example.php:46
+#: templates/form-donation.php:58 templates/form-experimental.php:46
+msgid "Valid mobile is required."
+msgstr "‫נייד - שדה חובה."
+
+#: templates/form-bootstrap.php:60 templates/form-cardcom-example.php:60
+#: templates/form-donation.php:72 templates/form-experimental.php:60
+msgid "Address"
+msgstr "כתובת"
+
+#: templates/form-bootstrap.php:61 templates/form-cardcom-example.php:61
+#: templates/form-donation.php:73 templates/form-experimental.php:61
+msgid "1234 Main St."
+msgstr "רחוב, מספר."
+
+#: templates/form-bootstrap.php:63 templates/form-cardcom-example.php:63
+#: templates/form-donation.php:75 templates/form-experimental.php:63
+msgid "Please enter your address."
+msgstr "כתובת - שדה חובה."
+
+#: templates/form-bootstrap.php:68 templates/form-cardcom-example.php:68
+#: templates/form-donation.php:80 templates/form-experimental.php:68
+msgid "Address 2"
+msgstr "כתובת (נוסף)"
+
+#: templates/form-bootstrap.php:68 templates/form-cardcom-example.php:68
+#: templates/form-donation.php:80 templates/form-experimental.php:68
+msgid "(Optional)"
+msgstr "(אופציונלי)"
+
+#: templates/form-bootstrap.php:69 templates/form-cardcom-example.php:69
+#: templates/form-donation.php:81 templates/form-experimental.php:69
+msgid "Apartment or suite"
+msgstr "דירה/קומה"
+
+#: templates/form-bootstrap.php:73 templates/form-cardcom-example.php:73
+#: templates/form-donation.php:85 templates/form-experimental.php:73
+msgid "City"
+msgstr "עיר"
+
+#: templates/form-bootstrap.php:76 templates/form-cardcom-example.php:76
+#: templates/form-donation.php:88 templates/form-experimental.php:76
+msgid "Please enter your city."
+msgstr "עיר - שדה חובה."
+
+#: templates/form-bootstrap.php:82 templates/form-cardcom-example.php:82
+#: templates/form-donation.php:94 templates/form-experimental.php:82
+msgid "Country"
+msgstr "ארץ"
+
+#: templates/form-bootstrap.php:84 templates/form-cardcom-example.php:84
+#: templates/form-donation.php:96 templates/form-experimental.php:84
+msgid "Choose"
+msgstr "בחר"
+
+#: templates/form-bootstrap.php:88 templates/form-cardcom-example.php:88
+#: templates/form-donation.php:100 templates/form-experimental.php:88
+msgid "Please select a valid country."
+msgstr "בחר ארץ."
+
+#: templates/form-bootstrap.php:92 templates/form-cardcom-example.php:92
+#: templates/form-donation.php:104 templates/form-experimental.php:92
+msgid "State"
+msgstr "מדינה"
+
+#: templates/form-bootstrap.php:95 templates/form-cardcom-example.php:95
+#: templates/form-donation.php:107 templates/form-experimental.php:95
+msgid "State required."
+msgstr "מדינה - שדה חובה."
+
+#: templates/form-bootstrap.php:99 templates/form-cardcom-example.php:99
+#: templates/form-donation.php:111 templates/form-experimental.php:99
+msgid "Zip Code"
+msgstr "מיקוד"
+
+#: templates/form-bootstrap.php:102 templates/form-cardcom-example.php:102
+#: templates/form-donation.php:114 templates/form-experimental.php:102
+msgid "Zip code required."
+msgstr "מיקוד - שדה חובה."
+
+#: templates/form-bootstrap.php:108 templates/form-bootstrap.php:109
+#: templates/form-cardcom-example.php:108
+#: templates/form-cardcom-example.php:109 templates/form-donation.php:120
+#: templates/form-donation.php:121 templates/form-experimental.php:108
+#: templates/form-experimental.php:109
+msgid "Tax ID"
+msgstr "מספר מס (ח״פ/ת.ז)"
+
+#: templates/form-bootstrap.php:111 templates/form-cardcom-example.php:111
+#: templates/form-donation.php:123 templates/form-experimental.php:111
+msgid "Valid tax id is required."
+msgstr "מספר מס - שדה חובה."
+
+#: templates/form-bootstrap.php:116 templates/form-cardcom-example.php:116
+#: templates/form-donation.php:128 templates/form-experimental.php:116
+msgid "Comment"
+msgstr "הערה"
+
+#: templates/form-bootstrap.php:119 templates/form-cardcom-example.php:119
+#: templates/form-donation.php:131 templates/form-experimental.php:119
+msgid "Please enter your comment for invoicing or shipping."
+msgstr "הערה לחשבונית או משלוח."
+
+#: templates/form-donation.php:14
+msgid "Donation Information"
+msgstr "פרטי תרומה"
+
+#: templates/form-donation.php:18
 msgid "Donation Concept"
 msgstr "תאור תרומה"
 
-#: templates/form-experimental.php:204
+#: templates/form-donation.php:214
+msgid "Process Payment"
+msgstr "בצע תשלום"
+
+#: templates/form-experimental.php:194
 msgid "Monthly Recurring"
 msgstr "תשלום קבוע חודשי"
 
+#: templates/form-legacy.php:63
+msgid "Expiration date required."
+msgstr "תוקף - שדה חובה."
+
+#: templates/form-legacy.php:70
+msgid "Security code required."
+msgstr "‫CVV - שדה חובה."
+
+#: templates/form-wpjobboard.php:8
+msgid "Your order has been placed."
+msgstr "ההזמנה בוצעה."
+
+#: templates/form-wpjobboard.php:9
+msgid "Please wait. You are now being redirected to payment."
+msgstr "בבקשה המתן אתה מועבר לתשלום."
+
+#~ msgid "This is a Simple Payment to work with Cardom"
+#~ msgstr "סיפמל פיימנט עובד עם קארדקום"
+
+#~ msgid "Purchase Information"
+#~ msgstr "פרטי רכישה"
+
+#~ msgid "United States"
+#~ msgstr "ארצות הברית"
+
+#~ msgid "Single Payment"
+#~ msgstr "תשלום אחד"
+
+#~ msgid "For"
+#~ msgstr "עבור"
+
+#~ msgid "General Donation"
+#~ msgstr "תרומה כללית"
+
+#~ msgid "Number of Installments "
+#~ msgstr "מספר תשלומים"
+
+#~ msgid "Number of Payments"
+#~ msgstr "מספר תשלומים"

@@ -156,16 +156,14 @@ class Credit2000 extends Engine {
       $post['ClientKey'] = $this->password; // Bytkebd75ALnhDEthkmjjo==
     }
     if ($transaction_id) {
-      $post['cvvNumber'] = '000';
-      $post['validationMonth'] = $params[SimplePayment::CARD_EXPIRY_MONTH]; // $valid[0];
-      $post['validationYear']= $params[SimplePayment::CARD_EXPIRY_YEAR] - 2000; //$valid[1]; // 20'.*/
       $post['cardNumber'] = $transaction_id;
+      $post['cvvNumber'] = '000';
     } else {
       $post['cardNumber'] = $params[SimplePayment::CARD_NUMBER];
       $post['cvvNumber'] = $params[SimplePayment::CARD_CVV];
-      $post['validationMonth'] = $params[SimplePayment::CARD_EXPIRY_MONTH];
-      $post['validationYear']= $params[SimplePayment::CARD_EXPIRY_YEAR] - 2000;
     }
+    $post['validationMonth'] = $params[SimplePayment::CARD_EXPIRY_MONTH];
+    $post['validationYear']= $params[SimplePayment::CARD_EXPIRY_YEAR] - 2000;
     $post['customerId'] = isset($params['payment_id']) ? $params['payment_id'] : $params['id'];
     $post['actionType'] = $operation;
 
@@ -183,8 +181,7 @@ class Credit2000 extends Engine {
     if (isset($params[SimplePayment::PAYMENTS]) && $params[SimplePayment::PAYMENTS] && isset($params[SimplePayment::INSTALLMENTS]) && $params[SimplePayment::INSTALLMENTS]) $installments = $params[SimplePayment::INSTALLMENTS] ? $params[SimplePayment::INSTALLMENTS] : $this->param('installments_default');
     $post['paymentsNumber'] = $installments;
     
-    // TODO: review if required on charge after authorize
-    $post['firstPayment'] = $params[SimplePayment::AMOUNT] * 100; // TODO: Validate probably 100%
+    $post['firstPayment'] = $params[SimplePayment::AMOUNT] * 100;
     $post['fixedAmmount'] = 0; // TODO: Probably Recurring Payments amount to recurrenly debit
 
     if (isset($params[SimplePayment::CARD_OWNER])) $post['FullName'] = $params[SimplePayment::CARD_OWNER];
@@ -204,7 +201,7 @@ class Credit2000 extends Engine {
     $post['stars'] = 0;
 
     $post['purchaseType'] = 1;
-    $post['confirmationNumber'] = isset($params['confirmation_code']) ? $params['confirmation_code'] : 0;
+    $post['confirmationNumber'] = 0;
     $post['confirmationSource'] = 0;
     $post['Fax'] = '';
 

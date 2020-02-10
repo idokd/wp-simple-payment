@@ -22,7 +22,7 @@ require('preparation.php');
     <div class="row">
       <div class="col-md-3 mb-3">
         <label for="cc-expiry-month"><?php _e('Expiration', 'simple-payment'); ?></label>
-        <select class="custom-select d-block w-100" id="cc-expiry-month" name="<?php echo $SPWP::CARD_EXPIRY_MONTH; ?>" required=""><option></option>
+        <select class="custom-select d-block w-100 form-control" id="cc-expiry-month" name="<?php echo $SPWP::CARD_EXPIRY_MONTH; ?>" required=""><option></option>
           <option>01</option><option>02</option><option>03</option><option>04</option>
           <option>05</option><option>06</option><option>07</option><option>08</option>
           <option>09</option><option>10</option><option>11</option><option>12</option>
@@ -33,7 +33,7 @@ require('preparation.php');
       </div>
       <div class="col-md-3 mb-3">
       <label for="cc-expiry-year">&nbsp;</label>
-        <select class="custom-select d-block w-100" id="cc-expiry-year" name="<?php echo $SPWP::CARD_EXPIRY_YEAR; ?>" required=""><option></option>
+        <select class="custom-select d-block w-100 form-control" id="cc-expiry-year" name="<?php echo $SPWP::CARD_EXPIRY_YEAR; ?>" required=""><option></option>
           <?php for ($y = $year_today; $y <= $year_max; $y++) echo '<option>'.$y.'</option>'; ?>
         </select>
         <div class="invalid-feedback">
@@ -50,7 +50,7 @@ require('preparation.php');
       <div class="col-md-4 mb-3">
         <?php if (isset($installments) && $installments && isset($installments_min) && $installments_min && isset($installments_max) && $installments_max && $installments_max > 1) { ?>
         <label for="payments"><?php _e('Installments', 'simple-payment'); ?></label>
-        <select class="custom-select d-block w-100" id="payments" name="<?php echo $SPWP::PAYMENTS; ?>" required="">
+        <select class="custom-select d-block w-100 form-control" id="payments" name="<?php echo $SPWP::PAYMENTS; ?>" required="">
           <?php for ($installment = $installments_min; $installment <= $installments_max; $installment++) echo '<option'.(isset($installments) && $installment == $installments ? ' selected' : '').'>'.$installment.'</option>'; ?>
         </select>
         <div class="invalid-feedback">
