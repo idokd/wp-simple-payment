@@ -14,3 +14,7 @@ __('TOKEN_NOT_FOUND_WITH_ENGINE', 'simple-payment');
 __('FAILED_CHARGE_WITH_ENGINE', 'simple-payment');
 __('DID_NOT_VERIFY', 'simple-payment');
 __('UNKOWN_ERROR', 'simple-payment');
+__('INVALID_CARD_CVV', 'simple-payment');
+__('INVALID_CARD_NUMBER', 'simple-payment');
+__('INVALID_CARD_EXPIRATION', 'simple-payment');
+
