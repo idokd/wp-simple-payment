@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.9.0
+ * Version: 1.9.1
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -223,10 +223,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         try {
           $status = $sp->engine->verify($transaction_id);
           if ($status) {
-            self::update($transaction_id , [
+            self::update($this->payment_id ? : $transaction_id, [
               'status' => self::TRANSACTION_SUCCESS,
               'confirmation_code' => $status,
-            ], true);
+            ], !$this->payment_id);
           } else {
             $retries = $transaction['retries'] ? $transaction['retries'] + 1 : 1;
             $data = null;
@@ -235,14 +235,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             } else {
               $data = ['retries' => $retries];
             }
-            if ($data) self::update($transaction_id , $data, true);
+            if ($data) self::update($this->payment_id ? : $transaction_id , $data, !$this->payment_id);
           }
         } catch (Exception $e) {
-          self::update($transaction_id , [
+          self::update($this->payment_id ? : $transaction_id , [
             'status' => self::TRANSACTION_FAILED,
             'error_code' => $e->getCode(),
             'error_description' => substr($e->getMessage(), 0, 250)
-          ], true);
+          ], !$this->payment_id);
         }
     }
     do_action('sp_process_verify');
@@ -691,9 +691,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     if (isset($params['payment_id'])) $data = $this->fetch($params['payment_id']);
     $code = parent::status(array_merge($data, $params));
     if ($code) {
-        $this->update($this->engine->transaction, [
+        $this->update($this->payment_id ? : $this->engine->transaction, [
           'confirmation_code' => $code,
-        ], true);
+        ], !$this->payment_id);
     }
     do_action('sp_payment_status', $params);
     return($status);
@@ -703,10 +703,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $this->setEngine($engine ? : $this->param('engine'));
     $params = apply_filters('sp_payment_post_process_filter', $params);
     if (parent::post_process($params)) {
-      $this->update($this->engine->transaction, [
+      $this->update($this->payment_id ? : $this->engine->transaction, [
         'status' => self::TRANSACTION_SUCCESS,
         'confirmation_code' => $this->engine->confirmation_code,
-      ], true);
+      ], !$this->payment_id);
       if ($this->param('user_create_step') == 'post' && !get_current_user_id()) $this->create_user($params);
       do_action('sp_payment_post_process', $params);
       return(true);
