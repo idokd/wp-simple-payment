@@ -324,7 +324,7 @@ function sp_wc_gateway_init() {
                 $params = $this->params($_REQUEST);
                 $validations = $this->SPWP->validate($params);
                 foreach ($validations as $key => $description) {
-                    wc_add_notice( sprintf(__('Payment error: %s', 'simple-payment'), $description, $key), 'error' );
+                    wc_add_notice( sprintf(__('Payment error: %s', 'simple-payment'), __($description, 'simple-payment'), $key), 'error' );
                     $ok = false;
                 }
             }
