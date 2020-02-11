@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Simple Payment\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
-"POT-Creation-Date: 2020-02-10T16:57:41+00:00\n"
+"POT-Creation-Date: 2020-02-11T10:15:40+00:00\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -545,6 +545,58 @@ msgstr "ביטול"
 #: addons/zapier/init.php:12
 msgid "API KEY Invalid"
 msgstr "‫API KEY שגוי"
+
+#: admin/error-messages.php:3 admin/error-messages.php:11
+msgid "HTTPS_REQUIRED_LIVE_TRANSACTIONS"
+msgstr "נדרש חיבור בטוח (SSL) לביצוע חיובי אמת"
+
+#: admin/error-messages.php:4
+msgid "NO_LICENSE"
+msgstr "רשיון שימוש לא קיים"
+
+#: admin/error-messages.php:5
+msgid "EXPIRED"
+msgstr "רשיון שימוש פג תוקף"
+
+#: admin/error-messages.php:6
+msgid "FINGERPRINT_SCOPE_MISSING"
+msgstr "שגיאת סקופ רשיון"
+
+#: admin/error-messages.php:7
+msgid "SUSPENDED"
+msgstr "רשיון מושהה"
+
+#: admin/error-messages.php:8
+msgid "FINGERPRINT_SCOPE_ERROR"
+msgstr "שגיאת רשיון"
+
+#: admin/error-messages.php:9
+msgid "ENGINE_SCOPE_MISSING"
+msgstr "רשיון מנוע חיוב חסר"
+
+#: admin/error-messages.php:10
+msgid "ENGINE_SCOPE_ERROR"
+msgstr "שגיאת רשיון מנוע חיוב"
+
+#: admin/error-messages.php:12
+msgid "CURRENCY_NOT_SUPPORTED_BY_ENGINE"
+msgstr "מטבע לא מכוסה ע״י מנוע חיוב"
+
+#: admin/error-messages.php:13
+msgid "TOKEN_NOT_FOUND_WITH_ENGINE"
+msgstr "אסימון לא נמצא במנוע חיוב"
+
+#: admin/error-messages.php:14
+msgid "FAILED_CHARGE_WITH_ENGINE"
+msgstr "שגיאת חיוב, בדוק נתונים"
+
+#: admin/error-messages.php:15
+msgid "DID_NOT_VERIFY"
+msgstr "לא עבר בדיקה"
+
+#: admin/error-messages.php:16
+msgid "UNKOWN_ERROR"
+msgstr "שגיאה לא ידועה"
 
 #: admin/transaction-list-table.php:15
 msgid "Transaction"

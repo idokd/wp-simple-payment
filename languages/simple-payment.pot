@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Simple Payment plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 1.8.7\n"
+"Project-Id-Version: Simple Payment 1.8.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-02-10T17:48:04+00:00\n"
+"POT-Creation-Date: 2020-02-11T10:19:44+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: simple-payment\n"
@@ -579,6 +579,59 @@ msgstr ""
 
 #: addons/zapier/init.php:12
 msgid "API KEY Invalid"
+msgstr ""
+
+#: admin/error-messages.php:3
+#: admin/error-messages.php:11
+msgid "HTTPS_REQUIRED_LIVE_TRANSACTIONS"
+msgstr ""
+
+#: admin/error-messages.php:4
+msgid "NO_LICENSE"
+msgstr ""
+
+#: admin/error-messages.php:5
+msgid "EXPIRED"
+msgstr ""
+
+#: admin/error-messages.php:6
+msgid "FINGERPRINT_SCOPE_MISSING"
+msgstr ""
+
+#: admin/error-messages.php:7
+msgid "SUSPENDED"
+msgstr ""
+
+#: admin/error-messages.php:8
+msgid "FINGERPRINT_SCOPE_ERROR"
+msgstr ""
+
+#: admin/error-messages.php:9
+msgid "ENGINE_SCOPE_MISSING"
+msgstr ""
+
+#: admin/error-messages.php:10
+msgid "ENGINE_SCOPE_ERROR"
+msgstr ""
+
+#: admin/error-messages.php:12
+msgid "CURRENCY_NOT_SUPPORTED_BY_ENGINE"
+msgstr ""
+
+#: admin/error-messages.php:13
+msgid "TOKEN_NOT_FOUND_WITH_ENGINE"
+msgstr ""
+
+#: admin/error-messages.php:14
+msgid "FAILED_CHARGE_WITH_ENGINE"
+msgstr ""
+
+#: admin/error-messages.php:15
+msgid "DID_NOT_VERIFY"
+msgstr ""
+
+#: admin/error-messages.php:16
+msgid "UNKOWN_ERROR"
 msgstr ""
 
 #: admin/transaction-list-table.php:15

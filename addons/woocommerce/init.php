@@ -435,7 +435,7 @@ function sp_wc_gateway_init() {
                 }
             } catch (Exception $e) {
                 $this->SPWP->error($params, $e->getCode(), $e->getMessage());
-                wc_add_notice( __('Payment error: ', 'simple-payment') . $e->getMessage(), 'error' );
+                wc_add_notice( __('Payment error: ', 'simple-payment') . __($e->getMessage(), 'simple-payment'), 'error' );
                 return;
             }
             /*try {
