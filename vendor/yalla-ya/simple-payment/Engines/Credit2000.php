@@ -65,7 +65,7 @@ class Credit2000 extends Engine {
       return($token['returnCode'] == 0);
     }
     if (isset($params['confirmationNumber']) && $params['confirmationNumber']) $this->confirmation_code = $params['confirmationNumber'];
-    return($params);
+    return(true);
   }
 
   public function pre_process($params) {
@@ -97,7 +97,7 @@ class Credit2000 extends Engine {
     $post['product_Id'] = $params[SimplePayment::PRODUCT]; 
     $post['client_Name'] = $params[SimplePayment::FIRST_NAME] . '/' . $params[SimplePayment::LAST_NAME];
 
-    //$post['tz_Number'] = isset($params[SimplePayment::CARD_OWNER_ID]) && $params[SimplePayment::CARD_OWNER_ID] ? $params[SimplePayment::CARD_OWNER_ID] : ''; //
+    $post['tz_Number'] = isset($params[SimplePayment::CARD_OWNER_ID]) && $params[SimplePayment::CARD_OWNER_ID] ? $params[SimplePayment::CARD_OWNER_ID] : ''; //
     $post['card_Reader'] = 2; // 1 - Connected, 2 - Not Connected
 
     $installments = 1;
@@ -206,7 +206,9 @@ class Credit2000 extends Engine {
     $post['Fax'] = '';
 
     $response = $this->soap('CreditXMLPro', $post);
-    if ($response['returnCode'] != 0) throw new Exception('FAILED_CHARGE_WITH_ENGINE', 500);
+    if ($response['returnCode'] != 0) {
+      throw new Exception(__('FAILED_CHARGE_WITH_ENGINE', 'simple-payment').': '.$response['CreditXMLProResult'], $response['returnCode']);
+    }
     return($response);
   }
   

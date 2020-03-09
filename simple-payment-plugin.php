@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.9.2
+ * Version: 1.9.3
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -876,7 +876,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $process = $this->process($process);
       if ($process === true) return(true);
       if (!$process) return(false);
-
       $return = is_array($process) ? $this->post_process($process, $engine) : $process;
     }
     } catch (Exception $e) {
@@ -928,6 +927,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           $username = $this->generate_unique_username(strtolower($username));
           if ($this->param('user_create_step') == 'register') $user_id = register_new_user($username, $email);
           else $user_id = wp_create_user($username, wp_generate_password(12, false), $email);
+          do_action('sp_user_created', $user_id, $params);
         }
     }
     if ($user_id) wp_set_auth_cookie($user_id);
@@ -1113,6 +1113,47 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $list = new Transaction_List(true);
   }
 
+  public static function get_transactions( $args = [], $per_page = 5, $page_number = 1, $instance = null, $count = false) {
+    global $wpdb;
+    if ($instance && !self::$details) {
+      $orderby = $instance->get_pagination_arg('orderby');
+      $order = $instance->get_pagination_arg('order');
+    } else {
+      $orderby = 'id';
+      $order = 'DESC';
+    }
+    if ($count) $sql = "SELECT COUNT(*) FROM ".$wpdb->prefix.self::$table_name;
+    else $sql = "SELECT * FROM ".$wpdb->prefix.self::$table_name;
+    $where = [];
+    if ( ! empty( $args['id'] ) && empty( $args['action'] ) ) $where[] = "`payment_id` = " .esc_sql(absint($args['id']));
+    if ( ! empty( $args['transaction_id'] ) && isset($args['engine']) && $args['engine'] ) $where[] = "`transaction_id` =  '" .esc_sql($_REQUEST['transaction_id'])."'";
+    
+    if ( ! empty( $args['status'] ) ) $where[] = "`status` =  '" .esc_sql($args['status'])."'";
+    if ( ! empty( $args['user_id'] ) ) $where[] = "`user_id` =  " .esc_sql($args['user_id']);
+
+    //if (!self::$details) {
+    //  $where[] = "`archived` = ".(!empty($args['archive']) ? '1' : 0);
+      if ( ! empty( $args['engine'] ) ) $where[] = "`engine` =  '" .esc_sql($args['engine'])."'";
+    //}
+
+    if ( ! empty( $args['s'] ) ) {
+      $where[] = "`transaction_id` LIKE '%" .esc_sql($args['s'])."%' OR `concept` LIKE '%" .esc_sql($args['s'])."%'";
+    }
+
+    if (count($where) > 0) $sql .=  ' WHERE '.implode(' AND ', $where);
+    if ($count) {
+      return($wpdb->get_var($sql));
+    }
+    if ( ! empty( $args['orderby'] ) || isset($orderby) ) {
+      $sql .= ' ORDER BY ' . (isset($args['orderby']) && ! empty($args['orderby']) ? esc_sql ($args['orderby']) : $orderby) ;
+      $sql .= isset($args['order']) && !empty($args['order']) ? ' '.esc_sql($args['order']) : ' '.$order;
+    }
+    $sql .= " LIMIT $per_page";
+    $sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
+    $result = $wpdb->get_results( $sql , 'ARRAY_A' );
+    return($result);
+  }
+
   public function render_transactions() {
     global $list;
     require(SPWP_PLUGIN_DIR.'/admin/transactions.php');
@@ -1184,7 +1225,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $tablename = 'history';
       foreach ($params as $field => $value) $params[$field] = $this->sanitize_pci_dss($value);
       if (!isset($params['payment_id'])) {
-        $payment_id = $this->payment_id ? : (isset($_REQUEST['payment_id']) ? $_REQUEST['payment_id'] : null);
+        $payment_id = $this->payment_id ? $this->payment_id : (isset($_REQUEST['payment_id']) ? $_REQUEST['payment_id'] : null);
         if ($payment_id) $params['payment_id'] = $payment_id;
       }
       if (!isset($params['ip_address'])) $params['ip_address'] = $_SERVER['REMOTE_ADDR'];

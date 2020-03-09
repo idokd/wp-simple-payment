@@ -141,7 +141,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
         ]), __('Archive', 'simple-payment') )
       ];
     }
-    $actions['details'] = sprintf( '<a href="?page=simple-payments-details&id=%s&transaction_id=%s&engine=%s">%s</a>', $item['id'], $item['transaction_id'], $item['engine'], __('Details', 'simple-payment') );
+    $actions['details'] = sprintf( '<a href="?page=simple-payments-details&id=%s&engine=%s">%s</a>', $item['id'], $item['engine'], __('Details', 'simple-payment') );
     return $title.$this->row_actions( $actions );
   }
 
@@ -164,12 +164,13 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     if ($this->is_export()) return($value);
       if (strlen($value) > 40) {
         add_thickbox();
-        $type = strpos($value, '://') !== FALSE ? 'url' : '';
+        $type = strpos($value, '://') < 10 ? 'url' : '';
         $type = json_decode($value) && json_last_error() === JSON_ERROR_NONE ? 'json' : $type;
+        if (!$type) $type = is_string($value) && strpos($value, '<?xml') === 0 ? 'xml' : $type;
         $id = 'tbox-'.$column_name.'-'.$item['id'];
         $href = "#TB_inline?&width=600&height=550&inlineId=".$id;
-        $value = '<a href="'.$href.'" title="'.$column_name.'" class="thickbox">'.substr($value, 0, 30).'...</a>';
-        $value .= '<div id="'.$id.'" style="display:none;"><pre class="'.$type.'">'.$item[$column_name].'</pre></div>';
+        $value = '<a href="'.$href.'" title="'.$column_name.'" class="thickbox">'.substr(htmlentities($value), 0, 30).'...</a>';
+        $value .= '<div id="'.$id.'" style="display:none;"><pre class="'.$type.'">'.htmlentities($item[$column_name]).'</pre></div>';
       }
       return($value);
   }

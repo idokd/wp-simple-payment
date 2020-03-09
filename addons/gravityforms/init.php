@@ -440,8 +440,31 @@ class GFSimplePayment extends GFPaymentAddOn {
 				}
 				$confirmation = GFFormDisplay::handle_confirmation( $form, $lead, false );
 				if ( is_array( $confirmation ) && isset( $confirmation['redirect'] ) ) {
-					header( "Location: {$confirmation['redirect']}" );
-					exit;
+					$url = $confirmation['redirect'];
+					$target = parse_url($url, PHP_URL_QUERY);
+					parse_str($target);
+					$target = isset($target['target']) ? $target['target'] : '';
+					$targets = explode(':', $target);
+					$target = $targets[0];
+					switch ($target) {
+						case '_top':
+						  echo '<html><head><script type="text/javascript"> top.location.replace("'.$url.'"); </script></head><body></body</html>'; 
+						  break;
+						case '_parent':
+						  echo '<html><head><script type="text/javascript"> parent.location.replace("'.$url.'"); </script></head><body></body</html>'; 
+						  break;
+						case 'javascript':
+						  $script = $targets[1];
+						  echo '<html><head><script type="text/javascript"> '.$script.' </script></head><body></body</html>'; 
+						  break;
+						case '_blank':
+						  break;
+						case '_self':
+						default:
+							echo '<html><head><script type="text/javascript"> location.replace("'.$url.'"); </script></head><body></body</html>'; 
+							wp_redirect($url);
+					}
+					wp_die();
 				}
 				GFFormDisplay::$submission[ $form_id ] = array( 'is_confirmation' => true, 'confirmation_message' => $confirmation, 'form' => $form, 'lead' => $lead );
 			}
@@ -551,10 +574,9 @@ class GFSimplePayment extends GFPaymentAddOn {
 		if (in_array($params['display'], ['iframe', 'modal'])) {
 			if (isset($params['template']) && $params['template']) {
 				$params['type'] = 'template';
-			}
-			if (!isset($params['form']) || !$params['form']) {
+			} else if (!isset($params['form']) || !$params['form']) {
 				$params['type'] = 'form';
-				$params['form'] = isset($_REQUEST['gform_ajax']) && $_REQUEST['gform_ajax'] ? 'plugin-addon' : 'plugin-addon';
+				$params['form'] = isset($_REQUEST['gform_ajax']) && $_REQUEST['gform_ajax'] ? 'plugin-addon-ajax' : 'plugin-addon';
 			}
 			GFSimplePayment::$params = $params;
 			$this->redirect_url = null;
@@ -562,7 +584,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 				if (isset($confirmation['redirect'])) {
 					$url = esc_url_raw( $confirmation['redirect'] );
 					GFCommon::log_debug( __METHOD__ . '(): Redirect to URL: ' . $url );
-					$confirmation .= "<script type=\"text/javascript\">window.open('$url', '_blank');</script>";
+					$confirmation .= "<script type=\"text/javascript\">window.open('$url', '_top');</script>";
 				} 
 				$confirmation .= $this->SPWP->checkout(GFSimplePayment::$params);
 				return $confirmation;
@@ -1108,7 +1130,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 			//}
 			$i++;
 		}
-
+		if (!$args[$this->SPWP::PRODUCT]) $args[$this->SPWP::PRODUCT] = $form['title'];
 		$args[$this->SPWP::AMOUNT] = $submission_data['payment_amount'];
 
 		$args['source'] = 'gravityforms';

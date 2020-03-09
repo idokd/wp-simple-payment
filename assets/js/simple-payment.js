@@ -20,6 +20,10 @@
           target = SimplePayment.params['target'];
           target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
           SimplePayment.modal(target);
+        } else if (SimplePayment.params['display'] == 'iframe') {
+          target = SimplePayment.params['target'];
+          target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
+          SimplePayment.submit();
         }
         
         // Loop over them and prevent submission

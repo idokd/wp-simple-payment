@@ -1,3 +1,33 @@
+function formatXml(xml) {
+    var formatted = '';
+    var reg = /(>)(<)(\/*)/g;
+    xml = xml.replace(reg, '$1\r\n$2$3');
+    var pad = 0;
+    jQuery.each(xml.split('\r\n'), function(index, node) {
+        var indent = 0;
+        if (node.match( /.+<\/\w[^>]*>$/ )) {
+            indent = 0;
+        } else if (node.match( /^<\/\w/ )) {
+            if (pad != 0) {
+                pad -= 1;
+            }
+        } else if (node.match( /^<\w([^>]*[^\/])?>.*$/ )) {
+            indent = 1;
+        } else {
+            indent = 0;
+        }
+
+        var padding = '';
+        for (var i = 0; i < pad; i++) {
+            padding += '  ';
+        }
+
+        formatted += padding + node + '\r\n';
+        pad += indent;
+    });
+
+    return formatted;
+}
 
 function syntaxHighlight(json) {
     json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -27,6 +57,13 @@ function syntaxHighlight(json) {
     // Loop over them and prevent submission
     Array.prototype.filter.call(jsons, function (json) {
 		json.innerHTML = syntaxHighlight(JSON.stringify(JSON.parse(json.innerText), undefined, 4));
+    })
+
+    var xmls = document.getElementsByClassName('xml')
+
+    // Loop over them and prevent submission
+    Array.prototype.filter.call(xmls, function (xml) {
+		xml.innerHTML = formatXml(xml.innerText).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/ /g, '&nbsp;');
     })
   }, false)
 }());

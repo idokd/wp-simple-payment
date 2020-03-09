@@ -56,11 +56,11 @@ msgstr "אלמנטור"
 #. translators: 1: Plugin name 2: PHP 3: Required PHP version
 #: addons/elementor/init.php:194 addons/elementor/init.php:219
 msgid "\"%1$s\" requires \"%2$s\" version %3$s or greater."
-msgstr ""
+msgstr "\"%1$s\" דרושה \"%2$s\" גירסה %3$s ומעלה."
 
 #: addons/elementor/init.php:221
 msgid "PHP"
-msgstr ""
+msgstr "‫PHP"
 
 #: addons/elementor/widget.php:90
 msgid "Basic"
@@ -133,12 +133,12 @@ msgstr "כתובת רידירקט"
 #: addons/elementor/widget.php:160 addons/gravityforms/init.php:145
 #: addons/gravityforms/init.php:310
 msgid "IFRAME"
-msgstr ""
+msgstr "IFRAME"
 
 #: addons/elementor/widget.php:161 addons/gravityforms/init.php:149
 #: addons/gravityforms/init.php:314
 msgid "Modal"
-msgstr ""
+msgstr "מודאל (תיבה קופצת עם החשכת מסך)"
 
 #: addons/elementor/widget.php:169
 msgid "Target"
@@ -215,7 +215,7 @@ msgstr "בחר מנוע סימפל פיימנט"
 
 #: addons/gravityforms/init.php:130 addons/gravityforms/init.php:294
 msgid "If none selected it will use Simple Payment default"
-msgstr "אם לא נבחר, יתבצע השימוש בברירת המחדל של סימפל פיימנט."
+msgstr "אם לא נבחר, יתבצע השימוש בברירת המחדל של סימפל פיימנט"
 
 #: addons/gravityforms/init.php:136 addons/gravityforms/init.php:138
 #: addons/gravityforms/init.php:300 addons/gravityforms/init.php:303
@@ -325,17 +325,15 @@ msgstr "פוסטים"
 msgid ""
 "Enable this option if you would like to change the post status when a "
 "subscription is cancelled."
-msgstr ""
+msgstr "הפוך אפשרות זו לזמינה אם ברצונך לשנות את מצב הפוסט כאשר מנוי מבוטל."
 
 #: addons/gravityforms/init.php:245
 msgid "Update Post when subscription is cancelled."
 msgstr "עדכן פוסט כאשר הוראת קבע מתבטלת."
 
 #: addons/gravityforms/init.php:260 addons/gravityforms/init.php:262
-#, fuzzy
-#| msgid "Settings"
 msgid "Custom Settings"
-msgstr "הגדרות"
+msgstr "הגדרות מותאמות אישית"
 
 #: addons/gravityforms/init.php:262
 msgid ""
@@ -761,8 +759,6 @@ msgid "Invoice"
 msgstr "חשבונית מס קבלה"
 
 #: settings.php:6
-#, fuzzy
-#| msgid "Donation Receipt"
 msgid "Formal Receipt"
 msgstr "קבלה מלכ\"ר"
 
@@ -811,16 +807,12 @@ msgid "Licensing Information"
 msgstr "קוד רשיון"
 
 #: settings.php:21
-#, fuzzy
-#| msgid ""
-#| "Obtain a license <a href=\"mailto:ido@yalla-ya.com\" target=\"_blank"
-#| "\">here</a> to use in production mode"
 msgid ""
 "Obtain a license <a href=\"https://simple-payment.yalla-ya.com/get\" target="
 "\"_blank\">here</a> to use in production mode"
 msgstr ""
-"קבל קוד רשיון  <a href=“mailto:ido@yalla-ya.com” target=“_blank”>כאן</a> "
-"לשימוש בסביבת אמת"
+"השג רישיון <a href=\"https://simple-payment.yalla-ya.com/get\" target="
+"\"_blank\">כאן</a> לשימוש במצב ייצור"
 
 #: settings.php:25
 msgid "General Settings"
@@ -1341,7 +1333,7 @@ msgstr "שימוש ב CVV"
 
 #: settings.php:461
 msgid "API KEY"
-msgstr ""
+msgstr "מפתח API"
 
 #: simple-payment-plugin.php:348
 msgid "Transaction Details"
