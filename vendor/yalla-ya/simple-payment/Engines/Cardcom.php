@@ -342,7 +342,7 @@ class Cardcom extends Engine {
       $post['Account.ContactName'] = $params['full_name']; // card_holder
     }
 
-    if (isset($params['first_name']) && $params['first_name']) $post['Account.FirstName'] = $params['first_name'];
+    if (isset($params['last_name']) && $params['last_name']) $post['Account.FirstName'] = $params['last_name'];
 
     if (isset($params['phone']) && $params['phone']) $post['Account.PhLine'] = $params['phone'];
     if (isset($params['mobile']) && $params['mobile']) $post['Account.PhMobile'] = $params['mobile'];
