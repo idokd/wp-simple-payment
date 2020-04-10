@@ -84,6 +84,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     if ( ! empty( $_REQUEST['transaction_id'] ) && isset($_REQUEST['engine']) && $_REQUEST['engine'] ) $where[] = "`transaction_id` =  '" .esc_sql($_REQUEST['transaction_id'])."'";
     
     if ( ! empty( $_REQUEST['status'] ) ) $where[] = "`status` =  '" .esc_sql($_REQUEST['status'])."'";
+    if ( ! empty( $_REQUEST['user_id'] ) ) $where[] = "`user_id` =  '" .esc_sql($_REQUEST['user_id'])."'";
 
     if (!self::$details) {
       $where[] = "`archived` = ".(!empty($_REQUEST['archive']) ? '1' : 0);

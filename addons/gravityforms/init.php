@@ -662,6 +662,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 				'transaction_id'   => $this->SPWP->engine->transaction,
 				'captured_payment' => $captured_payment,
 			);
+			$this->redirect_url = null;
 		} else {
 			$auth = array(
 				'is_authorized'    => false,

@@ -28,8 +28,7 @@ You require 3 Steps configurations:
 <h2>Coming Soon</h2>
 
 <ul>
-  <li>Simple integration with Elementor & Gutenberg</li>
   <li>Automatic Process for Recurring Payments (for memberships etc.)</li>
-  <li>More Payment Gateways: iCount, PayPal, Conekta</li>
+  <li>More Payment Gateways: Conekta</li>
   <li>Spanish Language Support</li>
 </ul>

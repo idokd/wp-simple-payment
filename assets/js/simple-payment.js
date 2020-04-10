@@ -5,10 +5,12 @@
     _validations: [],
     _form: null,
     bootstrap: null,
-
+    
     init: function(params) {
       if (SimplePayment.bootstrap == null) SimplePayment.bootstrap = (typeof $().modal == 'function');
       if (typeof(params) !== 'undefined' && params) SimplePayment.params = Object.assign({}, SimplePayment.params, params);
+
+      if ( $(document).triggerHandler( 'simple_payment_init' ) === false ) return(this);
 
       window.addEventListener('load', function () { 
         if (typeof(sp_settings) !== 'undefined') SimplePayment.params = Object.assign({}, SimplePayment.params, sp_settings);
@@ -43,6 +45,10 @@
         });
       }, false);
       return(this);
+    },
+
+    settings: function(params) {
+      if (typeof(params) !== 'undefined' && params) SimplePayment.params = Object.assign({}, SimplePayment.params, params);
     },
 
     filter: function(input, fn) {
@@ -129,31 +135,35 @@
       return(this._setup = true);
     },
 
-    modal: function(target) {
+    modal: function(target, _url) {
       var _modal;
+      var _url = typeof(_url) !== 'undefined' && _url ? _url : 'about:blank';
+
       if (SimplePayment.bootstrap) {
-        _modal = $('<div class="modal" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
+        _modal = $('<div class="modal" tabindex="-1" role="dialog" sp-data="modal" ' + (SimplePayment.params['modal_disable_close'] ? 'data-backdrop="static" data-keyboard="false"' : '') + 'aria-labelledby="" aria-hidden="true"></div>');
         _modal.append('<div class="modal-dialog modal-dialog-centered" role="document">' 
           + '<div class="modal-content"><div class="modal-body"><div class="embed-responsive embed-responsive-1by1">'
-          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="about:blank" class="embed-responsive-item h100 w100"></iframe>'
+          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="' + _url + '" class="embed-responsive-item h100 w100"></iframe>'
           + '</div></div></div></div>');
       } else {
         _modal = $('<div class="sp-legacy-modal" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
-        _modal.append('<div class="sp-modal-dialog" role="document"><a href="javascript:SimplePayment.close(' + (target ? "'" + target + "'" : '') + ');" class="sp-close">X</a>' 
-          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="about:blank"></iframe>'
+        _modal.append('<div class="sp-modal-dialog" role="document">'
+          + (SimplePayment.params['modal_disable_close'] ? '' : '<a href="javascript:SimplePayment.close(' + (target ? "'" + target + "'" : '') + ');" class="sp-close">X</a>')
+          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="' + _url + '"></iframe>'
           + '</div>');
-        
       }
       $('body').append(_modal);
       return($('[sp-data="modal"]'));
     },
 
-    pre: function(target) {
-      var target = typeof(target) !== 'undefined' ? target : SimplePayment.params['target'];
+    pre: function(target, _url) {
+      var target = typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target'];
+      var _url = typeof(_url) !== 'undefined' && _url ? _url : 'about:blank';
+
       if (SimplePayment.params['display'] == 'iframe') {
         target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         var iframe = $('[name="' + target + '"]');
-        if (!iframe.length) $('[sp-data="container"]').append('<iframe name="' + target + '" src="about:blank" sp-data="iframe"></iframe>');
+        if (!iframe.length) $('[sp-data="container"]').append('<iframe name="' + target + '" src="'+ _url + '" sp-data="iframe"></iframe>');
         $('[name="' + target + '"]').closest(':hidden').show();
       }
       if (SimplePayment.params['display'] == 'modal') {
@@ -172,7 +182,7 @@
         var modal = SimplePayment.params['modal'] ? jQuery(SimplePayment.params['modal']) : jQuery('[name="' + target + '"]').closest('[sp-data="modal"]');
         if (!modal || modal.length == 0) {
           console.log('modal not found creating..');
-          modal = this.modal(target);
+          modal = this.modal(target, _url);
         }
         modal.modal('show');
       }
@@ -204,5 +214,5 @@
       this._form._submit_function_();
     }
   };
-  this.SimplePayment = SimplePayment.init();
+  this.SimplePayment = SimplePayment.init(typeof(sp_settings) !== 'undefined' && sp_settings ? sp_settings : null);
 })(jQuery);

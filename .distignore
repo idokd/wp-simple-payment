@@ -11,3 +11,4 @@ deploy-plugin.sh
 pop-version.sh
 composer.json
 composer.lock
+cloudbuild.yaml

@@ -167,18 +167,19 @@ class iCredit extends Engine {
     $post['SaleId'] = $this->transaction;
     $post['TotalAmount'] = $params['amount'];
 
-    $response = $this->post($this->api['sale-details'], json_encode($post), [ 'Content-Type: application/json' ]);
+    $response = $this->post($this->api['verify'], json_encode($post), [ 'Content-Type: application/json' ]);
     $response = json_decode($response, true);
 
     $this->save([
       'transaction_id' => $this->transaction,
-      'url' => $this->api['sale-details'],
+      'url' => $this->api['verify'],
       'status' => isset($response['Status']) ? $response['Status'] : null,
-      'description' => isset($response['DebugMessage']) ? $response['DebugMessage'] : null,
+      'description' => isset($response['DebugMessage']) ? $response['DebugMessage'] : $response['Status'],
       'request' => json_encode($post),
       'response' => json_encode($response)
     ]);
     if (!isset($response['Status']) || $response['Status'] != 'VERIFIED') {
+      // Do not fail if not verified
       throw new Exception(isset($response['Status']) ? $response['Status'] : 'UNKOWN_ERROR');
     }
 
@@ -206,7 +207,7 @@ class iCredit extends Engine {
     
     $items = [[
       'Id' => 0,
-      'CatalogNumber' => isset($params['product_code']) ? $params['product_code'] : null,
+      'CatalogNumber' => isset($params['product_code']) ? $params['product_code'] : '',// TODO: should it be null, 0 or empty string
       'UnitPrice' => $params['amount'],
       'Quantity' => 1,
       'Description' => $params['product']
@@ -237,7 +238,7 @@ class iCredit extends Engine {
     
     if (isset($params[SimplePayment::CARD_OWNER_ID]) && $params[SimplePayment::CARD_OWNER_ID]) $post['IdNumber'] = $params[SimplePayment::CARD_OWNER_ID];
 
-    if (isset($params['tax_id']) && $params['tax_id']) $post['VatNumber'] = $params['tax_id'];
+    if (isset($params['tax_id']) && $params['tax_id'] && is_int($params['tax_id'])) $post['VatNumber'] = $params['tax_id'];
     
     if (isset($params['address']) && $params['address']) $post['Address'] = $params['address'];
     if (isset($params['address2']) && $params['address2']) $post['Address'] .=  ' '.$params['address2'];
@@ -270,6 +271,7 @@ class iCredit extends Engine {
 
     $api = $this->api[$token ? 'charge-token' : 'get-url'];
     $response = $this->post($api, json_encode($post), [ 'Content-Type: application/json' ]);
+
     $response = json_decode($response, true);
 
     //$parse = parse_url($response['URL']);

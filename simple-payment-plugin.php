@@ -3,10 +3,12 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.9.4
+ * Version: 1.9.5
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
+ * WC tested up to: 4.0.1
+ * WC requires at least: 2.6
  */
 
 if (!defined("ABSPATH")) {
@@ -105,6 +107,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       register_activation_hook(__FILE__, [$this, 'activate']);
       register_deactivation_hook(__FILE__, [$this, 'deactivate']);
 
+      add_action('upgrader_process_complete', [$this, 'upgraded'], 10, 2);
+
+      add_action( 'admin_notices', [$this, 'notices'] );
+
       //if (isset($_REQUEST['action'])) {
       //  do_action("admin_post_{$_REQUEST['action']}", [$this, 'archive']);
       //}
@@ -159,7 +165,30 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       return($this->callback);
   }
 
-  function activate() {}
+  function notices() {
+    if( get_transient( 'sp_updated' ) ) {
+      echo '<div class="notice notice-success">' . __( 'Thanks for updating Simple Payment, you can checkout for new features and updates <a href="https://simple-payment.yalla-ya.com" target="_blank">here</a>.', 'simple-payment' ) . '</div>';
+      delete_transient( 'sp_updated' );
+     }
+    if (get_transient( 'sp_activated')) {
+      echo '<div class="notice notice-success">' . __( 'Thanks for installing Simple Payment, after your test our plugin, dont forget to get your license to process real transactions, you can do it <a href="https://simple-payment.yalla-ya.com" target="_blank">here</a>.', 'simple-payment' ) . '</div>';
+      delete_transient( 'sp_activated' );
+     }
+  }
+
+  function upgraded($upgrader_object, $options) {
+    $spwp = plugin_basename( __FILE__ );
+    if( $options['action'] == 'update' && $options['type'] == 'plugin' && isset( $options['plugins'] ) ) {
+      foreach( $options['plugins'] as $plugin ) {
+        if ($plugin == $spwp) set_transient( 'sp_updated', 1 );
+      }
+    }
+    // TODO: consider rechecking license and deactivating live mode if necessary
+  }
+
+  function activate() {
+    set_transient( 'sp_activated', 1);
+  }
 
   function deactivate() {
     global $wp_rewrite;
@@ -318,7 +347,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   function add_custom_post_states($states) {
       global $post;
       $payment_page_id = self::param('payment_page');
-      if( 'page' == get_post_type($post->ID) && $post->ID == $payment_page_id && $payment_page_id != '0') {
+      if( is_object($post) && 'page' == get_post_type($post->ID) && $post->ID == $payment_page_id && $payment_page_id != '0') {
           $states[] = __('Payment Page', 'simple-payment');
       }
       return($states);
@@ -813,6 +842,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
               $status['payment_id'] = $this->payment_id;
               $status['status'] = $e->getCode();
               $status['message'] = $e->getMessage();
+              $this->error($status, $e->getCode(), $e->getMessage());
             }
           case self::OPERATION_ERROR:
             $url = $this->error(isset($status) ? $status : $_REQUEST, (isset($status['status']) ? $status['status']  : null), (isset($status['message']) ? $status['message'] : null));
@@ -1148,8 +1178,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $sql .= ' ORDER BY ' . (isset($args['orderby']) && ! empty($args['orderby']) ? esc_sql ($args['orderby']) : $orderby) ;
       $sql .= isset($args['order']) && !empty($args['order']) ? ' '.esc_sql($args['order']) : ' '.$order;
     }
-    $sql .= " LIMIT $per_page";
-    $sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
+    if ($per_page) {
+      $sql .= " LIMIT $per_page";
+      $sql .= ' OFFSET ' . ( ($page_number ? : 1) - 1 ) * $per_page;
+    }
     $result = $wpdb->get_results( $sql , 'ARRAY_A' );
     return($result);
   }

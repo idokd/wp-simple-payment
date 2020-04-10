@@ -22,6 +22,21 @@ add_filter('plugin_action_links_'.plugin_basename( __FILE__ ), 'sp_wc_gateway_pl
 
 add_action('plugins_loaded', 'sp_wc_gateway_init', 11);
 
+function sp_wc_maybe_failed_order() {
+    if ($payment_id = $_REQUEST['payment_id']) {
+        if ($url = $_REQUEST['redirect_url']) {
+            parse_str(parse_url($url, PHP_URL_QUERY), $params);
+            if (!isset($params['order-pay']) || !$params['order-pay']) return;
+            $order = wc_get_order($params['order-pay']);
+            $order->add_order_note( __('Important consult payment status before processing.', 'simple-payment') );
+            $url = add_query_arg('payment_id', $payment_id, $url);
+            wp_redirect($url);
+            die;
+        }
+    }
+}
+add_action( 'wc_ajax_checkout', 'sp_wc_maybe_failed_order', 5 );
+
 function sp_wc_gateway_init() {
     
 	class WC_SimplePayment_Gateway extends WC_Payment_Gateway_CC {
@@ -43,7 +58,7 @@ function sp_wc_gateway_init() {
         
 		public function __construct() {
             $this->SPWP = SimplePaymentPlugin::instance();
-
+// 
 			$this->id = 'simple-payment';
             $this->icon = apply_filters('woocommerce_offline_icon', '');
             
@@ -51,6 +66,7 @@ function sp_wc_gateway_init() {
 			$this->method_title = __( 'Simple Payment', 'simple-payment' );
 			$this->method_description = __( 'Allows integration of Simple Payment gateways into woocommerce', 'simple-payment' );
             $this->supports =  ['products', 'refunds',  'default_credit_card_form'];
+            // tokenization, subscriptions
             
             // TODO: credit_card_form_cvc_on_saved_method - add this to support when CVV is not required on tokenized cards - credit_card_form_cvc_on_saved_method
             // TODO: tokenization- in order to support tokinzation consider using the javascript
@@ -63,9 +79,9 @@ function sp_wc_gateway_init() {
 			// Define user set variables
 			$this->title = $this->get_option( 'title' );
 			$this->description = $this->get_option( 'description' );
-			$this->instructions = $this->get_option( 'instructions', $this->description );
+			$this->instructions = $this->get_option( 'instructions' );
 		  
-			// Actions
+            // Actions
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 			add_action( 'woocommerce_thankyou_'.$this->id, array($this, 'thankyou_page'));
           
@@ -198,7 +214,7 @@ function sp_wc_gateway_init() {
 
             $settings = $this->get_option('settings');
             if ($settings) $params = array_merge(json_decode($settings, true, 512, JSON_OBJECT_AS_ARRAY), $params);
-            
+
             set_query_var('display', $this->get_option('display'));
             $params['type'] = 'form';
             $params['form'] = 'plugin-addon';
@@ -274,7 +290,21 @@ function sp_wc_gateway_init() {
                 $this->do_payment( $transaction, $order );
             }*/
         }
-        
+                
+    /*
+
+        NO NEED TO; it takes it automatically via view_transaction_url, unless we wish to implement 
+        other popup or similar
+        public function get_transaction_url( $order ) {
+            $return_url     = '';
+            $transaction_id = $order->get_transaction_id();
+            if ( ! empty( $this->view_transaction_url ) && ! empty( $transaction_id ) ) {
+                $return_url = sprintf( $this->view_transaction_url, $transaction_id );
+            }
+            return apply_filters( 'woocommerce_get_transaction_url', $return_url, $order, $this );
+        }
+      */  
+
 		public function thankyou_page() {
 			if ( $this->instructions ) {
 				echo wpautop( wptexturize( $this->instructions ) );
@@ -308,8 +338,25 @@ function sp_wc_gateway_init() {
         }
         
         public function payment_fields() {
-            if (!$this->has_fields) return;
-
+            $description = $this->get_description();
+            if ( $description ) {
+                echo wpautop( wptexturize( $description ) );
+            }
+            if (!$this->has_fields) {
+                $params = json_decode($this->get_option('settings'), true, 512, JSON_OBJECT_AS_ARRAY);
+                $params['display'] = $this->get_option('display');
+                
+                echo '<div sp-data="container"></div><script>
+                var sp_settings = '.json_encode($params, true).';
+                </script>';
+                wp_enqueue_script('simple-payment-woocommerce-checkout-script',
+                    SPWP_PLUGIN_URL.'addons/woocommerce/js/simple-payment-woocommerce-checkout.js',
+                    ['jquery'],
+                    $this->SPWP::$version
+                );
+                $this->SPWP->scripts();
+                return;
+            }
             set_query_var('installments', $this->get_option('installments') == 'yes');
             $template = $this->get_option('template') ? : null;
             if ($template) {
@@ -362,7 +409,9 @@ function sp_wc_gateway_init() {
 
         public function payment_methods_html( $html ) {
             global $wp;
-            if ( ! is_checkout_pay_page() ) return $html;
+            if ( ! is_checkout_pay_page() ) {
+                return $html;
+            }
             $order_id = absint( $wp->query_vars['order-pay'] );
             $order = wc_get_order( $order_id );
             $payments = array(
@@ -410,7 +459,7 @@ function sp_wc_gateway_init() {
                 if (in_array($this->get_option('display'), ['iframe', 'modal'])) {
                     $params['redirect_url'] = add_query_arg(['target' => '_top'], $params['redirect_url']);
                 }
-                $url = $this->SPWP->payment($params, $engine);
+                $url = $external = $this->SPWP->payment($params, $engine);
                 if (!$this->has_fields && in_array($this->get_option('display'), ['iframe', 'modal'])) {
 
                     if (!add_post_meta((int) $order_id, 'sp_provider_url', $url, true)) { 
@@ -430,7 +479,9 @@ function sp_wc_gateway_init() {
                     
                     return([
                         'result' => 'success',
-                        'redirect' => $url
+                        'redirect' => $url,
+                        'external' => $external,
+                        'messages' => '<div></div>'
                     ]);
                 }
             } catch (Exception $e) {

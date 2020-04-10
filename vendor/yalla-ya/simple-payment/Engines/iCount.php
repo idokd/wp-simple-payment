@@ -95,7 +95,7 @@ class iCount extends Engine {
       if (!$response['status']) {
        throw new Exception($response['error_description'], intval($response['status']));
       }
-      return($response);
+      return(true);
     }
 
     public function basics($params, $cc = true) {
