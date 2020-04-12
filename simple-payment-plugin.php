@@ -3,10 +3,12 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 1.9.5
+ * Version: 1.9.6
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
+ * Text Domain: simple-payment
+ * Domain Path: /languages
  * WC tested up to: 4.0.1
  * WC requires at least: 2.6
  */
@@ -481,7 +483,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   protected function validate_single($options) {
-    foreach($options as $key => $value) $options[$key] = is_array($value) ? $this->validate_single($value) : sanitize_text_field($value);
+    foreach($options as $key => $value) $options[$key] = is_array($value) ? $this->validate_single($value) :  sanitize_text_field(stripslashes($value));
     return($options);
   }
 

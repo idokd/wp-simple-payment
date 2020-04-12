@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal
 Requires at least: 4.6
 Tested up to: 5.4
-Stable tag: 1.9.5
+Stable tag: 1.9.6
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -19,7 +19,7 @@ Simple Payment works with many payment gateways, and enables you to add you cust
 
 Major features in Simple Payment include:
 
-* Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount, PayMe, iCredit)
+* Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount, PayMe, iCredit, Credit2000)
 * Selection of Payment Forms to choose from (Basic, Bootstrap, Legacy, Donation)
 * Works with plugins such as: Gutenberg Editor, WooCommerce, WPJobBoard, GravityForms, Form Maker.
 * Extend workflow with Zapier - get triggers and preform actions on payments via Zapier.
@@ -36,7 +36,7 @@ Major features in Simple Payment include:
 * Transactions / Payments Log with Filtering
 * Export Transactions to CSV
 
-Currently on Beta: iCredit, PayMe, Credit2000 - please contact if require assistance.
+Currently on Beta: PayMe - please contact if require assistance.
 
 Soon to be released: Pelecard, Tranzilla, CreditGuard
 

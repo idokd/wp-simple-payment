@@ -10,7 +10,7 @@
       if (SimplePayment.bootstrap == null) SimplePayment.bootstrap = (typeof $().modal == 'function');
       if (typeof(params) !== 'undefined' && params) SimplePayment.params = Object.assign({}, SimplePayment.params, params);
 
-      if ( $(document).triggerHandler( 'simple_payment_init' ) === false ) return(this);
+      if ($(document).triggerHandler( 'simple_payment_init' ) === false ) return(this);
 
       window.addEventListener('load', function () { 
         if (typeof(sp_settings) !== 'undefined') SimplePayment.params = Object.assign({}, SimplePayment.params, sp_settings);
@@ -159,7 +159,6 @@
     pre: function(target, _url) {
       var target = typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target'];
       var _url = typeof(_url) !== 'undefined' && _url ? _url : 'about:blank';
-
       if (SimplePayment.params['display'] == 'iframe') {
         target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         var iframe = $('[name="' + target + '"]');
@@ -181,7 +180,6 @@
         target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         var modal = SimplePayment.params['modal'] ? jQuery(SimplePayment.params['modal']) : jQuery('[name="' + target + '"]').closest('[sp-data="modal"]');
         if (!modal || modal.length == 0) {
-          console.log('modal not found creating..');
           modal = this.modal(target, _url);
         }
         modal.modal('show');
@@ -195,6 +193,10 @@
         target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         jQuery('[name="' + target + '"]').closest('[sp-data="modal"]').modal('hide');
       }
+    },
+
+    show: function(_url, target) {
+      this.pre(target, _url);
     },
 
     submit: function(params, target) {

@@ -67,13 +67,13 @@ function sp_wc_gateway_init() {
 			$this->method_description = __( 'Allows integration of Simple Payment gateways into woocommerce', 'simple-payment' );
             $this->supports =  ['products', 'refunds',  'default_credit_card_form'];
             // tokenization, subscriptions
-            
+
             // TODO: credit_card_form_cvc_on_saved_method - add this to support when CVV is not required on tokenized cards - credit_card_form_cvc_on_saved_method
             // TODO: tokenization- in order to support tokinzation consider using the javascript
             $this->new_method_label = __('new payment method', 'simple-payment');
 
-			// Load the settings.
-			$this->init_form_fields();
+            // Load the settings.
+			$this->init_form_fields();            
             $this->init_settings();
             
 			// Define user set variables
@@ -97,6 +97,11 @@ function sp_wc_gateway_init() {
             add_filter( 'wc_payment_gateway_form_saved_payment_methods_html',  	array( $this, 'payment_methods_html' ) );
             
             add_filter( version_compare( WC()->version, '3.0.9', '>=' ) ? 'woocommerce' : 'wocommerce' . '_credit_card_type_labels', array( $this, 'credit_card_type_labels' ) );
+            
+            if (!$this->has_fields && !$this->description && $this->get_option('in_checkout') == 'yes') {
+                // Setting some value so it will go into the payment_fields() function
+                $this->description = ' ';
+            }
         }
     
         public function needs_setup() {
@@ -160,6 +165,14 @@ function sp_wc_gateway_init() {
                     'options' => ['' => 'Default', 'iframe' => 'IFRAME', 'modal' => 'Modal', 'redirect' => 'redirect'],
                     'default' => ''
                 ),
+                'in_checkout' => array(
+					'title'   => __( 'Show in Checkout', 'simple-payment' ),
+					'type'    => 'checkbox',
+                    'label'   => __( 'Show in Modal or IFRAME in Checkout page, instead of Order Review', 'simple-payment' ),
+                    'default' => 'yes',
+                    'description' => __( 'For Modal & IFRAME Only, If none selected it will use Simple Payment default.', 'simple-payment' ),
+					'desc_tip'    => true,
+                ),
                 'product' => array(
 					'title'       => __( 'Product', 'simple-payment' ),
                     'type'        => 'text',
@@ -212,13 +225,17 @@ function sp_wc_gateway_init() {
             $url = get_post_meta((int) $order_id, 'sp_provider_url', true);
             wc_delete_order_item_meta((int) $order_id, 'sp_provider_url');
 
-            $settings = $this->get_option('settings');
-            if ($settings) $params = array_merge(json_decode($settings, true, 512, JSON_OBJECT_AS_ARRAY), $params);
+            $settings = $this->get_option('settings') ? json_decode($this->get_option('settings'), true, 512, JSON_OBJECT_AS_ARRAY) : [];
+            if ($settings) $params = array_merge($settings, $params);
+            $params['method'] = 'direct_open';
 
-            set_query_var('display', $this->get_option('display'));
             $params['type'] = 'form';
             $params['form'] = 'plugin-addon';
-            $params['callback'] = $url;
+            $params['url'] = $url;
+            $params['display'] = $this->get_option('display');
+
+            set_query_var('display', $this->get_option('display'));
+            set_query_var('settings', $params);
             print $this->SPWP->checkout($params);
         }
 
@@ -337,24 +354,27 @@ function sp_wc_gateway_init() {
             //wp_enqueue_script( 'wc-credit-card-form' );
         }
         
+        // TODO: it requires description to enter here... consider what to do.
         public function payment_fields() {
             $description = $this->get_description();
             if ( $description ) {
                 echo wpautop( wptexturize( $description ) );
             }
             if (!$this->has_fields) {
-                $params = json_decode($this->get_option('settings'), true, 512, JSON_OBJECT_AS_ARRAY);
-                $params['display'] = $this->get_option('display');
-                
-                echo '<div sp-data="container"></div><script>
-                var sp_settings = '.json_encode($params, true).';
-                </script>';
-                wp_enqueue_script('simple-payment-woocommerce-checkout-script',
-                    SPWP_PLUGIN_URL.'addons/woocommerce/js/simple-payment-woocommerce-checkout.js',
-                    ['jquery'],
-                    $this->SPWP::$version
-                );
-                $this->SPWP->scripts();
+                if (in_array($this->get_option('display'), ['iframe', 'modal']) && $this->get_option('in_checkout') == 'yes') {
+                    $params = json_decode($this->get_option('settings'), true, 512, JSON_OBJECT_AS_ARRAY);
+                    $params['woocommerce_show_checkout'] = true;
+                    $params['display'] = $this->get_option('display');
+                    
+                    if ($this->get_option('display') == 'iframe') echo '<div sp-data="container"></div>';
+                    echo '<script> var sp_settings = '.json_encode($params, true).'; </script>';
+                    wp_enqueue_script('simple-payment-woocommerce-checkout-script',
+                        SPWP_PLUGIN_URL.'addons/woocommerce/js/simple-payment-woocommerce-checkout.js',
+                        ['jquery'],
+                        $this->SPWP::$version
+                    );
+                    $this->SPWP->scripts();
+                }
                 return;
             }
             set_query_var('installments', $this->get_option('installments') == 'yes');
@@ -377,7 +397,18 @@ function sp_wc_gateway_init() {
             }
             return($ok);
         }
-        
+        /*
+        $token = new WC_Payment_Token_CC();
+        $token->set_token( (string)($ipn_get_response->TransactionToken) );
+        $token->set_gateway_id( 'icredit_payment' ); 
+        $token->set_card_type('כרטיס אשראי' );
+        $token->set_last4( (string)(substr($json_response->CardNumber,12)));
+        $token->set_expiry_month( (string)$cardmm );
+        $token->set_expiry_year( '20'.(string)$cardyy);
+        $token->set_user_id($ipn_get_response->Custom4);
+        $token->save();   
+        */
+
         protected function params($params) {
             if (isset($params['billing'])) $params = array_merge($params, $params['billing']);
             if (!isset($params[$this->SPWP::PRODUCT])) $params[$this->SPWP::PRODUCT] = $this->product($params);
@@ -460,11 +491,12 @@ function sp_wc_gateway_init() {
                     $params['redirect_url'] = add_query_arg(['target' => '_top'], $params['redirect_url']);
                 }
                 $url = $external = $this->SPWP->payment($params, $engine);
-                if (!$this->has_fields && in_array($this->get_option('display'), ['iframe', 'modal'])) {
+                if (!is_bool($url)) {
+                    // && !add_post_meta((int) $order_id, 'sp_provider_url', $url, true) 
+                    update_post_meta((int) $order_id, 'sp_provider_url', $url);
+                 }
 
-                    if (!add_post_meta((int) $order_id, 'sp_provider_url', $url, true)) { 
-                        update_post_meta((int) $order_id, 'sp_provider_url', $url);
-                     }
+                if (!$this->has_fields && in_array($this->get_option('display'), ['iframe', 'modal'])) {
                     if (version_compare(WOOCOMMERCE_VERSION, '2.2', '<')) $url = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), get_permalink(woocommerce_get_page_id('pay'))));
                     else $url = add_query_arg(['order-pay' => $order_id], add_query_arg('key', $order->get_order_key(), $order->get_checkout_payment_url(true)));
                 }
@@ -479,7 +511,7 @@ function sp_wc_gateway_init() {
                     
                     return([
                         'result' => 'success',
-                        'redirect' => $url,
+                        'redirect' => !$this->has_fields && in_array($this->get_option('display'), ['iframe', 'modal']) && $this->get_option('in_checkout') == 'yes' ? '#'.$external : $url,
                         'external' => $external,
                         'messages' => '<div></div>'
                     ]);

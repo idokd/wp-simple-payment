@@ -138,7 +138,7 @@ $sp_settings = [
     'purge_period' => [ 
       'title' => __('Purge Period (days)', 'simple-payment'),
     ],
-      'css' => [ 
+    'css' => [ 
     'title' => __('CSS', 'simple-payment'),
     'type' => 'textarea'
   ],

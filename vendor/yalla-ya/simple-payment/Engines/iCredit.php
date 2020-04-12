@@ -200,7 +200,7 @@ class iCredit extends Engine {
       'Custom5'=>$_POST['wc-icredit_payment-new-payment-method'],
     );*/
 
-    $post['CreditFromPayment'] = $this->param('credit') ? : 0;
+    if ($this->param('credit')) $post['CreditFromPayment'] = $this->param('credit');
 
     $post['GroupPrivateToken'] = $this->password;
     $post['IPNMethod'] = 1; // 1 - POST, 2 - GET

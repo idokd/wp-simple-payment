@@ -18,4 +18,6 @@ $target = $target ? ' target="'.$target.'"' : '';
 
 $cvv = $SPWP->supports('cvv');
 $owner_id = $SPWP->supports('card_owner_id');
+$settings = isset($settings) ? $settings : null;
+
 
