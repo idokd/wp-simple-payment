@@ -118,6 +118,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       //}
 
       add_action( 'plugin_action_links_' . plugin_basename( __FILE__ ), [$this, 'plugin_action_links']);
+      add_filter( 'plugin_row_meta', [$this, 'plugin_row_meta' ], 10, 2 );
 
       add_filter('display_post_states', [$this, 'add_custom_post_states']);
       add_action('admin_menu', [$this, 'add_plugin_options_page']);
@@ -154,6 +155,19 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     // TODO: Add buy support, Documentation
   	return($links);
   }
+
+  public static function plugin_row_meta( $links, $file ) {
+		if ( plugin_basename( __FILE__ ) === $file ) {
+			$row_meta = array(
+				'docs'    => '<a href="https://simple-payment.yalla-ya.com/docs" aria-label="' . esc_attr__( 'View Simple Payment documentation', 'simple-payment' ) . '" target="_blank">' . esc_html__( 'Docs', 'simple-payment' ) . '</a>',
+				'support' => '<a href="https://simple-payment.yalla-ya.com/contact-us/" aria-label="' . esc_attr__( 'Visit premium customer support', 'simple-payment' ) . '" target="_blank">' . esc_html__( 'Premium support', 'simple-payment' ) . '</a>',
+			);
+
+			return array_merge( $links, $row_meta );
+		}
+
+		return (array) $links;
+	}
 
   public function init($callback = null) {
     $this->payment_page = self::param('payment_page');
