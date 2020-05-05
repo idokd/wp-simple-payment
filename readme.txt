@@ -3,8 +3,8 @@ Contributors: idokd
 Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal
 Requires at least: 4.6
-Tested up to: 5.4
-Stable tag: 1.9.7
+Tested up to: 5.4.1
+Stable tag: 1.9.8
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -90,6 +90,13 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+
+= 1.9.7 =
+*Release Date - 5 May 2020*
+* Support for Wordpress 5.4.1
+* Support for WooCommerce 4.1
+* General bug fixes and improvements
 
 = 1.9.6 =
 *Release Date - 10 April 2020*
