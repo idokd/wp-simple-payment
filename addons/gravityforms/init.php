@@ -403,26 +403,6 @@ class GFSimplePayment extends GFPaymentAddOn {
 		return array_merge( $fields, parent::billing_info_fields() );
 	}
 
-	/**
-	 * Add supported notification events.
-	 *
-	 * @param array $form The form currently being processed.
-	 *
-	 * @return array
-	 */
-	public function supported_notification_events( $form ) {
-		if ( ! $this->has_feed( $form['id'] ) ) {
-			return false;
-		}
-		return array(
-				'complete_payment'          => esc_html__( 'Payment Completed', 'simple-payment' ),
-			//	'create_subscription'       => esc_html__( 'Subscription Created', 'simple-payment' ),
-			//	'cancel_subscription'       => esc_html__( 'Subscription Canceled', 'simple-payment' ),
-			//	'expire_subscription'       => esc_html__( 'Subscription Expired', 'simple-payment' ),
-			//	'add_subscription_payment'  => esc_html__( 'Subscription Payment Added', 'simple-payment' ),
-		);
-	}
-
 	public static function maybe_thankyou_page() {
 		$instance = self::get_instance();
 		if ( ! $instance->is_gravityforms_supported() ) {
@@ -664,9 +644,15 @@ class GFSimplePayment extends GFPaymentAddOn {
 			);
 			$this->redirect_url = null;
 		} else {
+			$captured_payment = array(
+				'is_success'     => false,
+				'transaction_id' => $this->SPWP->engine->transaction,
+				'amount'         => $params[$this->SPWP::AMOUNT],
+			);
 			$auth = array(
 				'is_authorized'    => false,
-				'transaction_id'   => $this->SPWP->engine->transaction
+				'transaction_id'   => $this->SPWP->engine->transaction,
+				'captured_payment' => $captured_payment,
 			);
 		}
 		return $auth;
@@ -748,12 +734,31 @@ class GFSimplePayment extends GFPaymentAddOn {
 		}
 
 		$action = [];
-		$action['transaction_id']   = $entry['transaction_id'];
+		$action['transaction_id']   = $params['transaction_id'];
 		$action['amount']           = $params['amount'];
 		$action['payment_method']	= 'SimplePayment';
-	
+		$action['type']	= 'complete_payment';
+
 		$result = $this->complete_payment($entry, $action);
 
+	}
+
+	public function supported_notification_events( $form ) {
+		if ( ! $this->has_feed( $form['id'] ) ) {
+			return false;
+		}
+
+		return array(
+				'complete_payment'          => esc_html__( 'Payment Completed', 'simple-payment' ),
+				/*'fail_payment'              => esc_html__( 'Payment Failed', 'simple-payment' ),
+				'add_pending_payment'       => esc_html__( 'Payment Pending', 'simple-payment' ),
+				'void_authorization'        => esc_html__( 'Authorization Voided', 'simple-payment' ),
+				'create_subscription'       => esc_html__( 'Subscription Created', 'simple-payment' ),
+				'cancel_subscription'       => esc_html__( 'Subscription Canceled', 'simple-payment' ),
+				'expire_subscription'       => esc_html__( 'Subscription Expired', 'simple-payment' ),
+				'add_subscription_payment'  => esc_html__( 'Subscription Payment Added', 'simple-payment' ),
+				'fail_subscription_payment' => esc_html__( 'Subscription Payment Failed', 'simple-payment' ),*/
+		);
 	}
 
 	public function maybe_process_callback() {
@@ -804,7 +809,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$action['transaction_id']   = $entry['transaction_id'];
 		$action['amount']           = $entry['payment_amount'];
 		$action['payment_method']	= 'SimplePayment';
-	
+
 		$result = $this->complete_payment( $entry, $action );
 		$this->log_debug( __METHOD__ . '(): IPN processing complete.' );
 		
@@ -1127,7 +1132,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 			//	$args["L_NUMBER$i"] = $i + 1;
 			//	$args["L_QTY$i"]    = $line_item['quantity'];
 			//} else {
-				$args[$this->SPWP::PRODUCT] .= $i > 1 ? ', ' . $line_item['name'] : $line_item['name']; // ?? TO DO figure out why there is warning that desc is undefined
+				$args[$this->SPWP::PRODUCT] .= $i >= 1 ? ', ' . $line_item['name'] : $line_item['name']; // ?? TO DO figure out why there is warning that desc is undefined
 			//}
 			$i++;
 		}

@@ -15,11 +15,6 @@ class ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61
         array (
             'SimplePayment\\' => 14,
         ),
-        'R' => 
-        array (
-            'Razorpay\\Tests\\' => 15,
-            'Razorpay\\Api\\' => 13,
-        ),
         'P' => 
         array (
             'Psr\\Log\\' => 8,
@@ -35,14 +30,6 @@ class ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61
         array (
             0 => __DIR__ . '/..' . '/yalla-ya/simple-payment',
         ),
-        'Razorpay\\Tests\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/razorpay/razorpay/tests',
-        ),
-        'Razorpay\\Api\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/razorpay/razorpay/src',
-        ),
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
@@ -50,13 +37,6 @@ class ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61
     );
 
     public static $prefixesPsr0 = array (
-        'R' => 
-        array (
-            'Requests' => 
-            array (
-                0 => __DIR__ . '/..' . '/rmccue/requests/library',
-            ),
-        ),
         'P' => 
         array (
             'PayPal' => 
