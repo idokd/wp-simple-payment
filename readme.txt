@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal
 Requires at least: 4.6
 Tested up to: 5.4.1
-Stable tag: 1.9.9
+Stable tag: 2.0.0
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,9 @@ I hope it is useful for you and look forward to reading your reviews! 😉 Thank
 
 == Changelog ==
 
+= 2.0.0 =
+*Release Date - 5 May 2020*
+* Provide Documentation and additional links
 
 = 1.9.7 =
 *Release Date - 5 May 2020*
@@ -213,15 +216,8 @@ work transparently in WooCommerce.
 9. Extended configuration
 10. PCI-DSS ready, masking data directly in database
 
-
-== Demo Site ==
-You can access admin and checkout our site demo to see how the plugin works
-URL: [https://wordpress.yalla-ya.com/](https://wordpress.yalla-ya.com/)
-Username: admin
-Password: admin
-
 == Advanced Configuration: Theme Custom Payment Processing ==
 
-To write your own payment processing integration, to be plugin, read the information at this link: [https://github.com/idokd/wp-simple-payment](https://github.com/idokd/wp-simple-payment)
+To write your own payment processing integration, to be plugin, read the information at this link: [https://simple-payment.yalla-ya.com/](https://simple-payment.yalla-ya.com/)
 
 you will require to write a simple php class that Pre Process, Process and Post Process the transaction with your your payment gateway.

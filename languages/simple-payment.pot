@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-05-05T19:44:31+00:00\n"
+"POT-Creation-Date: 2020-06-07T16:49:42+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: simple-payment\n"
@@ -781,11 +781,11 @@ msgid "Created"
 msgstr ""
 
 #: admin/transaction-log.php:7
-#: admin/transactions.php:8
+#: admin/transactions.php:9
 msgid "Payments Transactions"
 msgstr ""
 
-#: admin/transactions.php:20
+#: admin/transactions.php:21
 msgid "Search"
 msgstr ""
 
