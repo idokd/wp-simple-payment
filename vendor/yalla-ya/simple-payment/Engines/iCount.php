@@ -86,7 +86,7 @@ class iCount extends Engine {
       $response = json_decode($status, true);
       $this->save([
         'transaction_id' => $this->transaction,
-        'url' => $this->api['bill'],
+        'url' => $this->api['document'],
         'status' => $response['status'],
         'description' => isset($response['error_description']) ? $response['error_description'] : $response['reason'],
         'request' => json_encode($post),
@@ -121,7 +121,8 @@ class iCount extends Engine {
         }
       } else {
         $post['cc'] = [
-            'cc_type' => $params['cc_type'],
+            'sum' => $params[SimplePayment::AMOUNT],
+            'card_type' => $params['cc_type'],
             'card_number' => substr($params[SimplePayment::CARD_NUMBER], -4),
             'exp_year' => $params[SimplePayment::CARD_EXPIRY_YEAR],
             'exp_month' => $params[SimplePayment::CARD_EXPIRY_MONTH],
