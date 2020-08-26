@@ -11,7 +11,8 @@ if (!in_array('gravityforms/gravityforms.php', apply_filters('active_plugins', g
 // If Gravity Forms is loaded, bootstrap the Simple Payment Add-On.
 add_action('gform_loaded', ['GF_SimplePayment_Bootstrap', 'load'], 5);
 
-add_action('wp', ['GFSimplePayment', 'maybe_thankyou_page'], 5);
+add_action('wp', ['GFSimplePayment', 'maybe_repayment_page'], 20);
+add_action('wp', ['GFSimplePayment', 'maybe_thankyou_page'], 50);
 
 
 class GF_SimplePayment_Bootstrap {
@@ -178,7 +179,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 			array(
 				'name'     => 'settings',
 				'label'    => esc_html__( 'Settings', 'simple-payment' ),
-				'type'     => 'json',
+				'type'     => 'textarea',
 				'class'    => 'medium',
 				'tooltip' 		=> '<h6>' . esc_html__( 'Custom & advanced checkout settings', 'simple-payment' ) . '</h6>' . esc_html__( 'Use if carefully', 'simple-payment' ),
 			)
@@ -403,6 +404,51 @@ class GFSimplePayment extends GFPaymentAddOn {
 		return array_merge( $fields, parent::billing_info_fields() );
 	}
 
+	public static function maybe_repayment_page() {
+		$instance = self::get_instance();
+		if ( ! $instance->is_gravityforms_supported() ) {
+			return;
+		}
+		$retry = $str = rgget( 'gf_simplepayment_retry' );
+		if (!$retry) return;
+		
+		// TODO: validate payment status before continuing
+		// GFAPI::update_entry_property( $entry['id'], 'payment_status', 'Processing' );
+		if ( $str = rgget( 'gf_simplepayment_return' ) ) {
+			$str = base64_decode( $str );
+			parse_str( $str, $query );
+			if ( wp_hash( 'ids=' . $query['ids'] ) == $query['hash'] ) {
+				list( $form_id, $entry_id ) = explode( '|', $query['ids'] );
+				$form = GFAPI::get_form( $form_id );
+				$entry = GFAPI::get_entry( $entry_id );
+				$feed = $instance->get_feed( $retry );
+				$submission_data = $instance->get_submission_data( $feed, $form, $entry );
+
+				$is_subscription = $feed['meta']['transactionType'] == 'subscription';
+				//if ( ! $is_subscription ) {
+					//Running an authorization only transaction if function is implemented and this is a single payment
+					//$authorization = $instance->authorize( $feed, $submission_data, $form, $entry );
+				//}
+				// TODO: handle subscriptions
+				//if ( $authorization ) {
+					//$instance->log_debug( __METHOD__ . "(): Authorization result for form #{$form['id']} submission => " . print_r( $this->authorization, true ) );
+				//} else {
+					$instance->redirect_url( $feed, $submission_data, $form, $entry );
+				//}
+				
+				// TODO: check if feed id , is not paid? or let it charge for it anyway
+				// 
+				//$instance->entry_post_save( $lead, $form, $feed);
+				//
+				if ( ! class_exists( 'GFFormDisplay' ) ) {
+					require_once( GFCommon::get_base_path() . '/form_display.php' );
+				}
+			}
+		}
+	}
+	
+
+
 	public static function maybe_thankyou_page() {
 		$instance = self::get_instance();
 		if ( ! $instance->is_gravityforms_supported() ) {
@@ -422,7 +468,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 				if ( is_array( $confirmation ) && isset( $confirmation['redirect'] ) ) {
 					$url = $confirmation['redirect'];
 					$target = parse_url($url, PHP_URL_QUERY);
-					parse_str($target);
+					parse_str($target, $target);
 					$target = isset($target['target']) ? $target['target'] : '';
 					$targets = explode(':', $target);
 					$target = $targets[0];
@@ -444,7 +490,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 							echo '<html><head><script type="text/javascript"> location.replace("'.$url.'"); </script></head><body></body</html>'; 
 							wp_redirect($url);
 					}
-					wp_die();
+					die();
 				}
 				GFFormDisplay::$submission[ $form_id ] = array( 'is_confirmation' => true, 'confirmation_message' => $confirmation, 'form' => $form, 'lead' => $lead );
 			}
@@ -463,7 +509,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 		}
 		$ids_query = "ids={$form_id}|{$lead_id}";
 		$ids_query .= '&hash=' . wp_hash( $ids_query );
-		$url = add_query_arg('gf_simplepayment_return', base64_encode( $ids_query ), $pageURL);
+		$url = remove_query_arg('gf_simplepayment_retry', $pageURL);
+		$url = add_query_arg('gf_simplepayment_return', base64_encode( $ids_query ), $url);
 		/**
 		 * Filters SimplePayment's return URL, which is the URL that users will be sent to after completing the payment on SimplePayment's site.
 		 * Useful when URL isn't created correctly (could happen on some server configurations using PROXY servers).
@@ -522,7 +569,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 	
 	public function redirect_url( $feed, $submission_data, $form, $entry ) {
 		//Don't process redirect url if request is a SimplePayment return
-		if ( ! rgempty( 'gf_simplepayment_return', $_GET ) ) {
+		if ( !rgempty( 'gf_simplepayment_return', $_GET ) && rgempty( 'gf_simplepayment_retry', $_GET ) ) {
 			return false;
 		}
 		$settings = $this->get_settings( $feed );
@@ -531,11 +578,12 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$params = array_merge($params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ));
 		
 		$engine = isset($params['engine']) ? $params['engine'] : null; 
-		
+		if (!rgempty( 'gf_simplepayment_retry', $_GET )) {
+			$params['callback'] = $entry['source_url'];
+		}
 		$params['redirect_url'] = $this->return_url( $form['id'], $entry['id']).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
 
 		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form['id'], $submission_data, $feed, $entry );
-		
 		GFAPI::update_entry_property( $entry['id'], 'payment_method', 'SimplePayment' );
 		GFAPI::update_entry_property( $entry['id'], 'payment_status', 'Processing' );
 		if (!isset($params['display']) || !in_array($params['display'], ['iframe', 'modal']) || !SimplePaymentPlugin::supports($params['display'], $engine)) {
@@ -558,15 +606,20 @@ class GFSimplePayment extends GFPaymentAddOn {
 				$params['type'] = 'form';
 				$params['form'] = isset($_REQUEST['gform_ajax']) && $_REQUEST['gform_ajax'] ? 'plugin-addon-ajax' : 'plugin-addon';
 			}
+			//$params['redirect_url'] = add_query_arg('target', '_parent', $params['redirect_url']);
 			GFSimplePayment::$params = $params;
 			$this->redirect_url = null;
 			add_filter('gform_confirmation', function ($confirmation, $form, $entry, $ajax) {
 				if (isset($confirmation['redirect'])) {
 					$url = esc_url_raw( $confirmation['redirect'] );
 					GFCommon::log_debug( __METHOD__ . '(): Redirect to URL: ' . $url );
-					$confirmation .= "<script type=\"text/javascript\">window.open('$url', '_top');</script>";
+					//$confirmation = "<script type=\"text/javascript\">window.open('$url', '_top');</script>";
+					//return($confirmation);
 				} 
-				$confirmation .= $this->SPWP->checkout(GFSimplePayment::$params);
+				// TODO: check if the previous was redirect from javascript to also disable the previous;
+				// otherwise preset html/text from confirmation
+				$confirmation = $this->SPWP->checkout(GFSimplePayment::$params);
+
 				return $confirmation;
 			}, 10, 4 );
 		}

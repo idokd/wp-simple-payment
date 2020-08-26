@@ -21,7 +21,7 @@ class iCount extends Engine {
       'verify' => 'https://api.icount.co.il/api/v3.php/cc/transactions'
     ];
 
-    public static $supports = ['cvv', 'tokenization'];
+    public static $supports = ['cvv', 'tokenization', 'card_owner_id'];
 
     public function process($params) {
       $post = $this->basics($params);

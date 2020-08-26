@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.0.0
+ * Version: 2.0.1
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -829,6 +829,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             if (!$url) $url = get_bloginfo('url');
             $url .= (strpos($url, '?') ? '&' : '?').http_build_query($_REQUEST);
             $url = remove_query_arg(self::OP, $url);
+            parse_str(parse_url($url, PHP_URL_QUERY), $vars);
+            if (isset($vars['target']) && $vars['target']) $target = $vars['target'];
             try {
               if (isset($_REQUEST['payment_id']) && $_REQUEST['payment_id']) $params = array_merge($this->fetch($_REQUEST['payment_id']), $_REQUEST);
               else $params = $_REQUEST;
