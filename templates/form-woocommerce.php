@@ -1,5 +1,5 @@
 <?php
-require('preparation.php');
+require(SPWP_PLUGIN_DIR.'/templates/preparation.php');
 ?>
 <div class="col-md-8 order-md-1" id="simple-payment">
     <div class="row">

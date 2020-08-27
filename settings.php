@@ -365,6 +365,12 @@ $sp_settings = [
     'options' => ['' => __('None', 'simple-payment'), 'invrec' => __('Invoice / Receipt', 'simple-payment'), 'receipt' => __('Receipt', 'simple-payment'), 'invoice' => __('Invoice', 'simple-payment'), 'deal' => __('Deal', 'simple-payment'), 'offer' => __('Offer', 'simple-payment'), 'order' => __('Order', 'simple-payment')],
     'section' => 'icount_settings'
   ],  // may consider additionals as trec.
+  'icount.doc_vat' => [
+    'title' => __('Document VAT Type', 'simple-payment'),
+    'type' => 'select',
+    'options' => ['' => __('None', 'simple-payment'), 'include' => __('Included', 'simple-payment'), 'exempt' => __('Exempt', 'simple-payment') ],
+    'section' => 'icount_settings'
+  ],
   'icount.auto_invoice' => [ 
     'title' => __('Auto invoice on installments', 'simple-payment'),
     'type' => 'check',

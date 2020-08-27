@@ -55,10 +55,13 @@ class iCount extends Engine {
 
     public function post_process($params) {
       parent::post_process($params);
+
       $doctype = $this->param('doc_type');
       if (!$doctype || $doctype == 'none') return($params);
       // Process the result of the transactions save
+
       $post = $this->basics($params, false);
+
       $post['doc_title'] = $params[SimplePayment::PRODUCT];
       $post['doctype'] = $doctype;
       if (isset($params[SimplePayment::LANGUAGE])) $post['lang'] = $params[SimplePayment::LANGUAGE];
@@ -71,7 +74,20 @@ class iCount extends Engine {
      // $post['totalwithvat'] = $amount;
       //$post['totalpaid'] = $amount;
       //$post['paid'] = $amount;
-      $post['items'][] = ['description' => $params[SimplePayment::PRODUCT],'unitprice' => $amount, 'quantity' => 1];
+      $item = [
+        'description' => $params[SimplePayment::PRODUCT],  
+        'quantity' => 1
+      ];
+      $post['items'] = [];
+      if ($this->param('doc_vat') == 'exempt') {
+        $item['unitprice_exempt'] = $amount;
+        $item['unitprice'] = $amount;
+      } else if ($this->param('doc_vat') == 'include') {
+        $item['unitprice_incvat'] = $amount;
+      } else $item['unitprice'] = $amount;
+      if (isset($params[SimplePayment::PRODUCT_CODE])) $item['sku'] = $params[SimplePayment::PRODUCT_CODE];
+      $post['items'][] = $item; 
+      // unitprice_incvat
       /*
       $date = new DateTime();
       $post['paydate'] =  $date->format('Y-m-y');
@@ -107,10 +123,9 @@ class iCount extends Engine {
       $post['client_name'] = isset($params[SimplePayment::FULL_NAME]) ? $params[SimplePayment::FULL_NAME] : $params[SimplePayment::CARD_OWNER];
       if (isset($params[SimplePayment::TAX_ID])) $post['vat_id'] = $params[SimplePayment::TAX_ID];
       // custom_client_id
-      if (isset($params['cc_type'])) $post['cc_type'] = $params['cc_type']; // else maybe= $params[SimplePayment::CARD_TYPE]
       if (isset($params[SimplePayment::EMAIL])) $post['email'] = $params[SimplePayment::EMAIL]; 
-
       if ($cc) {
+        if (isset($params['cc_type'])) $post['cc_type'] = $params['cc_type']; // else maybe= $params[SimplePayment::CARD_TYPE]
         if (isset($params['cc_token_id'])) $post['cc_token_id'] = $params['cc_token_id'];
         else {
           $post['cc_number'] = $params[SimplePayment::CARD_NUMBER];
@@ -131,6 +146,7 @@ class iCount extends Engine {
             'confirmation_code' => $params['confirmation_code'],
         ];
       }
+
       return($post);
     }
 
