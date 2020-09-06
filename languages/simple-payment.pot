@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Simple Payment plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 2.0.2\n"
+"Project-Id-Version: Simple Payment 2.0.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-08-27T17:16:18+00:00\n"
+"POT-Creation-Date: 2020-09-06T08:25:02+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: simple-payment\n"
@@ -814,7 +814,7 @@ msgid "Suspended Deal"
 msgstr ""
 
 #: settings.php:6
-#: settings.php:365
+#: settings.php:361
 msgid "Invoice"
 msgstr ""
 
@@ -827,7 +827,7 @@ msgid "Order Confirmation"
 msgstr ""
 
 #: settings.php:6
-#: settings.php:365
+#: settings.php:361
 msgid "Receipt"
 msgstr ""
 
@@ -1129,7 +1129,7 @@ msgid "Purge Transactions"
 msgstr ""
 
 #: settings.php:137
-#: settings.php:312
+#: settings.php:308
 msgid "Disabled"
 msgstr ""
 
@@ -1203,7 +1203,7 @@ msgid "Terminal ID"
 msgstr ""
 
 #: settings.php:190
-#: settings.php:349
+#: settings.php:345
 msgid "Username"
 msgstr ""
 
@@ -1212,8 +1212,8 @@ msgid "API Password"
 msgstr ""
 
 #: settings.php:199
-#: settings.php:426
-#: settings.php:441
+#: settings.php:422
+#: settings.php:437
 msgid "Operation"
 msgstr ""
 
@@ -1246,7 +1246,7 @@ msgid "Invoice Processing"
 msgstr ""
 
 #: settings.php:250
-#: settings.php:363
+#: settings.php:359
 msgid "Document Type Upon Success"
 msgstr ""
 
@@ -1275,163 +1275,159 @@ msgid "Email Invoice to Client"
 msgstr ""
 
 #: settings.php:298
-msgid "Site ID"
-msgstr ""
-
-#: settings.php:302
 msgid "Department ID"
 msgstr ""
 
-#: settings.php:304
+#: settings.php:300
 msgid "Numeric ID"
 msgstr ""
 
-#: settings.php:309
+#: settings.php:305
 msgid "Enable Recurring (Direct Debit) Payments"
 msgstr ""
 
-#: settings.php:312
+#: settings.php:308
 msgid "Provider"
 msgstr ""
 
-#: settings.php:316
+#: settings.php:312
 msgid "Process Recurring Upon"
 msgstr ""
 
-#: settings.php:319
+#: settings.php:315
 msgid "Post Process"
 msgstr ""
 
-#: settings.php:319
+#: settings.php:315
 msgid "Status Process"
 msgstr ""
 
-#: settings.php:323
+#: settings.php:319
 msgid "Direct Debit Terminal"
 msgstr ""
 
-#: settings.php:328
+#: settings.php:324
 msgid "Direct Debit Operation"
 msgstr ""
 
-#: settings.php:335
+#: settings.php:331
 msgid "Repeated Recurring"
 msgstr ""
 
-#: settings.php:340
+#: settings.php:336
 msgid "Recurring Interval ID"
 msgstr ""
 
-#: settings.php:345
+#: settings.php:341
 msgid "Business ID"
 msgstr ""
 
-#: settings.php:353
+#: settings.php:349
 msgid "Password"
 msgstr ""
 
-#: settings.php:358
+#: settings.php:354
 msgid "Use CC Storage"
 msgstr ""
 
-#: settings.php:365
-#: settings.php:371
+#: settings.php:361
+#: settings.php:367
 msgid "None"
 msgstr ""
 
-#: settings.php:365
+#: settings.php:361
 msgid "Invoice / Receipt"
 msgstr ""
 
-#: settings.php:365
+#: settings.php:361
 msgid "Deal"
 msgstr ""
 
-#: settings.php:365
+#: settings.php:361
 msgid "Offer"
 msgstr ""
 
-#: settings.php:365
+#: settings.php:361
 msgid "Order"
 msgstr ""
 
-#: settings.php:369
+#: settings.php:365
 msgid "Document VAT Type"
 msgstr ""
 
-#: settings.php:371
+#: settings.php:367
 msgid "Included"
 msgstr ""
 
-#: settings.php:371
+#: settings.php:367
 msgid "Exempt"
 msgstr ""
 
-#: settings.php:375
+#: settings.php:371
 msgid "Auto invoice on installments"
 msgstr ""
 
-#: settings.php:380
+#: settings.php:376
 msgid "Email Document to Client"
 msgstr ""
 
-#: settings.php:385
+#: settings.php:381
 msgid "Seller ID"
 msgstr ""
 
-#: settings.php:390
+#: settings.php:386
 msgid "Client Key"
 msgstr ""
 
-#: settings.php:395
+#: settings.php:391
 msgid "Merchant Secret"
 msgstr ""
 
-#: settings.php:400
+#: settings.php:396
 msgid "Notify Client"
 msgstr ""
 
-#: settings.php:406
+#: settings.php:402
 msgid "Payment Token"
 msgstr ""
 
-#: settings.php:411
+#: settings.php:407
 msgid "Create Tokens"
 msgstr ""
 
-#: settings.php:416
+#: settings.php:412
 msgid "Token Box"
 msgstr ""
 
-#: settings.php:420
+#: settings.php:416
 msgid "Apply Credit Above Payments"
 msgstr ""
 
-#: settings.php:432
+#: settings.php:428
 msgid "VAT Free"
 msgstr ""
 
-#: settings.php:437
+#: settings.php:433
 msgid "Company Name"
 msgstr ""
 
-#: settings.php:447
+#: settings.php:443
 msgid "Vendor Name"
 msgstr ""
 
-#: settings.php:451
+#: settings.php:447
 msgid "Company Key"
 msgstr ""
 
-#: settings.php:457
+#: settings.php:453
 msgid "Company Logo"
 msgstr ""
 
-#: settings.php:461
+#: settings.php:457
 msgid "Use CVV"
 msgstr ""
 
-#: settings.php:467
+#: settings.php:463
 msgid "API KEY"
 msgstr ""
 

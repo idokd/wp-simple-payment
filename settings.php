@@ -294,10 +294,6 @@ $sp_settings = [
     'type' => 'check',
     'section' => 'cardcom_document'
   ],
-  'cardcom.site_id' => [
-    'title' => __('Site ID', 'simple-payment'),
-    'section' => 'cardcom_document'
-  ], // SiteUniqueId
   'cardcom.department_id' => [
     'title' => __('Department ID', 'simple-payment'),
     'section' => 'cardcom_document',
