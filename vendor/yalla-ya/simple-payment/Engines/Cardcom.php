@@ -327,7 +327,7 @@ class Cardcom extends Engine {
     $post['LowProfileDealGuid'] = isset($params['lowprofilecode']) ? $params['lowprofilecode'] : $params['transaction_id'];
     
     if ($this->param('department_id')) $post['RecurringPayments.DepartmentId'] = $this->param('department_id');
-    if (isset($params['payment_id']) && $params['payment_id']) $post['Account.SiteUniqueId'] = $params['payment_id'];
+    //if (isset($params['payment_id']) && $params['payment_id']) $post['Account.SiteUniqueId'] = $params['payment_id'];
 
     if (isset($params['payment_id']) && $params['payment_id']) $post['RecurringPayments.ReturnValue'] = $params['payment_id'];
 
@@ -494,7 +494,7 @@ class Cardcom extends Engine {
     if ($this->param('auto_create_account')) $post['InvoiceHead.IsAutoCreateUpdateAccount'] = 'true';
     if ($this->param('auto_load_account')) $post['InvoiceHead.IsLoadInfoFromAccountID'] = 'true';
     if ($this->param('department_id')) $post['InvoiceHead.DepartmentId'] = $this->param('department_id');
-    if (isset($params['payment_id']) && $params['payment_id']) $post['InvoiceHead.SiteUniqueId'] = $params['payment_id'];
+    //if (isset($params['payment_id']) && $params['payment_id']) $post['InvoiceHead.SiteUniqueId'] = $params['payment_id'];
 
     $post['InvoiceLines1.Description'] = $params['product'];
     $post['InvoiceLines1.Price'] = $params['amount'];
