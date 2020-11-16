@@ -1501,7 +1501,7 @@ msgstr "ת.ז. בעל הכרטיס"
 #: templates/form-bootstrap-basic-id.php:90
 #: templates/form-bootstrap-basic.php:97
 msgid "Card owner ID (official ID)"
-msgstr "‫ת.ז. בעל הכרטי"
+msgstr "ת.ז. בעל הכרטיס"
 
 #: templates/form-bootstrap-basic-id.php:92
 #: templates/form-bootstrap-basic.php:99

@@ -16,6 +16,8 @@ class Engine {
   public $handler;
   public $interactive;
   public $password;
+  public $amount = null;
+  public $payments = null;
 
   public static $supports = [];
   

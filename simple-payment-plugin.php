@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.0.5
+ * Version: 2.0.6
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -41,7 +41,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public static $table_name = 'sp_transactions';
   public static $engines = ['PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'Credit2000', 'Custom'];
 
-  public static $fields = ['target', 'type', 'callback', 'display', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
+  public static $fields = ['payment_id', 'transaction_id', 'target', 'type', 'callback', 'display', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE];
 
   public $payment_id = null;
 
@@ -109,7 +109,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       register_activation_hook(__FILE__, [$this, 'activate']);
       register_deactivation_hook(__FILE__, [$this, 'deactivate']);
 
-      add_action('upgrader_process_complete', [$this, 'upgraded'], 10, 2);
+      add_action( 'upgrader_process_complete', [$this, 'upgraded'], 10, 2 );
 
       add_action( 'admin_notices', [$this, 'notices'] );
 
@@ -145,7 +145,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       }
     }
     add_action('parse_request', [$this, 'callback']);
-    add_shortcode('simple_payment', [$this, 'shortcode'] );
+    add_shortcode( 'simple_payment', [$this, 'shortcode'] );
+    do_action( 'sp_loaded' );
   }
 
   function plugin_action_links($links) {
@@ -749,10 +750,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $this->setEngine($engine ? : $this->param('engine'));
     $params = apply_filters('sp_payment_post_process_filter', $params);
     if (parent::post_process($params)) {
-      $this->update($this->payment_id ? : $this->engine->transaction, [
+      $args = [
         'status' => self::TRANSACTION_SUCCESS,
         'confirmation_code' => $this->engine->confirmation_code,
-      ], !$this->payment_id);
+      ];
+      if ($this->engine->payments) $args['payments'] = $this->engine->payments;
+      if ($this->engine->amount) $args['amount'] = $this->engine->amount;
+      $this->update($this->payment_id ? : $this->engine->transaction, $args , !$this->payment_id);
       if ($this->param('user_create') != 'disabled' && $this->param('user_create_step') == 'post' && !get_current_user_id()) $this->create_user($params);
       do_action('sp_payment_post_process', $params);
       return(true);
@@ -764,7 +768,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $method = isset($pre_params[self::METHOD]) ? strtolower(sanitize_text_field($pre_params[self::METHOD])) : null;
     foreach (self::$fields as $field) if (isset($pre_params[$field]) && $pre_params[$field]) $params[$field] = $field == 'redirect_url' ? $pre_params[$field] : sanitize_text_field($pre_params[$field]);
     
-    $params[self::AMOUNT] = self::tofloat($params[self::AMOUNT]);
+    $params[self::AMOUNT] = isset($params[self::AMOUNT]) && $params[self::AMOUNT] ? self::tofloat($params[self::AMOUNT]) : null;
     $secrets = [ self::CARD_NUMBER, self::CARD_CVV ];
     foreach ($secrets as $field) if (isset($params[$field])) $this->secrets[$field] = $params[$field];
     if (isset($this->engine->password)) $this->secrets['engine.password'] = $this->engine->password;
@@ -784,7 +788,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     }
     if (!isset($params[self::FULL_NAME]) && (isset($params[self::FIRST_NAME]) || isset($params[self::LAST_NAME]))) $params[self::FULL_NAME] = trim((isset($params[self::FIRST_NAME]) ? $params[self::FIRST_NAME] : '').' '.(isset($params[self::LAST_NAME]) ? $params[self::LAST_NAME] : ''));
     if (!isset($params[self::CARD_OWNER]) && isset($params[self::FULL_NAME])) $params[self::CARD_OWNER] = $params[self::FULL_NAME];
-    $params['payment_id'] = $this->register($params);
+    if (!isset($params['payment_id']) || !$params['payment_id']) $params['payment_id'] = $this->register($params);
     $this->payment_id = $params['payment_id'];
     try {
       $params = apply_filters('sp_payment_pre_process_filter', $params);
@@ -844,6 +848,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
               break;
             } 
             break;
+        /*  case 'form':
+            if (isset($_REQUEST['payment_id']) && $_REQUEST['payment_id']) $params = array_merge($this->fetch($_REQUEST['payment_id']), $_REQUEST);
+            else $params = $_REQUEST;
+            $engine = $params['engine'] ? : $this->param('engine');
+            $this->setEngine($engine);
+            $this->process($params);
+            break;*/
           case 'purchase':
           case 'payment':
           case 'redirect':
@@ -922,9 +933,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $this->setEngine($engine);
     try {
     if ($process = $this->pre_process($params)) {
+      if (!is_array($process) && $process !== true) {
+        $this->redirect($process);
+        wp_die();
+      }
+      // TODO: allow redirect if returned is url
       $process = $this->process($process);
       if ($process === true) return(true);
-      if (!$process) return(false);
+      if (!$process) return(false); 
       $return = is_array($process) ? $this->post_process($process, $engine) : $process;
     }
     } catch (Exception $e) {
@@ -1045,6 +1061,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       return($this->checkout($params));
     }
 
+    function secretive($key, $value) {
+      if (!isset($this->secrets[$key])) $this->secrets[$key] = $value;
+    }
+
     function checkout($params) {
       $type = isset($params['type']) ? $params['type'] : null;
       $target = isset($params['target']) ? $params['target'] : null;
@@ -1086,7 +1106,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function scripts() {
     $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
-    wp_enqueue_script( 'simple-payment-js', plugin_dir_url( __FILE__ ).'assets/js/simple-payment.js', [], $plugin['Version'], true );
+    wp_enqueue_script( 'simple-payment-js', plugin_dir_url( __FILE__ ).'assets/js/simple-payment.js', [ 'jquery' ], $plugin['Version'], true );
     wp_enqueue_style( 'simple-payment-css', plugin_dir_url( __FILE__ ).'assets/css/simple-payment.css', [], $plugin['Version'], 'all' );
     if (self::param('css')) wp_enqueue_style( 'simple-payment-custom-css', $this->callback.'?'.http_build_query([self::OP => self::OPERATION_CSS]), [], md5(self::param('css')), 'all' );
   }
@@ -1281,8 +1301,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       }
       if (!isset($params['ip_address'])) $params['ip_address'] = $_SERVER['REMOTE_ADDR'];
       if (!isset($params['user_agent'])) $params['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-      // TODO: if id do update instead of insert
-      $result = $wpdb->insert($wpdb->prefix . 'sp_' . $tablename, $params);
+      if ($id) $result = $wpdb->update($wpdb->prefix . 'sp_' . $tablename, $params, [ 'id' => $id ]);
+      else $result = $wpdb->insert($wpdb->prefix . 'sp_' . $tablename, $params);
       return($result != null ? $wpdb->insert_id : false);
     }
 

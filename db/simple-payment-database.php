@@ -22,9 +22,10 @@ function sp_install() {
   require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
   global $wpdb, $sp_db_version;
+  $sql = [];
   $charset_collate = $wpdb->get_charset_collate();
   $table_name = $wpdb->prefix . "sp_transactions";
-  $sql = "CREATE TABLE $table_name (
+  $sql[] = "CREATE TABLE $table_name (
     `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
     `engine` VARCHAR(50) DEFAULT NULL,
     `status` VARCHAR(50) DEFAULT NULL,
@@ -44,7 +45,7 @@ function sp_install() {
     `retries` TINYINT(1) NOT NULL DEFAULT 0,
     `sandbox` TINYINT(1) NOT NULL DEFAULT 0,
     `archived` TINYINT(1) NOT NULL DEFAULT 0,
-    `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `idx_id` (`id`),
       KEY `idx_engine` (`engine`),
@@ -53,14 +54,12 @@ function sp_install() {
       KEY `idx_status` (`status`),
       KEY `idx_archived` (`archived`),
       KEY `idx_created` (`created`)
-  ) $charset_collate;
+  ) $charset_collate;";
 
-  ALTER TABLE $table_name  AUTO_INCREMENT = 1000;";
-
-  dbDelta( $sql );
+  //$sql[] = "ALTER TABLE $table_name AUTO_INCREMENT = 1000;";
 
   $table_name = $wpdb->prefix . "sp_history";
-  $sql = "CREATE TABLE $table_name (
+  $sql[] = "CREATE TABLE $table_name (
     `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
     `payment_id` MEDIUMINT(9) DEFAULT NULL,
     `transaction_id` VARCHAR(50) DEFAULT NULL,
@@ -71,7 +70,7 @@ function sp_install() {
     `response` TEXT DEFAULT NULL,
     `ip_address` VARCHAR(250) DEFAULT NULL,
     `user_agent` VARCHAR(250) DEFAULT NULL,
-    `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `idx_id` (`id`),
       KEY `idx_transaction` (`transaction_id`),

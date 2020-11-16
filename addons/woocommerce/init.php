@@ -65,8 +65,7 @@ function sp_wc_gateway_init() {
 			$this->has_fields =  $this->SPWP->supports('cvv', $this->get_option('engine') ? : null);
 			$this->method_title = __( 'Simple Payment', 'simple-payment' );
 			$this->method_description = __( 'Allows integration of Simple Payment gateways into woocommerce', 'simple-payment' );
-            $this->supports =  ['products', 'refunds',  'default_credit_card_form'];
-            // tokenization, subscriptions
+            $this->supports =  [ 'tokenization', 'subscriptions', 'products', 'refunds',  'default_credit_card_form']; // tokenization, subscriptions
 
             // TODO: credit_card_form_cvc_on_saved_method - add this to support when CVV is not required on tokenized cards - credit_card_form_cvc_on_saved_method
             // TODO: tokenization- in order to support tokinzation consider using the javascript
