@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '23';
+$sp_db_version = '25';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -40,11 +40,13 @@ function sp_install() {
     `error_code` VARCHAR(255) DEFAULT NULL,
     `error_description` VARCHAR(255) DEFAULT NULL,
     `confirmation_code` VARCHAR(255) DEFAULT NULL,
+    `token` TEXT DEFAULT NULL,
     `ip_address` VARCHAR(50) DEFAULT NULL,
     `user_agent` TEXT DEFAULT NULL,
     `retries` TINYINT(1) NOT NULL DEFAULT 0,
     `sandbox` TINYINT(1) NOT NULL DEFAULT 0,
     `archived` TINYINT(1) NOT NULL DEFAULT 0,
+    `parent_id` MEDIUMINT(9) DEFAULT NULL,
     `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `idx_id` (`id`),
@@ -73,11 +75,32 @@ function sp_install() {
     `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `idx_id` (`id`),
+      KEY `idx_payment_id` (`payment_id`),
       KEY `idx_transaction` (`transaction_id`),
       KEY `idx_created` (`created`)
 
   ) $charset_collate;";
+/*
+  $table_name = $wpdb->prefix . "sp_tokens";
+  $sql[] = "CREATE TABLE $table_name (
+    `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+    `payment_id` MEDIUMINT(9) DEFAULT NULL,
+    `transaction_id` VARCHAR(50) DEFAULT NULL,
+    `token` VARCHAR(250) DEFAULT NOT NULL,
+    `card_type` VARCHAR(250) DEFAULT NULL,
+    `card_number` VARCHAR(50) DEFAULT NULL,
+    `card_year` INT DEFAULT NULL,
+    `card_month` INT DEFAULT NULL,
+    `card_owner_id` VARCHAR(50) DEFAULT NULL,
+    `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `idx_id` (`id`),
+      KEY `idx_payment_id` (`payment_id`),
+      KEY `idx_transaction` (`transaction_id`),
+      KEY `idx_created` (`created`)
 
+  ) $charset_collate;";
+*/
   dbDelta( $sql );
 
   $table_name = $wpdb->prefix . "sp_cardcom";

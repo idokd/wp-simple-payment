@@ -18,23 +18,27 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 		] );
     self::$details = $details;
     self::$table_name = $details ? $wpdb->prefix.'sp_'.strtolower('history') : $wpdb->prefix.self::$table_name;
-	}
+    $this->export_button_text = __( 'Export', 'simple-payment' );
+    $this->process_bulk_action();
+  }
 
   protected function is_export() {
-    return(!empty($_GET['wlte_export']));
+    return(!empty($_GET['wlte_export']) ? $_GET['wlte_export'] : false);
   }
 
   protected function get_views() {
       if (self::$details) return;
+      // TODO: consider replacing the status query para of the current url, not building it from scratch - in order to respect other parameters
       $status_links = [
           "all"       => "<a href='?page=simple-payments'>".__("All", 'simple-payment')."</a>",
           "success" => "<a href='?page=simple-payments&status=success'>".__("Success", 'simple-payment')."</a>",
           "failed"   => "<a href='?page=simple-payments&status=failed'>".__("Failed", 'simple-payment')."</a>",
           "cancelled"   =>"<a href='?page=simple-payments&status=cancelled'>". __("Cancelled", 'simple-payment')."</a>",
           "pending"   =>"<a href='?page=simple-payments&status=pending'>". __("Pending", 'simple-payment')."</a>",
+          "created"   =>"<a href='?page=simple-payments&status=created'>". __("Created", 'simple-payment')."</a>",
           "archived"   =>"<a href='?page=simple-payments&archive=true'>". __("Archived", 'simple-payment')."</a>"
       ];
-      return($status_links);
+      return(apply_filters('sp_admin_table_view', $status_links));
   }
 
   public function views() {
@@ -47,23 +51,26 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       if (self::$details) return;
       global $wpdb;
       if ($which == "top"){
+          if (isset($_REQUEST['page'])) echo '<input type="hidden" name="page" value="'.$_REQUEST['page'].'" />';
+          if (isset($_REQUEST['status'])) echo '<input type="hidden" name="status" value="'.$_REQUEST['status'].'" />';
+
           ?>
-          <div class="alignleft actions bulkactions">
+          <div class="alignleft actions">
           <?php
           $engine = isset($_REQUEST['engine']) && $_REQUEST['engine'] ? sanitize_text_field( $_REQUEST['engine'] ) : null;
           $options = $wpdb->get_results('SELECT `engine` AS `title` FROM '.self::$table_name.' GROUP BY `engine` ORDER BY `engine` ASC ', ARRAY_A);
-          if ($options) {
-              echo '<select id="engine" class="sp-filter-engine" onchange="location.href=this.value;"><option value="'.remove_query_arg('engine').'">'.__('All Engines', 'simple-payment').'</option>';
+          if (count($options) > 1) {
+              echo '<select id="engine" class="sp-filter-engine" name="engine"><option value="">'.__('All Engines', 'simple-payment').'</option>';
               foreach ($options as $option) {
-                  $url = add_query_arg([
-                      'engine' => $option['title']
-                  ]);
-                  if ($option['title']) echo '<option value="'.$url.'"'.( $engine == $option['title'] ? ' selected' : '').'>'.$option['title'].'</option>';
+                  if ($option['title']) echo '<option value="'.$option['title'].'"'.( $engine == $option['title'] ? ' selected' : '').'>'.$option['title'].'</option>';
               }
               echo "</select>";
           }
+          echo '<label for="from-date">Date Range:</label><input type="date" name="created_from" id="from-date" value="'.(isset($_REQUEST['created_from']) ? $_REQUEST['created_from'] : '').'" /><input type="date" name="created_to" id="to-date" value="'.(isset($_REQUEST['created_to']) ? $_REQUEST['created_to'] : '').'" />';
+          echo '<input type="submit" name="filter_action" id="transaction-query-submit" class="button" value="'.__('Filter', 'simple-payment').'">';
           echo '</div>';
-      }
+
+        }
       if ( $which == "bottom" ){
       }
   }
@@ -95,6 +102,13 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       $where[] = "`transaction_id` LIKE '%" .esc_sql($_REQUEST['s'])."%' OR `concept` LIKE '%" .esc_sql($_REQUEST['s'])."%'";
     }
 
+    if ( ! empty( $_REQUEST['created_from'] ) ) {
+      $where[] = "`created` >= '".esc_sql($_REQUEST['created_from'])."'";
+    }
+    if ( ! empty( $_REQUEST['created_to'] ) ) {
+      $where[] = "`created` <= '".esc_sql($_REQUEST['created_to'])."'";
+    }
+
     if (count($where) > 0) $sql .=  ' WHERE '.implode(' AND ', $where);
     if ($count) {
       return($wpdb->get_var($sql));
@@ -103,8 +117,10 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       $sql .= ' ORDER BY ' . (isset($_REQUEST['orderby']) && ! empty($_REQUEST['orderby']) ? esc_sql ($_REQUEST['orderby']) : $orderby) ;
       $sql .= isset($_REQUEST['order']) && !empty($_REQUEST['order']) ? ' '.esc_sql($_REQUEST['order']) : ' '.$order;
     }
-    $sql .= " LIMIT $per_page";
-    $sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
+    if ( $per_page > 0 ) {
+      $sql .= " LIMIT $per_page";
+      $sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
+    }
     $result = $wpdb->get_results( $sql , 'ARRAY_A' );
     if ($result) self::$columns = array_keys($result[0]);
     return($result);
@@ -254,7 +270,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   public function process_bulk_action() {
-    if ( in_array($this->current_action(), ['archive', 'unarchive']) ) {
+    if ( in_array($this->current_action(), [ 'archive', 'unarchive' ]) ) {
       $nonce = esc_attr( $_REQUEST['_wpnonce'] );
       if ( ! wp_verify_nonce( $nonce, $this->current_action().'_'.$this->_args['singular'] ) ) {
         die( 'Go get a life script kiddies' );
@@ -267,19 +283,20 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
           self::unarchive_transaction( absint( $_GET['id'] ) );
           break;
       }
-      //wp_redirect( wp_get_referer() );
+      
+      wp_redirect( wp_get_referer() );
       return;
     }
     // If the delete bulk action is triggered
-    if ( ( isset( $_POST['action'] ) && $_POST['action'])
-         || ( isset( $_POST['action2'] ) && $_POST['action2'] )
+    if ( ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] && $_REQUEST['action'] != '-1')
+         || ( isset( $_REQUEST['action2'] ) && $_REQUEST['action2']  && $_REQUEST['action2'] != '-1')
     ) {
       $nonce = esc_attr( $_REQUEST['_wpnonce'] );
       if ( ! wp_verify_nonce( $nonce, 'bulk-'.$this->_args['plural'] ) ) {
         die( 'Go get a life script kiddies' );
       }
-      $ids = esc_sql( $_POST['id'] );
-      $action = isset($_POST['action']) && $_POST['action'] != -1 ? $_POST['action'] : $_POST['action2'];
+      $ids = isset($_REQUEST['id']) ? esc_sql( $_REQUEST['id'] ) : [];
+      $action = isset($_REQUEST['action']) && $_REQUEST['action'] != -1 ? $_REQUEST['action'] : $_REQUEST['action2'];
       foreach ( $ids as $id ) {
         switch ($action) {
           case 'bulk-archive':
@@ -298,20 +315,33 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   public function prepare_items() {
     $this->process_bulk_action();
 
-    $screen = get_current_screen();
-    $per_page = get_user_meta(get_current_user_id(), $screen->get_option('per_page', 'option'), true);
-    $per_page     = $this->get_items_per_page( 'per_page', $screen->get_option('per_page', 'default'));
-    $per_page = $per_page ? : 20;
-    $current_page = $this->get_pagenum();
+    if ($this->is_export()) $per_page = -1;
+    else {
+      $screen = get_current_screen();
+      $per_page = get_user_meta(get_current_user_id(), $screen->get_option('per_page', 'option'), true);
+      $per_page = $per_page ? $per_page : $this->get_items_per_page( 'per_page', $screen->get_option('per_page', 'default'));
+      // $per_page = $per_page ? $per_page : 20;
+      $current_page = $this->get_pagenum();
 
-    $this->set_pagination_args([
+      $total_items = self::get_transactions( 0, 0, $this, true );
+
+      $this->set_pagination_args([
+        'total_items' => $total_items,
+        'per_page'    => $per_page,
+        'orderby' => 'id',
+        'order' => 'DESC',
+        'offset' => ( $this->get_pagenum() - 1 ) * $per_page,
+      ]);
+
+    }
+    
+    /*$this->set_pagination_args([
       'per_page'    => $per_page,
       'orderby' => 'id',
       'order' => 'DESC',
-    ]);
+    ]);*/
 
     $this->items = self::get_transactions( $per_page, $current_page, $this );
-    $total_items = self::get_transactions( 0, 0, $this, true );
 
     $this->_column_headers = $this->get_column_info();
     $this->_column_headers = [
@@ -319,13 +349,6 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       [],
       $this->get_sortable_columns()
     ];
-    $this->set_pagination_args([
-      'total_items' => $total_items,
-      'per_page'    => $per_page,
-      'orderby' => 'id',
-      'order' => 'DESC',
-      'offset' => ( $this->get_pagenum() - 1 ) * $per_page,
-    ]);
 
   }
 

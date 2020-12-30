@@ -3,8 +3,8 @@ Contributors: idokd
 Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal
 Requires at least: 4.6
-Tested up to: 5.5.1
-Stable tag: 2.0.6
+Tested up to: 5.6
+Stable tag: 2.0.7
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -90,6 +90,20 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.0.7 =
+*Release Date - 30 Dec 2020*
+* Support & Tested up to Wordpress 5.6
+* Support & Tested on PHP 7.4
+* Fixed issue with not saving per page on admin transaction list
+* Enabled filter by date range on admin transaction list
+* Added created on filters on admin transaction list
+* Improved and fixed issues with Cardcom payment gateway
+* Added support to WC Subscription
+* Beta version with Cardcom & WC Subscription
+* Added refund function
+* Added support of old mysql server for TIMESTAMP for modified and created on db tables
+
 
 = 2.0.0 =
 *Release Date - 5 May 2020*

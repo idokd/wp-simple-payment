@@ -37,6 +37,7 @@ function sp_wc_maybe_failed_order() {
 }
 add_action( 'wc_ajax_checkout', 'sp_wc_maybe_failed_order', 5 );
 
+
 function sp_wc_gateway_init() {
     
 	class WC_SimplePayment_Gateway extends WC_Payment_Gateway_CC {
@@ -61,11 +62,13 @@ function sp_wc_gateway_init() {
 // 
 			$this->id = 'simple-payment';
             $this->icon = apply_filters('woocommerce_offline_icon', '');
-            
-			$this->has_fields =  $this->SPWP->supports('cvv', $this->get_option('engine') ? : null);
+            $engine = $this->get_option('engine') ? $this->get_option('engine') : null;
+			$this->has_fields =  $this->SPWP->supports('cvv', $engine);
 			$this->method_title = __( 'Simple Payment', 'simple-payment' );
 			$this->method_description = __( 'Allows integration of Simple Payment gateways into woocommerce', 'simple-payment' );
-            $this->supports =  [ 'tokenization', 'subscriptions', 'products', 'refunds',  'default_credit_card_form']; // tokenization, subscriptions
+            $this->supports =  apply_filters('sp_woocommerce_supports', [ 'products', 'tokenization', 'subscriptions', 'refunds',  'default_credit_card_form' ], $engine); 
+            
+            // TODO: consider taking these values from the specific engine; tokenization, subscriptions
 
             // TODO: credit_card_form_cvc_on_saved_method - add this to support when CVV is not required on tokenized cards - credit_card_form_cvc_on_saved_method
             // TODO: tokenization- in order to support tokinzation consider using the javascript
@@ -248,10 +251,12 @@ function sp_wc_gateway_init() {
             if (!$order = wc_get_order($order_id)) {
                 return;
             }
-            //if ( ! empty( $transaction->Token ) && $order->get_user_id() ) {
-			//	$this->save_token( $transaction, $order->get_user_id() );
-			//}
             $payment_id = $_REQUEST['payment_id']; // get payment id
+
+            if ( ! empty( $payment_id ) && $order->get_user_id() ) {
+				$this->save_token( $payment_id, $order->get_user_id() );
+            }
+            $order->update_meta_data('_sp_transaction_id', $payment_id);
             $order->payment_complete($payment_id);
             WC()->cart->empty_cart();
             $target = isset($_REQUEST['target']) ? $_REQUEST['target'] : '';
@@ -489,6 +494,7 @@ function sp_wc_gateway_init() {
                 if (in_array($this->get_option('display'), ['iframe', 'modal'])) {
                     $params['redirect_url'] = add_query_arg(['target' => '_top'], $params['redirect_url']);
                 }
+                $params = apply_filters('sp_wc_payment_args', $params, $order_id );
                 $url = $external = $this->SPWP->payment($params, $engine);
                 if (!is_bool($url)) {
                     // && !add_post_meta((int) $order_id, 'sp_provider_url', $url, true) 
@@ -529,7 +535,8 @@ function sp_wc_gateway_init() {
                 return;
             }*/
 			// Mark as on-hold (we're awaiting the payment)
-            
+        
+            $order->update_meta_data('_sp_transaction_id', $this->SPWP->payment_id);
             $order->payment_complete($this->SPWP->payment_id);
 			WC()->cart->empty_cart();
 			return([
@@ -538,20 +545,22 @@ function sp_wc_gateway_init() {
             ]);
         }
         
-        public function save_token( $transaction, $user_id = 0 ) {
+        public function save_token( $payment_id, $user_id = 0 ) {
+            $transaction = $this->SPWP->fetch($payment_id);
+            if (!$this->SPWP::supports('tokenization', $transaction['engine'])) return(null);
             //$token_number 		= $transaction->Token;
             //$token_card_type 	= $this->get_card_type( $transaction );
             //$token_last4 		= substr( $transaction->CreditCardNumber, -4 );
             //$token_expiry_month = substr( $transaction->CreditCardExpDate, 0, 2 );
             //$token_expiry_year 	= substr( date( 'Y' ), 0, 2 ) . substr( $transaction->CreditCardExpDate, -2 );
-            
-            $token = new WC_Payment_Token_CC();
-            $token->set_token( $token_number );
+            require('payment-token.php');
+            $token = new WC_Payment_Token_SimplePayment();
+            $token->set_token( $transaction['transaction_id'] );
             $token->set_gateway_id( $this->id );
-            $token->set_card_type( $token_card_type );
-            $token->set_last4( $token_last4 );
-            $token->set_expiry_month( $token_expiry_month );
-            $token->set_expiry_year( $token_expiry_year );
+            $token->set_card_type( 'Card' ); // $transaction[$this->SPWP::CARD_TYPE] );
+            if (!empty($transaction[$this->SPWP::CARD_NUMBER])) $token->set_last4( substr($transaction[$this->SPWP::CARD_NUMBER], -4, 4) );
+            if (!empty($transaction[$this->SPWP::CARD_EXPIRY_MONTH])) $token->set_expiry_month( $transaction[$this->SPWP::CARD_EXPIRY_MONTH ] );
+            if (!empty($transaction[$this->SPWP::CARD_EXPIRY_YEAR])) $token->set_expiry_year( $transaction[$this->SPWP::CARD_EXPIRY_YEAR ] );
             $token->set_user_id( 0 < $user_id ? $user_id : get_current_user_id());
             
             if ($token->save()) return($token);
@@ -601,6 +610,14 @@ function sp_wc_gateway_init() {
             return $available_gateways;
         }
     
+        public function process_refund( $order_id, $amount = null, $reason = '') {
+            $order = wc_get_order( $order_id );
+            $params = [];
+            $params[$this->SPWP::PRODUCT] = get_the_title($order->get_id());
+            $params[$this->SPWP::AMOUNT] = $amount;
+            return($this->SPWP->payment_refund($order->get_transaction_id(), $params));
+        }
+
         /**
          * Add credit card types and labels.
          *

@@ -18,7 +18,7 @@ class Cardcom extends Engine {
   // CancelType (0 - no cancel, 1 - back button, 2 - cancel url)
   protected $recurrAt = 'post'; // status
 
-  public static $supports = ['iframe', 'modal', 'tokenization'];
+  public static $supports = [ 'iframe', 'modal', 'tokenization', 'subscriptions' ];
 
   public $api = [
     'version' => 10,
@@ -69,27 +69,42 @@ class Cardcom extends Engine {
 
     $response = $this->post($this->api['indicator_request'], $post);
     parse_str($response, $response);
+
+    $token = null;
+    if ($response['Token']) {
+      $token = [
+          'token' => $response['Token'],
+          SimplePayment::CARD_OWNER => $response['CardOwnerID'],
+          SimplePayment::CARD_EXPIRY_YEAR => $response['CardValidityYear'],
+          SimplePayment::CARD_EXPIRY_MONTH => $response['CardValidityMonth'],
+        //  'card_type' => '',
+          'expiry' => $response['TokenExDate'],
+      ];
+    }
+    $this->confirmation_code = $response['InternalDealNumber'];
+
     $this->save([
       'transaction_id' => $this->transaction,
       'url' => $this->api['indicator_request'],
       'status' => isset($response['OperationResponse']) ? $response['OperationResponse'] : (isset($response['DealResponse']) ? $response['DealResponse'] : ''),
       'description' => isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'],
       'request' => json_encode($post),
-      'response' => json_encode($response)
+      'response' => json_encode($response),
+      'token' => $token
     ]);
     $operation = isset($response['Operation']) ? $response['Operation'] : null;
     $code = isset($response['OperationResponse']) ? $response['OperationResponse'] : 999;
     switch($operation) {
       case 1:
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0) return($response['TokenApprovalNumber']);
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0) return($this->confirmation_code);
         $code = $response['DealResponse'];
         break;
       case 2:
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0 && isset($response['TokenResponse']) && $response['TokenResponse'] == 0) return($response['TokenApprovalNumber']);
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0 && isset($response['TokenResponse']) && $response['TokenResponse'] == 0) return($this->confirmation_code);
         $code = $response['TokenResponse'];
         break;
       case 3:
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 &&  isset($response['SuspendedDealResponseCode']) && $response['SuspendedDealResponseCode'] == 0) return($response['TokenApprovalNumber']);
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 &&  isset($response['SuspendedDealResponseCode']) && $response['SuspendedDealResponseCode'] == 0) return($this->confirmation_code);
         $code = $response['SuspendedDealResponseCode'];
         break;
       case 4:
@@ -120,17 +135,30 @@ class Cardcom extends Engine {
     $post['lowprofilecode'] = $params['lowprofilecode'];
     $status = $this->post($this->api['indicator_request'], $post);
     parse_str($status, $status);
-    //$this->record($params, $status);
     //$this->transaction = $params['lowprofilecode'];
-    $this->confirmation_code = $status['TokenApprovalNumber'];
+
+    // TODO: fetch VISA, YEAR, MONTH, ID???
+    $token = null;
+    if ($status['Token']) {
+      $token = [
+          'token' => $status['Token'],
+          SimplePayment::CARD_OWNER => $status['CardOwnerID'],
+          SimplePayment::CARD_EXPIRY_YEAR => $status['CardValidityYear'],
+          SimplePayment::CARD_EXPIRY_MONTH => $status['CardValidityMonth'],
+        //  'card_type' => '',
+          'expiry' => $status['TokenExDate'],
+      ];
+    }
     $response = $status;
+    $this->confirmation_code = $response['InternalDealNumber'];
     $this->save([
       'transaction_id' => $this->transaction,
       'url' => $this->api['indicator_request'],
       'status' => isset($response['OperationResponse']) ? $response['OperationResponse'] : $response['DealResponse'],
       'description' => isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'],
       'request' => json_encode($post),
-      'response' => json_encode($response)
+      'response' => json_encode($response),
+      'token' => $token
     ]);
     if (!isset($response['OperationResponse']) || $response['OperationResponse'] != 0) {
       throw new Exception(isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'], isset($response['OperationResponse']) ? $response['OperationResponse'] : $response['DealResponse']);
@@ -143,7 +171,6 @@ class Cardcom extends Engine {
 
   public function post_process($params) {
     $this->transaction = $_REQUEST['lowprofilecode'];
-    //$this->record($params, $_REQUEST);
     $response = $_REQUEST;
     $this->save([
       'transaction_id' => $this->transaction,
@@ -156,6 +183,8 @@ class Cardcom extends Engine {
     if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
       if ($this->param('recurr_at') == 'post' && $this->param('reurring') == 'provider') return($this->recur_by_provider($params));
     }
+    // TODO: update confirmation code con status
+    //$this->confirmation_code = $response['confirmation_code'];
     return($_REQUEST['ResponeCode'] == 0);
   }
 
@@ -191,7 +220,12 @@ class Cardcom extends Engine {
       $post['Password'] = $this->password;
     }
 
-    $post['Operation'] = $this->param('operation');
+    $operation = $this->param('operation');
+
+    // TODO: maybe add flag to determine this feature?
+    if ($operation == 2 && !$params['amount']) $operation = 3;
+    $post['Operation'] = $operation;
+
 
     $post['ProductName'] = $params['product'];
     $post['SumToBill'] = $params['amount'];
@@ -236,13 +270,13 @@ class Cardcom extends Engine {
     if ($creditType != '') $post['CreditType'] = $creditType;
 
     $show = $this->param('show_invoice_operation');
-    if ($show != '') $post['InvoiceHeadOperation'] = $show;
+    if ($operation != 3 && $show != '') $post['InvoiceHeadOperation'] = $operation == 3 ? 0 : $show;
 
     $show = $this->param('show_invoice_info');
-    if ($show != '') $post['ShowInvoiceHead'] = $show;
+    if ($operation != 3 && $show != '') $post['ShowInvoiceHead'] = $show;
 
     $docType = $this->param('doc_type');
-    if ($docType != '') $post['DocTypeToCreate'] = $docType;
+    if ($operation != 3 && $docType != '') $post['DocTypeToCreate'] = $docType;
 
     $field = $this->param('field_name');
     if ($field != '') {
@@ -263,10 +297,10 @@ class Cardcom extends Engine {
     
     if ((!isset($params['payments']) || $params['payments'] != "monthly") && $this->param('hide_user_id')) $post['HideCreditCardUserId'] = $this->param('hide_user_id') == 'true' ? 'true' : 'false';
 
-    if (isset($params['company']) && $params['company']) $post['InvoiceHead.CustName'] = $params['company'];
-    if (!isset($post['InvoiceHead.CustName']) && isset($params['full_name']) && $params['full_name']) $post['InvoiceHead.CustName'] = $params['full_name'];
+    if ($operation != 3 && isset($params['company']) && $params['company']) $post['InvoiceHead.CustName'] = $params['company'];
+    if ($operation != 3 && !isset($post['InvoiceHead.CustName']) && isset($params['full_name']) && $params['full_name']) $post['InvoiceHead.CustName'] = $params['full_name'];
 
-    $post = array_merge($post, $this->document(array_merge($params, ['language' => $language, 'currency' => $currency])));
+    if ($operation != 3) $post = array_merge($post, $this->document(array_merge($params, ['language' => $language, 'currency' => $currency])));
 
     // TODO: Analyze how to use those parameters
     // SumInStars
@@ -291,7 +325,6 @@ class Cardcom extends Engine {
     $status = $this->post($this->api['payment_request'], $post);
     parse_str($status, $status);
     $status['url'] = $this->param('method') == 'paypal' ? $status['PayPalUrl'] : $status['url'];
-    //$this->record($post, $status);
     $this->transaction = $this->transaction ? : $status['LowProfileCode'];
     $response = $status;
     $this->save([
@@ -409,16 +442,44 @@ class Cardcom extends Engine {
     return($status); // OperationResponseText, OperationResponse
   }
 
-  public function recur() {
+  public function refund($params) {
+    $this->transaction = self::uuid();
+    $this->confirmation_code = $this->charge($params, true);
+    return($this->confirmation_code);
+  }
+
+  public function recharge($params) {
+    $this->transaction = self::uuid();
+    $this->confirmation_code = $this->charge($params);
+    return($this->confirmation_code);
+  }
+
+  public function recur($params) {
+    $this->transaction = self::uuid();
+    //$this->transaction = $params['transaction_id'];
+    $this->confirmation_code = $this->charge($params);
+    return($this->confirmation_code);
+  }
+
+  public function charge($params, $refund = false) {
     $post = [];
     if (!$this->sandbox) {
       $post['terminalnumber'] = $this->param_part($params);
       $post['username'] = $this->param_part($params, 'username');
-      // $post['TokenToCharge.UserPassword'] = $this->param_part($params, 'password');
+     // $post['TokenToCharge.UserPassword'] = $this->param_part($params, 'password');
     } else {
       $post['terminalnumber'] = $this->terminal;
       $post['username'] = $this->username;
-      //$post['TokenToCharge.UserPassword'] = $this->password;
+    }
+
+    if ($refund) $post['TokenToCharge.UserPassword'] = $this->password;
+
+    $token = $params['token'] ? json_decode($params['token'], true) : null;
+    if ($token) {
+      $post['TokenToCharge.Token'] = $token['token'];//$this->transaction;
+      if (isset($token[SimplePayment::CARD_EXPIRY_YEAR])) $post['TokenToCharge.CardValidityYear'] = $token[SimplePayment::CARD_EXPIRY_YEAR];
+      if (isset($token[SimplePayment::CARD_EXPIRY_MONTH])) $post['TokenToCharge.CardValidityMonth'] = $token[SimplePayment::CARD_EXPIRY_MONTH];      
+      if (isset($token[SimplePayment::CARD_OWNER_ID])) $post['TokenToCharge.IdentityNumber'] = $token[SimplePayment::CARD_OWNER_ID];
     }
     $post['TokenToCharge.SumToBill'] = $params['amount'];
 
@@ -430,25 +491,29 @@ class Cardcom extends Engine {
 
     $post['TokenToCharge.CoinID'] = $currency;
 
+
+
+
     $language = $this->param('language');
     if ($language != '') $post['Language'] = $language;
 
     //  TokenToCharge.CardOwnerName
-    // TokenToCharge.Token, TokenToCharge.CardValidityMonth
+    // TokenToCharge.CardValidityMonth
     // TokenToCharge.CardValidityYear
     // TokenToCharge.IdentityNumber
+// UniqAsmachta
 
-    $post['TokenToCharge.RefundInsteadOfCharge'] = 'false';
-    $post['TokenToCharge.IsAutoRecurringPayment'] = 'true';
+
+    if ($refund) $post['TokenToCharge.RefundInsteadOfCharge'] = $refund;
+    if ($params['PAYMENTS'] == 'monthly') $post['TokenToCharge.IsAutoRecurringPayment'] = 'true';
 
     if (isset($params['approval_number']) && $params['approval_number']) $post['TokenToCharge.ApprovalNumber'] = $params['approval_number'];
 
 
-    $post = array_merge($post, $this->document(array_merge($params, ['language' => $language, 'currency' => $currency])));
+    // $post = array_merge($post, $this->document(array_merge($params, ['language' => $language, 'currency' => $currency])));
 
     $status = $this->post($this->api['payment_recur'], $post);
     parse_str($status, $status);
-    //$this->record($post, $status);
     $response = $status;
     $this->save([
       'transaction_id' => $this->transaction,
@@ -456,8 +521,11 @@ class Cardcom extends Engine {
       'status' => isset($response['ResponseCode']) ? $response['ResponseCode'] : $response['response_code'],
       'description' => isset($response['Description']) ? $response['Description'] : null,
       'request' => json_encode($post),
-      'response' => json_encode($response)
+      'response' => json_encode($response),
+      'token' => isset($token) ? $token : null
     ]);
+    // InternalDealNumber
+    return($response['ResponseCode'] == 0 ? $response['InternalDealNumber'] : false);
     // Not in use:
     // TokenToCharge.Salt, TokenToCharge.SumInStars, TokenToCharge.NumOfPayments
     // TokenToCharge.ExtendedParameters,  TokenToCharge.SapakMutav
@@ -516,22 +584,5 @@ class Cardcom extends Engine {
    CustomFields.Field1 .. 25 */
     return($post);
   }
-  
-  protected function record($request, $response, $fields = []) {
-    $fields = [
-        'terminal' => ['TerminalNumber', 'terminalnumber'],
-        'transaction_id' => ['LowProfileCode', 'lowprofilecode', 'LowProfileDealGuid'],
-        'operation' => ['Operation', 'Recurring0_RecurringId'],
-        'response_code' => ['ResponseCode', 'response_code'],
-        'deal_response' => 'DealResponse',
-        'token_response' => 'TokenResponse',
-        'token' => ['Token', 'Recurring0_RecurringId'],
-        'operation_response' => ['OperationResponse','Status'],
-        'operation_description' => ['Description', 'OperationResponseText'],
-    ];
-// InternalDealNumber	, TokenExDate, CoinId, CardOwnerID, CardValidityYear, CardValidityMonth, TokenApprovalNumber, SuspendedDealResponseCode, SuspendedDealId, SuspendedDealGroup, InvoiceResponseCode, InvoiceNumber, InvoiceType, CallIndicatorResponse, ReturnValue, NumOfPayments, CardOwnerEmail, CardOwnerName, CardOwnerPhone, AccountId, ForeignAccountNumber, SiteUniqueId
-    return(parent::record($request, $response, $fields));
-  }
-
   
 }

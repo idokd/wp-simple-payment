@@ -16,7 +16,7 @@ $list->prepare_items();
 	?>
 	<hr class="wp-header-end">
 	<?php $list->views(); ?>
-	<form method="post">
+	<form id="transactions-filter" method="get">
 		<?php
 		$list->search_box(__('Search', 'simple-payment'), 's');
 		$list->display(); ?>

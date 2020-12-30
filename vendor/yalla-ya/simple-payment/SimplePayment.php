@@ -24,7 +24,7 @@ class SimplePayment {
 
   const FIRST_NAME = 'first_name'; const LAST_NAME = 'last_name'; const FULL_NAME = 'full_name'; const PHONE = 'phone'; const MOBILE = 'mobile'; const EMAIL = 'email';
   
-  const CARD_OWNER = 'card_owner';  const CARD_NUMBER = 'card_number'; const CARD_EXPIRY_MONTH = 'expiry_month'; const CARD_EXPIRY_YEAR = 'expiry_year'; const CARD_CVV = 'cvv'; const CARD_OWNER_ID = 'card_owner_id'; 
+  const CARD_TYPE = 'card_type'; const CARD_OWNER = 'card_owner';  const CARD_NUMBER = 'card_number'; const CARD_EXPIRY_MONTH = 'expiry_month'; const CARD_EXPIRY_YEAR = 'expiry_year'; const CARD_CVV = 'cvv'; const CARD_OWNER_ID = 'card_owner_id'; 
 
   const ADDRESS = 'address'; const ADDRESS2 = 'address2'; const CITY = 'city'; const STATE = 'state'; const COUNTRY = 'country'; const ZIPCODE = 'zipcode';
 
@@ -72,6 +72,14 @@ class SimplePayment {
       $value = isset($value[$k]) ? $value[$k] : $default;
     }
     return($value);
+  }
+
+  function refund($params = []) {
+    return($this->engine->refund($params));
+  }
+
+  function recharge($params = []) {
+    return($this->engine->recharge($params));
   }
 
   function process($params = []) {
