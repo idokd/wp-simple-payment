@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => '9dac479b8513d8501d2ff6d43c6ad07af15e6ea5',
+    'reference' => 'f9baf48d93dbea8da9232aed4b929e85dc5ad375',
     'name' => 'yalla-ya/wp-simple-payment',
   ),
   'versions' => 
@@ -101,7 +101,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => '9dac479b8513d8501d2ff6d43c6ad07af15e6ea5',
+      'reference' => 'f9baf48d93dbea8da9232aed4b929e85dc5ad375',
     ),
   ),
 );

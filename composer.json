@@ -23,5 +23,8 @@
        "psr-4": {
            "SimplePayment\\": "vendor/yalla-ya/simple-payment"
        }
+    },
+    "config": {
+        "platform-check": false
     }
 }
