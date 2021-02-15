@@ -16,7 +16,8 @@
     ],
     "require": {
         "leewillis77/wplisttableexportable": "dev-master",
-        "paypal/rest-api-sdk-php": "*"
+        "paypal/rest-api-sdk-php": "*",
+        "nahid/jsonq": "^6.0"
     },
     "autoload": {
        "psr-4": {

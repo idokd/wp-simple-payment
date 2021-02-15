@@ -9,4 +9,7 @@ return array(
     'leewillis77\\WpListTableExportable\\' => array($vendorDir . '/leewillis77/WpListTableExportable/src'),
     'SimplePayment\\' => array($vendorDir . '/yalla-ya/simple-payment'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
+    'Nahid\\QArray\\' => array($vendorDir . '/nahid/qarray/src'),
+    'Nahid\\JsonQ\\' => array($vendorDir . '/nahid/jsonq/src'),
+    'DeepCopy\\' => array($vendorDir . '/myclabs/deep-copy/src/DeepCopy'),
 );

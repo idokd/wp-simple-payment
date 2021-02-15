@@ -38,7 +38,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
           "created"   =>"<a href='?page=simple-payments&status=created'>". __("Created", 'simple-payment')."</a>",
           "archived"   =>"<a href='?page=simple-payments&archive=true'>". __("Archived", 'simple-payment')."</a>"
       ];
-      return(apply_filters('sp_admin_table_view', $status_links));
+      return( apply_filters( 'sp_admin_table_view', $status_links ) );
   }
 
   public function views() {
@@ -177,19 +177,28 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 	}
 
   public function column_default($item, $column_name) {
-    $value = $item[$column_name];
-    if ($this->is_export()) return($value);
-      if (strlen($value) > 40) {
+    $value = isset( $item[ $column_name ] ) ? $item[ $column_name ] : null;
+    if ( strpos( $column_name, '.' ) > 0 ) { // Fetch a json path
+      $query = substr( $column_name, strpos( $column_name, '.' ) + 1 );
+      $main_column_name = substr( $column_name, 0, strpos( $column_name, '.' ) );
+      $value = isset( $item[ $main_column_name ] ) ? $item[ $main_column_name ] : null;
+      $jsonq = new Nahid\JsonQ\Jsonq( $value );
+      $value = $jsonq->find( $query )->toArray();
+      if ( !$value || !count( $value ) ) $value = '';
+      else $value = $value[0];
+    }
+
+    if ( $this->is_export() ) return( apply_filters( 'sp_list_table_column_value', $value, $column_name, $item, $this ) );
+    if ( strlen( $value ) > 40 ) {
         add_thickbox();
         $type = strpos($value, '://') < 10 ? 'url' : '';
         $type = json_decode($value) && json_last_error() === JSON_ERROR_NONE ? 'json' : $type;
         if (!$type) $type = is_string($value) && strpos($value, '<?xml') === 0 ? 'xml' : $type;
         $id = 'tbox-'.$column_name.'-'.$item['id'];
         $href = "#TB_inline?&width=600&height=550&inlineId=".$id;
-        $value = '<a href="'.$href.'" title="'.$column_name.'" class="thickbox">'.substr(htmlentities($value), 0, 30).'...</a>';
-        $value .= '<div id="'.$id.'" style="display:none;"><pre class="'.$type.'">'.htmlentities($item[$column_name]).'</pre></div>';
-      }
-      return($value);
+        $value = '<a href="'.$href.'" title="'.$column_name.'" class="thickbox">'.substr( htmlentities( $value ), 0, 30 ).'...</a><div id="'.$id.'" style="display:none;"><pre class="'.$type.'">'.htmlentities( $value ).'</pre></div>';
+    }
+    return( apply_filters( 'sp_list_table_column_value', $value, $column_name, $item, $this ) );
   }
 
   public function column_user_id($item) {
@@ -211,9 +220,9 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     if (self::$details && self::$columns) {
       $cols = [];
       foreach (self::$columns as $key) $cols[$key] = __($key, 'simple-payments');
-      return($cols);
+      return( apply_filters( 'sp_list_table_columns', $cols, $this ) );
     }
-    return(self::define_columns());
+    return(  apply_filters( 'sp_list_table_columns', self::define_columns(), $this ) );
   }
 
   public static function define_columns() {
@@ -237,7 +246,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       'modified'    => __( 'Modified', 'simple-payment' ),
       'created'    => __( 'Created', 'simple-payment' ),
     ];
-    return($columns);
+    return( $columns );
 	}
 
   public function get_sortable_columns() {

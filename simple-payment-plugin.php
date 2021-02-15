@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.0.7
+ * Version: 2.0.8
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -22,11 +22,11 @@ if (!defined("ABSPATH")) {
 // TODO: validate refund and add refund on all other engines
 // TODO: better configure/test subscription  functionlity (differ between provdier/internal)
 
-define('SPWP_PLUGIN_FILE', __FILE__);
-define('SPWP_PLUGIN_DIR', dirname(SPWP_PLUGIN_FILE));
-define('SPWP_PLUGIN_URL', plugin_dir_url( __FILE__ ));
+define( 'SPWP_PLUGIN_FILE', __FILE__ );
+define( 'SPWP_PLUGIN_DIR', dirname( SPWP_PLUGIN_FILE ) );
+define( 'SPWP_PLUGIN_URL', plugin_dir_url( __FILE__  ) );
 
-require_once(SPWP_PLUGIN_DIR . '/vendor/autoload.php');
+require_once( SPWP_PLUGIN_DIR . '/vendor/autoload.php' );
 
 if (file_exists(SPWP_PLUGIN_DIR .'/vendor/leewillis77/WpListTableExportable/bootstrap.php')) require_once(SPWP_PLUGIN_DIR .'/vendor/leewillis77/WpListTableExportable/bootstrap.php');
 
@@ -417,22 +417,16 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
     $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'sp';
     $section = $tab;
-    $tabs = ['General', 'PayPal', 'Cardcom', 'License', 'Shortcode', 'Instructions'];
+    $tabs = apply_filters( 'sp_admin_tabs', [ 'General', 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'Credit2000', 'License', 'Extensions', 'Shortcode', 'Instructions' ] );
     ?>
     <div class="wrap">
       <h1><?php _e('Simple Payment Settings', 'simple-payment'); ?></h1>
       <h2 class="nav-tab-wrapper">
-            <a id="sp" href="options-general.php?page=sp" class="nav-tab <?php echo $tab == 'sp' ? 'nav-tab-active' : ''; ?>"><?php _e('General', 'simple-payment'); ?></a>
-            <a id="paypal" href="options-general.php?page=sp&tab=paypal" class="nav-tab <?php echo $tab == 'paypal' ? 'nav-tab-active' : ''; ?>"><?php _e('PayPal', 'simple-payment'); ?></a>
-            <a id="cardcom" href="options-general.php?page=sp&tab=cardcom" class="nav-tab <?php echo $tab == 'cardcom' ? 'nav-tab-active' : ''; ?>"><?php _e('Cardcom', 'simple-payment'); ?></a>
-            <a id="icount" href="options-general.php?page=sp&tab=icount" class="nav-tab <?php echo $tab == 'icount' ? 'nav-tab-active' : ''; ?>"><?php _e('iCount', 'simple-payment'); ?></a>
-            <a id="payme" href="options-general.php?page=sp&tab=payme" class="nav-tab <?php echo $tab == 'payme' ? 'nav-tab-active' : ''; ?>"><?php _e('PayMe', 'simple-payment'); ?></a>
-            <a id="icredit" href="options-general.php?page=sp&tab=icredit" class="nav-tab <?php echo $tab == 'icredit' ? 'nav-tab-active' : ''; ?>"><?php _e('iCredit', 'simple-payment'); ?></a>
-            <a id="credit2000" href="options-general.php?page=sp&tab=credit2000" class="nav-tab <?php echo $tab == 'icredit' ? 'nav-tab-active' : ''; ?>"><?php _e('Credit2000', 'simple-payment'); ?></a>
-            <a id="license" href="options-general.php?page=sp&tab=license" class="nav-tab <?php echo $tab == 'license' ? 'nav-tab-active' : ''; ?>"><?php _e('License', 'simple-payment'); ?></a>
-            <a id="extensions" href="options-general.php?page=sp&tab=extensions" class="nav-tab <?php echo $tab == 'extensions' ? 'nav-tab-active' : ''; ?>"><?php _e('Extensions', 'simple-payment'); ?></a>
-            <a id="shortcode" href="options-general.php?page=sp&tab=shortcode" class="nav-tab <?php echo $tab == 'shortcode' ? 'nav-tab-active' : ''; ?>"><?php _e('Shortcode', 'simple-payment'); ?></a>
-            <a id="instructions" href="options-general.php?page=sp&tab=instructions" class="nav-tab <?php echo $tab == 'instructions' ? 'nav-tab-active' : ''; ?>"><?php _e('Instructions', 'simple-payment'); ?></a>
+	<?php foreach ( $tabs as $stab => $label ) {
+		$stab = is_numeric( $stab ) ? $label : $stab;
+		$general = strtolower( $stab ) == 'general';
+		echo '<a id="' . (  $general ? 'sp' : strtolower( $stab ) ) .'" href="options-general.php?page=sp' . ( $general ? '' : '&tab='. strtolower( $stab ) ) . '" class="nav-tab '.( strtolower( $tab ) == $stab ? 'nav-tab-active' : '' ).'">' . __( $label, 'simple-payment' ).'</a>';
+	} ?>
         </h2>
       <?php
       switch ($tab) {
@@ -475,8 +469,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $this->register_license_settings();
 
     require('settings.php');
-    $this->sections = $sp_sections;
-
+    $this->sections = apply_filters( 'sp_admin_sections', $sp_sections );
+    $sp_settings = apply_filters( 'sp_admin_settings', $sp_settings );
     foreach ($sp_sections as $key => $section) {
         add_settings_section(
           $key,
@@ -497,9 +491,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           ['option' => $key, 'params' => $value, 'default' => NULL],
           array('label_for' => $key)
         );
-
         if (isset($value['sanitize_callback'])) register_setting('sp', $key, ['sanitize_callback' => [$this, $value['sanitize_callback']], 'default' => []]);
-
     }
   }
 
@@ -719,15 +711,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     echo "<input id='".$key."' size='40' type='text' readonly value='{$option}' />";
     echo "&nbsp;<input id='{$key}_reset' value='true' name='{$field}' type='checkbox' /> ".__('Reset API KEY', 'simple_payment');
   }
-
-/*
-  // CHECKBOX - Name: plugin_options[chkbox2]
-  function setting_chk2_fn() {
-  	$options = get_option('plugin_options');
-  	if($options['chkbox2']) { $checked = ' checked="checked" '; }
-  	echo "<input ".$checked." id='plugin_chk2' name='plugin_options[chkbox2]' type='checkbox' />";
-  }
-  */
 
   function process($params = []) {
     $params = apply_filters('sp_payment_process_filter', $params);

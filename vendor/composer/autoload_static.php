@@ -6,6 +6,12 @@ namespace Composer\Autoload;
 
 class ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61
 {
+    public static $files = array (
+        '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
+        '4384ae2b1c411dab75a78e15f1b182ad' => __DIR__ . '/..' . '/nahid/qarray/helpers/qarray.php',
+        'fd867582e8863a0158e17d8954f1762f' => __DIR__ . '/..' . '/nahid/jsonq/helpers/jsonq.php',
+    );
+
     public static $prefixLengthsPsr4 = array (
         'l' => 
         array (
@@ -18,6 +24,15 @@ class ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61
         'P' => 
         array (
             'Psr\\Log\\' => 8,
+        ),
+        'N' => 
+        array (
+            'Nahid\\QArray\\' => 13,
+            'Nahid\\JsonQ\\' => 12,
+        ),
+        'D' => 
+        array (
+            'DeepCopy\\' => 9,
         ),
     );
 
@@ -34,6 +49,18 @@ class ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
+        'Nahid\\QArray\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/nahid/qarray/src',
+        ),
+        'Nahid\\JsonQ\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/nahid/jsonq/src',
+        ),
+        'DeepCopy\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy',
+        ),
     );
 
     public static $prefixesPsr0 = array (
@@ -46,12 +73,17 @@ class ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61
         ),
     );
 
+    public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61::$prefixDirsPsr4;
             $loader->prefixesPsr0 = ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61::$classMap;
 
         }, null, ClassLoader::class);
     }
