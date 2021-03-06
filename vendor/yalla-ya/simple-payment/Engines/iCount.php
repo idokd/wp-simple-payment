@@ -152,7 +152,7 @@ class iCount extends Engine {
 
     public function pre_process($params) {
       parent::pre_process($params);
-      $this->transaction = $this->uuid();
+      $this->transaction = self::uuid();
       $params[SimplePayment::TRANSACTION_ID] = $this->transaction;
       $post = $this->basics($params);
       if ($this->param('use_storage')) {
@@ -174,4 +174,9 @@ class iCount extends Engine {
       return($params);
     }
 
+    public static function uuid() {
+      $uuid = parent::uuid();
+      $uuid = str_replace( '-', '', $uuid );
+      return( base64_encode( pack( 'h*', $uuid ) ) );
+    }
 }
