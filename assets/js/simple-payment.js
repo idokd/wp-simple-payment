@@ -35,6 +35,7 @@
           form.addEventListener('submit', function (event) {
             SimplePayment.validate();
             if (form.checkValidity() === false) {
+              form.classList.add('was-validated');
               event.preventDefault()
               event.stopPropagation();
               return(false);

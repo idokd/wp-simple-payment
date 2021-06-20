@@ -582,6 +582,16 @@ class Cardcom extends Engine {
 
    // TODO: Support Custom Fields
    CustomFields.Field1 .. 25 */
+   if ( isset( $params[ 'custom' ] ) && $params[ 'custom' ] ) {
+     $fid = 1;
+     foreach ( $params[ 'custom' ] as $key => $value ) {
+       //if ( $key ) {
+       //  
+       //}
+       $post[ 'CustomFields.Field' . $fid ] = $value;
+       $fid++;
+     }
+   }
     return($post);
   }
   

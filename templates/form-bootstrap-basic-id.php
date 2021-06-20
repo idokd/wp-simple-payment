@@ -75,7 +75,7 @@ var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
         <?php if (isset($installments_min) && $installments_min && isset($installments_max) && $installments_max && $installments_max > 1) { ?>
         <label for="payments"><?php _e('Installments', 'simple-payment'); ?></label>
         <select class="custom-select d-block w-100" id="payments" name="<?php echo $SPWP::PAYMENTS; ?>" required="">
-          <?php for ($installment = $installments_min; $installment <= $installments_max; $installment++) echo '<option'.(isset($installments) && $installment == $installments ? ' selected' : '').'>'.$installment.'</option>'; ?>
+          <?php for ($installment = $installments_min; $installment <= $installments_max; $installment++) echo '<option'.selected( $installments, $installment, true).'>'.$installment.'</option>'; ?>
         </select>
         <div class="invalid-feedback">
           <?php _e('Number of Installments is required.', 'simple-payment'); ?>
