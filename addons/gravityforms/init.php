@@ -779,6 +779,11 @@ class GFSimplePayment extends GFPaymentAddOn {
 			return false;
 		}
 
+		if ( strtolower( $entry['payment_status'] ) == 'paid' ) {
+			$this->log_error( __METHOD__ . '(): Entry is marked as already paid. Aborting.' );
+			return false;
+		}
+
 		$feed = $this->get_payment_feed( $entry );
 		// Ignore IPN messages from forms that are no longer configured with the add-on
 		if ( ! $feed || ! rgar( $feed, 'is_active' ) ) {
