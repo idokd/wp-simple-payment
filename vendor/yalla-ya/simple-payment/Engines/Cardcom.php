@@ -170,7 +170,7 @@ class Cardcom extends Engine {
   }
 
   public function post_process($params) {
-    $this->transaction = $_REQUEST['lowprofilecode'];
+    $this->transaction = isset( $_REQUEST['lowprofilecode'] ) ? $_REQUEST['lowprofilecode'] : $params[ 'transaction_id' ];
     $response = $_REQUEST;
     $this->save([
       'transaction_id' => $this->transaction,

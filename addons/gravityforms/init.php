@@ -824,6 +824,12 @@ class GFSimplePayment extends GFPaymentAddOn {
 			return false;
 		}
 
+		/*
+		if ( rgar( $action, 'id' ) && $this->is_duplicate_callback( $action['id'] ) ) {
+			return new WP_Error( 'duplicate', sprintf( esc_html__( 'This webhook has already been processed (Event Id: %s)', 'gravityforms' ), $action['id'] ) );
+		}
+		*/
+
 		$this->log_debug( __METHOD__ . '(): IPN request received. Starting to process => ' . print_r( $_POST, true ) );
 		// Valid IPN requests must have a custom field
 		$custom_field = rgget( 'entry_id' );
@@ -862,7 +868,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$action['transaction_id']   = $entry['transaction_id'];
 		$action['amount']           = $entry['payment_amount'];
 		$action['payment_method']	= 'SimplePayment';
-
+		$action[ 'type' ] = 'complete_payment';
 		$result = $this->complete_payment( $entry, $action );
 		$this->log_debug( __METHOD__ . '(): IPN processing complete.' );
 		

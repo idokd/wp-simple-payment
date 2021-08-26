@@ -23,14 +23,14 @@ add_filter('plugin_action_links_'.plugin_basename( __FILE__ ), 'sp_wc_gateway_pl
 add_action('plugins_loaded', 'sp_wc_gateway_init', 11);
 
 function sp_wc_maybe_failed_order() {
-    if ($payment_id = $_REQUEST['payment_id']) {
-        if ($url = $_REQUEST['redirect_url']) {
-            parse_str(parse_url($url, PHP_URL_QUERY), $params);
-            if (!isset($params['order-pay']) || !$params['order-pay']) return;
-            $order = wc_get_order($params['order-pay']);
+    if ( $payment_id = $_REQUEST['payment_id'] ) {
+        if ( $url = $_REQUEST['redirect_url'] ) {
+            parse_str( parse_url($url, PHP_URL_QUERY), $params );
+            if ( !isset($params['order-pay'] ) || !$params['order-pay'] ) return;
+            $order = wc_get_order( $params['order-pay'] );
             $order->add_order_note( __('Important consult payment status before processing.', 'simple-payment') );
-            $url = add_query_arg('payment_id', $payment_id, $url);
-            wp_redirect($url);
+            $url = add_query_arg( 'payment_id', $payment_id, $url );
+            wp_redirect( $url );
             die;
         }
     }
@@ -107,14 +107,14 @@ function sp_wc_gateway_init() {
         }
     
         public function needs_setup() {
-            return(false);
+            return( false );
         }
 
 		/**
 		 * Initialize Gateway Settings Form Fields
 		 */
 		public function init_form_fields() {
-            $engines = ['' => 'Default'];
+            $engines = [ '' => 'Default' ];
             foreach (SimplePaymentPlugin::$engines as $engine) $engines[$engine] = $engine;
 			$this->form_fields = apply_filters( 'wc_offline_form_fields', array(
 				'enabled' => array(
@@ -220,15 +220,15 @@ function sp_wc_gateway_init() {
     /*
     { "type":"hidden", "display": "modal" } 
     */
-        function provider_step($order_id) {
+        function provider_step( $order_id ) {
             $order = wc_get_order( $order_id );
-            $params = $this->params($order->get_data());
+            $params = $this->params( $order->get_data() );
 
-            $url = get_post_meta((int) $order_id, 'sp_provider_url', true);
-            wc_delete_order_item_meta((int) $order_id, 'sp_provider_url');
+            $url = get_post_meta( (int) $order_id, 'sp_provider_url', true );
+            wc_delete_order_item_meta( (int) $order_id, 'sp_provider_url' );
 
-            $settings = $this->get_option('settings') ? json_decode($this->get_option('settings'), true, 512, JSON_OBJECT_AS_ARRAY) : [];
-            if ($settings) $params = array_merge($settings, $params);
+            $settings = $this->get_option( 'settings' ) ? json_decode( $this->get_option( 'settings' ), true, 512, JSON_OBJECT_AS_ARRAY ) : [];
+            if ( $settings ) $params = array_merge( $settings, $params );
             $params['method'] = 'direct_open';
 
             $params['type'] = 'form';
@@ -242,13 +242,14 @@ function sp_wc_gateway_init() {
         }
 
         public function gateway_response() {
-            $order_key = $_REQUEST['key'];
-            $order_id = $_REQUEST['order-pay'];
-            if (!$order_id) {
+            $order_key = $_REQUEST[ 'key' ];
+            $order_id = $_REQUEST[ 'order-pay' ];
+            if ( !$order_id ) {
                 return;
             }
-            $order = wc_get_order($order_id);
-            if (!$order = wc_get_order($order_id)) {
+            $order = wc_get_order( $order_id );
+            // TODO: Maybe here check if the payment was approved
+            if ( !$order = wc_get_order( $order_id ) ) {
                 return;
             }
             $payment_id = $_REQUEST['payment_id']; // get payment id
@@ -333,7 +334,7 @@ function sp_wc_gateway_init() {
 		}
 	
 		public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-			if ($this->instructions && !$sent_to_admin && $this->id === $order->get_payment_method() && $order->has_status( 'on-hold' ) ) {
+			if ( $this->instructions && !$sent_to_admin && $this->id === $order->get_payment_method() && $order->has_status( 'on-hold' ) ) {
 				echo wpautop( wptexturize( $this->instructions ) ) . PHP_EOL;
 			}
 		}
@@ -364,28 +365,27 @@ function sp_wc_gateway_init() {
             if ( $description ) {
                 echo wpautop( wptexturize( $description ) );
             }
-            if (!$this->has_fields) {
-                if (in_array($this->get_option('display'), ['iframe', 'modal']) && $this->get_option('in_checkout') == 'yes') {
-                    $params = json_decode($this->get_option('settings'), true, 512, JSON_OBJECT_AS_ARRAY);
-                    $params['woocommerce_show_checkout'] = true;
-                    $params['display'] = $this->get_option('display');
-                    
-                    if ($this->get_option('display') == 'iframe') echo '<div sp-data="container"></div>';
-                    echo '<script> var sp_settings = '.json_encode($params, true).'; </script>';
-                    wp_enqueue_script('simple-payment-woocommerce-checkout-script',
-                        SPWP_PLUGIN_URL.'addons/woocommerce/js/simple-payment-woocommerce-checkout.js',
-                        ['jquery'],
+            if ( !$this->has_fields ) {
+                if ( in_array( $this->get_option( 'display'), [ 'iframe', 'modal' ] ) && $this->get_option( 'in_checkout' ) == 'yes' ) {
+                    $params = json_decode( $this->get_option( 'settings' ), true, 512, JSON_OBJECT_AS_ARRAY );
+                    $params[ 'woocommerce_show_checkout' ] = true;
+                    $params[ 'display' ] = $this->get_option( 'display' );
+                    if ( $this->get_option( 'display' ) == 'iframe' ) echo '<div sp-data="container"></div>';
+                    echo '<script> var sp_settings = ' . json_encode( $params, true ) . '; </script>';
+                    wp_enqueue_script( 'simple-payment-woocommerce-checkout-script',
+                        SPWP_PLUGIN_URL . 'addons/woocommerce/js/simple-payment-woocommerce-checkout.js',
+                        [ 'jquery' ],
                         $this->SPWP::$version
                     );
                     $this->SPWP->scripts();
                 }
                 return;
             }
-            set_query_var('installments', $this->get_option('installments') == 'yes');
-            $template = $this->get_option('template') ? : null;
-            if ($template) {
-                if ($override_template = locate_template($template.'.php')) load_template($override_template);
-                else load_template(SPWP_PLUGIN_DIR.'/templates/'.$template.'.php');
+            set_query_var( 'installments', $this->get_option( 'installments' ) == 'yes' );
+            $template = $this->get_option( 'template' ) ? : null;
+            if ( $template ) {
+                if ( $override_template = locate_template( $template.'.php' ) ) load_template( $override_template );
+                else load_template( SPWP_PLUGIN_DIR . '/templates/' . $template.'.php' );
             } else parent::payment_fields();         
         }
 
@@ -477,16 +477,16 @@ function sp_wc_gateway_init() {
 		 */
 		public function process_payment( $order_id ) {
             $order = wc_get_order( $order_id );
-            $engine = $this->get_option('engine') ? : null;
+            $engine = $this->get_option( 'engine' ) ? : null;
 
-            $params = $this->params(array_merge($order->get_data(), $_REQUEST));
-            $params['source'] = 'woocommerce';
-            $params['source_id'] = $order_id;
-            wc_reduce_stock_levels($order_id);
+            $params = $this->params( array_merge( $order->get_data(), $_REQUEST ) );
+            $params[ 'source' ] = 'woocommerce';
+            $params[ 'source_id' ] = $order_id;
+            wc_reduce_stock_levels( $order_id );
             try {
                 //get_checkout_order_received_url, get_cancel_order_url_raw
 
-                $params['redirect_url'] = WC()->api_request_url( "{$this}" );
+                $params[ 'redirect_url' ] = WC()->api_request_url( "{$this}" );
 
                 if (version_compare(WOOCOMMERCE_VERSION, '2.2', '<')) $params['redirect_url'] = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), $params['redirect_url']));   
                 else $params['redirect_url'] = add_query_arg(['order-pay' => $order_id], add_query_arg('key', $order->get_order_key(), $params['redirect_url']));
@@ -495,7 +495,7 @@ function sp_wc_gateway_init() {
                     $params['redirect_url'] = add_query_arg(['target' => '_top'], $params['redirect_url']);
                 }
                 $params = apply_filters('sp_wc_payment_args', $params, $order_id );
-                $url = $external = $this->SPWP->payment($params, $engine);
+                $url = $external = $this->SPWP->payment( $params, $engine );
                 if (!is_bool($url)) {
                     // && !add_post_meta((int) $order_id, 'sp_provider_url', $url, true) 
                     update_post_meta((int) $order_id, 'sp_provider_url', $url);

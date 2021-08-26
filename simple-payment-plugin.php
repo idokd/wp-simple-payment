@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.1.1
+ * Version: 2.1.2
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -728,6 +728,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $status = false; 
     if ($code) {
         $status = self::update($this->payment_id ? : $this->engine->transaction, [
+          'status' => self::TRANSACTION_SUCCESS,
           'confirmation_code' => $code,
         ], !$this->payment_id);
     }
@@ -1195,7 +1196,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $user_id = get_current_user_id();
     if ($user_id) $params['user_id'] = $user_id;
     $result = $wpdb->update($table_name, $params, [($transaction_id ? 'transaction_id' : 'id') => $id]);
-    if ($result === false) throw new Exception(__("Couldn't update transaction: ") . $wpdb->last_error);
+    if ($result === false) throw new Exception(__("Couldn't update transaction: ", 'simple-payment' ) . $wpdb->last_error);
     return($result);
   }
 
