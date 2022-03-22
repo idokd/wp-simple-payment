@@ -20,7 +20,7 @@ class SimplePayment {
 
   const ENGINE = 'engine'; const METHOD = 'method';
 
-  const TRANSACTION_ID = 'transaction_id'; const CURRENCY = 'currency'; const AMOUNT = 'amount'; const PRODUCT = 'product'; const PRODUCT_CODE = 'product_code'; 
+  const TRANSACTION_ID = 'transaction_id'; const CURRENCY = 'currency'; const AMOUNT = 'amount'; const PRODUCT = 'product'; const PRODUCT_CODE = 'product_code'; const PRODUCTS = 'products';
 
   const FIRST_NAME = 'first_name'; const LAST_NAME = 'last_name'; const FULL_NAME = 'full_name'; const PHONE = 'phone'; const MOBILE = 'mobile'; const EMAIL = 'email';
   

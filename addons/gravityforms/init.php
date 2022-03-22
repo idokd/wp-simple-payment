@@ -94,6 +94,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		parent::pre_init();
 		add_action('sp_payment_success', [$this, 'payment_success']);
 		add_action('gform_enqueue_scripts', [$this, 'load_scripts'], 10, 2);
+		add_filter( 'sp_payment_pre_process_filter', [ $this, 'sp_payment_pre_process_filter' ] );
         $this->SPWP = SimplePaymentPlugin::instance();
 		$this->_version = $this->SPWP::$version;
 		
@@ -261,13 +262,23 @@ class GFSimplePayment extends GFPaymentAddOn {
 				'label'     => esc_html__( 'Custom Settings', 'simple-payment' ),
 				'type'      => 'checkbox',
 				'tooltip' 	=> '<h6>' . esc_html__( 'Custom Settings', 'simple-payment' ) . '</h6>' . esc_html__( 'Override the settings provided on the Simple Payment Settings page and use these instead for this feed.', 'simple-payment' ),
-				'onchange' => "if(jQuery(this).prop('checked')){
+				'onchange' => " if ( jQuery( this ).prop( 'checked' ) ){
+										jQuery('#gform_setting_engine').show();
+										jQuery('#gform_setting_display').show();
+										jQuery('#gform_setting_installments').show();
+										jQuery('#gform_setting_template').show();
+										jQuery('#gform_setting_settings').show();
 										jQuery('#gaddon-setting-row-engine').show();
 										jQuery('#gaddon-setting-row-display').show();
 										jQuery('#gaddon-setting-row-installments').show();
 										jQuery('#gaddon-setting-row-template').show();
 										jQuery('#gaddon-setting-row-settings').show();
 									} else {
+										jQuery('#gform_setting_engine').hide();
+										jQuery('#gform_setting_display').hide();
+										jQuery('#gform_setting_installments').hide();
+										jQuery('#gform_setting_template').hide();
+										jQuery('#gform_setting_settings').hide();
 										jQuery('#gaddon-setting-row-engine').hide();
 										jQuery('#gaddon-setting-row-display').hide();
 										jQuery('#gaddon-setting-row-installments').hide();
@@ -421,7 +432,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 				list( $form_id, $entry_id ) = explode( '|', $query['ids'] );
 				$form = GFAPI::get_form( $form_id );
 				$entry = GFAPI::get_entry( $entry_id );
-				$feed = $instance->get_feed( $retry );
+				$feed = $this->get_feed( $retry );
 				$submission_data = $instance->get_submission_data( $feed, $form, $entry );
 
 				$is_subscription = $feed['meta']['transactionType'] == 'subscription';
@@ -565,6 +576,47 @@ class GFSimplePayment extends GFPaymentAddOn {
 		return true;
 	}
 
+	public function sp_payment_pre_process_filter( $params ) {
+		global $gf_sp_payment;
+		if ( !( $gf_sp_payment
+			|| ( isset( $params[ 'source' ]) 
+			&& $params[ 'source' ] == 'gravityforms'
+			&& isset( $params[ 'source_id' ] )
+			&& $params[ 'source_id' ] ) ) ) return( $params );
+
+		if ( isset( $gf_sp_payment ) && $gf_sp_payment ) {
+			$submission_data = $gf_sp_payment[ 'submission_data' ];
+		} else {
+			$entry_id = $params[ 'source_id' ];
+			$entry = GFAPI::get_entry( $entry_id );
+			$form_id = $entry[ 'form_id' ];
+			$form = GFAPI::get_form( $form_id );			
+			$feed = $this->get_payment_feed( $entry, $form );
+			$submission_data = $this->get_order_data( $feed, $form, $entry );
+		}
+		foreach ( $submission_data[ 'line_items' ] as $item ) {
+			$product = [
+				'id' => $item[ 'id' ],
+				'name' => $item[ 'name' ],
+				'description' => $item[ 'description' ],
+				'amount' => $item[ 'unit_price' ],
+				'qty' => $item[ 'quantity' ]
+			];
+			if ( !isset( $params[ 'products' ] ) ) $params[ 'products' ] = [];
+			$params[ 'products' ][] = $product;
+		}
+		return( $params );
+	}
+
+	public function add_sp_pre_process( $feed, $submission_data, $form, $entry ) {
+		global $gf_sp_payment;
+		$gf_sp_payment = [
+			'feed' => $feed,
+			'submission_data' => $submission_data,
+			'form' => $form,
+			'entry' => $entry
+		];
+	}
 	// # SUBMISSION ----------------------------------------------------------------------------------------------------
 	
 	public function redirect_url( $feed, $submission_data, $form, $entry ) {
@@ -582,6 +634,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 			$params['callback'] = $entry['source_url'];
 		}
 		$params['redirect_url'] = $this->return_url( $form['id'], $entry['id']).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
+		
+		$this->add_sp_pre_process(  $feed, $submission_data, $form, $entry );
 
 		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form['id'], $submission_data, $feed, $entry );
 		GFAPI::update_entry_property( $entry['id'], 'payment_method', 'SimplePayment' );
@@ -604,12 +658,12 @@ class GFSimplePayment extends GFPaymentAddOn {
 				$params['type'] = 'template';
 			} else if (!isset($params['form']) || !$params['form']) {
 				$params['type'] = 'form';
-				$params['form'] = isset($_REQUEST['gform_ajax']) && $_REQUEST['gform_ajax'] ? 'plugin-addon-ajax' : 'plugin-addon';
+				$params['form'] = isset($_REQUEST['gform_ajax']) && $_REQUEST[ 'gform_ajax' ] ? 'plugin-addon-ajax' : 'plugin-addon';
 			}
 			//$params['redirect_url'] = add_query_arg('target', '_parent', $params['redirect_url']);
 			GFSimplePayment::$params = $params;
 			$this->redirect_url = null;
-			add_filter('gform_confirmation', function ($confirmation, $form, $entry, $ajax) {
+			add_filter( 'gform_confirmation', function ($confirmation, $form, $entry, $ajax ) {
 				if (isset($confirmation['redirect'])) {
 					$url = esc_url_raw( $confirmation['redirect'] );
 					GFCommon::log_debug( __METHOD__ . '(): Redirect to URL: ' . $url );
@@ -663,6 +717,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 		 */
 		$params['redirect_url'] = get_bloginfo( 'url' ) . '/?page=gf_simplepayment_ipn&entry_id='.$entry['id'].'&redirect_url='.urlencode($this->return_url( $form['id'], $entry['id'])).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
 		
+		$this->add_sp_pre_process(  $feed, $submission_data, $form, $entry );
+
 		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form['id'], $submission_data, $feed, $entry );
 
 		try {

@@ -299,7 +299,6 @@ class Cardcom extends Engine {
 
     if ($operation != 3 && isset($params['company']) && $params['company']) $post['InvoiceHead.CustName'] = $params['company'];
     if ($operation != 3 && !isset($post['InvoiceHead.CustName']) && isset($params['full_name']) && $params['full_name']) $post['InvoiceHead.CustName'] = $params['full_name'];
-
     if ($operation != 3) $post = array_merge($post, $this->document(array_merge($params, ['language' => $language, 'currency' => $currency])));
 
     // TODO: Analyze how to use those parameters
@@ -562,14 +561,29 @@ class Cardcom extends Engine {
     if ($this->param('auto_create_account')) $post['InvoiceHead.IsAutoCreateUpdateAccount'] = 'true';
     if ($this->param('auto_load_account')) $post['InvoiceHead.IsLoadInfoFromAccountID'] = 'true';
     if ($this->param('department_id')) $post['InvoiceHead.DepartmentId'] = $this->param('department_id');
-    //if (isset($params['payment_id']) && $params['payment_id']) $post['InvoiceHead.SiteUniqueId'] = $params['payment_id'];
+    //if ( isset($params['payment_id']) && $params['payment_id']) $post['InvoiceHead.SiteUniqueId'] = $params['payment_id'];
 
-    $post['InvoiceLines1.Description'] = $params['product'];
-    $post['InvoiceLines1.Price'] = $params['amount'];
-    $post['InvoiceLines1.Quantity'] = 1;
-    $post['InvoiceLines1.IsPriceIncludeVAT'] = 'true'; // Must be true - API requirement
-    // TODO: support per item: $post['InvoiceLines1.IsVatFree'] = 'true';
-    if (isset($params['id']) && $params['id']) $post['InvoiceLines1.ProductID'] = $params['id'];
+    if ( isset( $params[ 'products' ] ) && is_array( $params[ 'products' ] ) ) {
+      $index = 1;
+      foreach ( $params[ 'products' ] as $product ) {
+        $post[ 'InvoiceLines' . $index . '.Description' ] = $product[ 'name' ];
+        if ( isset( $product[ 'description' ] ) ) $post[ 'InvoiceLines' . $index . '.Description' ] .= ' ' . $product[ 'description' ];
+        $post[ 'InvoiceLines' . $index . '.Price' ] = $product[ 'amount' ];
+        $post[ 'InvoiceLines' . $index . '.Quantity' ] = $product[ 'qty' ];
+        $post[ 'InvoiceLines' . $index . '.IsPriceIncludeVAT' ] = 'true'; // Must be true - API requirement
+        // TODO: support per item: $post['InvoiceLines1.IsVatFree'] = 'true';
+        if ( isset( $product[ 'id' ] ) && $product[ 'id' ] ) $post[ 'InvoiceLines' . $index . '.ProductID' ] = $product[ 'id' ];
+        $index++;
+      }
+    } else {
+      $post[ 'InvoiceLines1.Description'] = $params['product'];
+      $post[ 'InvoiceLines1.Price'] = $params['amount'];
+      $post[ 'InvoiceLines1.Quantity'] = 1;
+      $post[ 'InvoiceLines1.IsPriceIncludeVAT'] = 'true'; // Must be true - API requirement
+      // TODO: support per item: $post['InvoiceLines1.IsVatFree'] = 'true';
+      if ( isset( $params[ 'id' ] ) && $params[ 'id' ] ) $post[ 'InvoiceLines1.ProductID' ] = $params[ 'id' ];
+    }
+    
 /*
 
     AccountForeignKey 	- not needed at the moment, TODO: maybe use user_id from wordpress (string)

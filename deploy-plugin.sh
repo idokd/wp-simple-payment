@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Zip for specific installation:
+# zip -x '*.git*' -x '*.docs*' -x '*.wordpress-org*'  -r simple-payment.pre-release.zip simple-payment
 
 # Install necessary packages: subversion rsync git
 
