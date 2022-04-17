@@ -77,12 +77,13 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   public static function get_transactions( $per_page = 5, $page_number = 1, $instance = null, $count = false) {
     global $wpdb;
-    $orderby = 'id';
-    $order = 'DESC';
+
     if ($instance && !self::$details) {
       $orderby = $instance->get_pagination_arg('orderby');
       $order = $instance->get_pagination_arg('order');
     }
+    if ( !$orderby ) $orderby = 'id';
+    if ( !$order ) $order = 'DESC';
     if ($count) $sql = "SELECT COUNT(*) FROM ".self::$table_name;
     else $sql = "SELECT * FROM ".self::$table_name;
     $where = [];

@@ -92,23 +92,26 @@ class Cardcom extends Engine {
       'response' => json_encode($response),
       'token' => $token
     ]);
-    if ( $this->confirmation_code ) return( $this->confirmation_code );
     $operation = isset($response['Operation']) ? $response['Operation'] : null;
     $code = isset($response['OperationResponse']) ? $response['OperationResponse'] : 999;
     switch($operation) {
       case 1:
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0) return($this->confirmation_code);
+      case "1":
         $code = $response['DealResponse'];
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == '0' && isset($response['DealResponse']) && $response['DealResponse'] == '0' ) return($this->confirmation_code);
         break;
       case 2:
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 && isset($response['DealResponse']) && $response['DealResponse'] == 0 && isset($response['TokenResponse']) && $response['TokenResponse'] == 0) return($this->confirmation_code);
+      case "2":
         $code = $response['TokenResponse'];
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == '0' && isset($response['DealResponse']) && $response['DealResponse'] == '0' && isset($response['TokenResponse']) && $response['TokenResponse'] == '0') return($this->confirmation_code);
         break;
       case 3:
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == 0 &&  isset($response['SuspendedDealResponseCode']) && $response['SuspendedDealResponseCode'] == 0) return($this->confirmation_code);
+      case "3":
         $code = $response['SuspendedDealResponseCode'];
+        if (isset($response['OperationResponse']) && $response['OperationResponse'] == '0' &&  isset($response['SuspendedDealResponseCode']) && $response['SuspendedDealResponseCode'] == '0') return($this->confirmation_code);
         break;
       case 4:
+      case "4":
         break;
     }
     throw new Exception(isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'], $code);
