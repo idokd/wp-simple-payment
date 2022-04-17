@@ -77,12 +77,11 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   public static function get_transactions( $per_page = 5, $page_number = 1, $instance = null, $count = false) {
     global $wpdb;
+    $orderby = 'id';
+    $order = 'DESC';
     if ($instance && !self::$details) {
       $orderby = $instance->get_pagination_arg('orderby');
       $order = $instance->get_pagination_arg('order');
-    } else {
-      $orderby = 'id';
-      $order = 'DESC';
     }
     if ($count) $sql = "SELECT COUNT(*) FROM ".self::$table_name;
     else $sql = "SELECT * FROM ".self::$table_name;
@@ -324,8 +323,10 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   public function prepare_items() {
     $this->process_bulk_action();
 
-    if ($this->is_export()) $per_page = -1;
-    else {
+    if ($this->is_export()) {
+      $per_page = -1;
+      $current_page = 0;
+    } else {
       $screen = get_current_screen();
       $per_page = get_user_meta(get_current_user_id(), $screen->get_option('per_page', 'option'), true);
       $per_page = $per_page ? $per_page : $this->get_items_per_page( 'per_page', $screen->get_option('per_page', 'default'));

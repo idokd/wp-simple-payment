@@ -71,7 +71,10 @@ class iCredit extends Engine {
       'response' => json_encode($response)
     ]);
     $code = isset($response['AuthNum']) ? $response['AuthNum'] : null;
-    if ($code) return($code);
+    if ($code) {
+      $this->confirmation_code = $code;
+      return( $code ); 
+    } 
     throw new Exception(isset($response['Status']) ? $response['Status'] : 'DID_NOT_VERIFY', $code);
   }
 

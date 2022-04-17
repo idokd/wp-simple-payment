@@ -92,6 +92,7 @@ class Cardcom extends Engine {
       'response' => json_encode($response),
       'token' => $token
     ]);
+    if ( $this->confirmation_code ) return( $this->confirmation_code );
     $operation = isset($response['Operation']) ? $response['Operation'] : null;
     $code = isset($response['OperationResponse']) ? $response['OperationResponse'] : 999;
     switch($operation) {
