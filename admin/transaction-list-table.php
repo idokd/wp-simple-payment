@@ -77,7 +77,8 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
 
   public static function get_transactions( $per_page = 5, $page_number = 1, $instance = null, $count = false) {
     global $wpdb;
-
+    $orderby = 'id';
+    $order = 'DESC';
     if ($instance && !self::$details) {
       $orderby = $instance->get_pagination_arg('orderby');
       $order = $instance->get_pagination_arg('order');
@@ -149,29 +150,36 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
         ]), __('Unarchive', 'simple-payment') )
       ];
     } else {
-      $archive_nonce = wp_create_nonce( 'archive_'.$this->_args['singular'] );
+      $archive_nonce = wp_create_nonce( 'archive_'.$this->_args[ 'singular' ] );
+      $verify_nonce = wp_create_nonce( 'verify_'.$this->_args[ 'singular' ] );
       $actions = [
-        'archive' => sprintf( '<a href="%s">%s</a>', add_query_arg([
+        'archive' => sprintf( '<a href="%s">%s</a>', add_query_arg( [
             'action' => 'archive',
-            'id' => absint($item['id']),
+            'id' => absint( $item[ 'id' ] ),
             '_wpnonce' => $archive_nonce
-        ]), __('Archive', 'simple-payment') )
+        ] ), __( 'Archive', 'simple-payment' ) ),
+        'verify' => sprintf( '<a href="%s">%s</a>', add_query_arg( [
+          'action' => 'verify',
+          'id' => absint( $item[ 'id' ] ),
+          '_wpnonce' => $verify_nonce
+      ] ), __( 'Verify', 'simple-payment' ) ),
       ];
     }
     $actions['details'] = sprintf( '<a href="?page=simple-payments-details&id=%s&engine=%s">%s</a>', $item['id'], $item['engine'], __('Details', 'simple-payment') );
-    return $title.$this->row_actions( $actions );
+    return( $title . $this->row_actions( $actions ) );
   }
 
   protected function get_bulk_actions() {
-    if (self::$details) return;
-    if (isset($_REQUEST['archive']) && $_REQUEST['archive']) {
-      $actions = array(
+    if ( self::$details ) return;
+    if ( isset( $_REQUEST[ 'archive' ] ) && $_REQUEST[ 'archive' ] ) {
+      $actions = [
         'bulk-unarchive' => __( 'Unarchive', 'simple-payment' ),
-      );
+      ];
     } else {
-      $actions = array(
+      $actions = [
+        'bulk-verify' => __( 'Verify', 'simple-payment' ),
         'bulk-archive' => __( 'Archive', 'simple-payment' ),
-      );
+      ];
     }
 		return($actions);
 	}
@@ -270,6 +278,10 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     return($sortable_columns);
   }
 
+  public function verify_transaction( $id ) {
+    SimplePaymentPlugin::verify( $id );
+  }
+
   public function archive_transaction($id) {
     SimplePaymentPlugin::archive($id);
   }
@@ -279,12 +291,18 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   public function process_bulk_action() {
-    if ( in_array($this->current_action(), [ 'archive', 'unarchive' ]) ) {
+    global $sp_bulk_processed;
+    if ( isset( $sp_bulk_processed ) && $sp_bulk_processed ) return;
+    $sp_bulk_processed = true;
+    if ( in_array($this->current_action(), [ 'archive', 'unarchive', 'verify' ] ) ) {
       $nonce = esc_attr( $_REQUEST['_wpnonce'] );
       if ( ! wp_verify_nonce( $nonce, $this->current_action().'_'.$this->_args['singular'] ) ) {
         die( 'Go get a life script kiddies' );
       } 
-      switch ($this->current_action()) {
+      switch ( $this->current_action() ) {
+        case 'verify':
+          self::verify_transaction( absint( $_GET['id'] ) );
+          break;
         case 'archive':
           self::archive_transaction( absint( $_GET['id'] ) );
           break;
@@ -308,6 +326,9 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       $action = isset($_REQUEST['action']) && $_REQUEST['action'] != -1 ? $_REQUEST['action'] : $_REQUEST['action2'];
       foreach ( $ids as $id ) {
         switch ($action) {
+          case 'bulk-verify':
+            self::verify_transaction( $id );
+            break;
           case 'bulk-archive':
             self::archive_transaction( $id );
             break;

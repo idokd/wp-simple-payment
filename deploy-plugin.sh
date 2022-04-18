@@ -56,6 +56,10 @@ if [[ -z "$VERSION" ]]; then
 fi
 echo "ℹ︎ VERSION is $VERSION"
 
+if [ $VERSION -e  "master" ]; then
+	exit;
+fi
+
 if [[ -z "$ASSETS_DIR" ]]; then
 	ASSETS_DIR=".wordpress-org"
 fi

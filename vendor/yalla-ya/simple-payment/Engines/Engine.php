@@ -32,36 +32,36 @@ class Engine {
     $this->password = $this->sandbox ? $this->password : $this->param('password');
   }
 
-  protected function param($key) {
-    if (isset(self::$params[$key])) return(self::$params[$key]);
-    return(SimplePayment\SimplePayment::param($key));
+  protected function param( $key ) {
+    if ( isset(self::$params[$key])) return( self::$params[ $key ] );
+    return( SimplePayment\SimplePayment::param( $key ) );
   }
 
-  public function process($params) {
+  public function process( $params ) {
     // Process the transaction, for example
     // - Call payment gateway API
     // - Redirect to the payment gateway url with params
     // Return FALSE if transaction failed
     // Return array of params to move to post_process if payment was handleded without being redirecting
-    return(true);
+    return( true );
   }
 
-  public function status($params) {
+  public function status( $params ) {
     // Process the statuc callback, for example
     // Return FALSE if transaction failed
-    return(true);
+    return( true );
   }
 
-  public function verify($params) {
+  public function verify( $params ) {
     // Process the statuc callback, for example
     // Return FALSE if transaction failed
-    return(false);
+    return( false );
   }
 
-  public function refund($params) {
+  public function refund( $params ) {
     // Process the statuc callback, for example
     // Return FALSE if transaction failed
-    return(false);
+    return( false );
   }
 
   public function post_process($params) {
@@ -97,9 +97,9 @@ class Engine {
     return($this->save($params));
   }
 
-  protected function save($params) {
-    if (!isset($params['transaction_id']) && $this->transaction) $params['transaction_id'] = $this->transaction;
-    return($this->handler->save($params, $this->name));
+  protected function save( $params ) {
+    if ( !isset( $params[ 'transaction_id' ] ) && $this->transaction ) $params[ 'transaction_id' ] = $this->transaction;
+    return( $this->handler->save( $params, $this->name ) );
   }
 
   public static function uuid() {

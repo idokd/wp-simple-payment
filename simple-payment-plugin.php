@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.1.7
+ * Version: 2.1.8
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -28,7 +28,7 @@ define( 'SPWP_PLUGIN_URL', plugin_dir_url( __FILE__  ) );
 
 require_once( SPWP_PLUGIN_DIR . '/vendor/autoload.php' );
 
-if (file_exists(SPWP_PLUGIN_DIR .'/vendor/leewillis77/WpListTableExportable/bootstrap.php')) require_once(SPWP_PLUGIN_DIR .'/vendor/leewillis77/WpListTableExportable/bootstrap.php');
+if ( file_exists( SPWP_PLUGIN_DIR . '/vendor/leewillis77/WpListTableExportable/bootstrap.php' ) ) require_once( SPWP_PLUGIN_DIR . '/vendor/leewillis77/WpListTableExportable/bootstrap.php' );
 
 class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
@@ -48,12 +48,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public static $fields = [ 'payment_id', 'transaction_id', 'target', 'type', 'callback', 'display', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::PRODUCTS, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE ];
 
+  public static $max_retries = 5;
+
   public $payment_id = null;
 
   protected $option_name = 'sp';
   protected $payment_page = null;
   protected $secrets = [];
-
   protected $test_shortcodes = [
     'button' => [
         'title' => 'Standard Button Shortcode',
@@ -75,12 +76,12 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       'currency' => 'USD'
   ];
 
-  public function __construct($params = []) {
-    $option = get_option('sp') ? : [];
-    parent::__construct(array_merge(array_merge($this->defaults, $params), $option));
-    self::$license = get_option('sp_license');
-    $plugin = get_file_data(__FILE__, array('Version' => 'Version'), false);
-    self::$version = $plugin['Version'];
+  public function __construct( $params = [] ) {
+    $option = get_option( 'sp' ) ? : [];
+    parent::__construct( array_merge( array_merge( $this->defaults, $params ), $option ) );
+    self::$license = get_option( 'sp_license' );
+    $plugin = get_file_data( __FILE__, array( 'Version' => 'Version' ), false );
+    self::$version = $plugin[ 'Version' ];
     $this->load();
   }
 
@@ -262,68 +263,43 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     do_action( 'sp_cron_purge_done', $archive_purge, $period );
   }
 
-  public static function process_verify($mins) {
+  public static function process_verify( $mins ) {
+    if ( !$mins ) return;
     global $wpdb;
-    $max_retries = 5;
-    $sql = $wpdb->prepare("SELECT * FROM ".$wpdb->prefix.self::$table_name." WHERE `transaction_id` IS NOT NULL AND `retries` <= ".$max_retries." AND (`status` = 'pending' OR (`status` = 'success' AND  `confirmation_code` IS NULL)) AND `archived` = 0 AND `created` < DATE_SUB(NOW(), INTERVAL %d MINUTE)", $mins);
+    $sql = $wpdb->prepare( "SELECT * FROM " . $wpdb->prefix.self::$table_name . " WHERE `transaction_id` IS NOT NULL AND `retries` <= " . self::$max_retries . " AND (`status` = 'pending' OR (`status` = 'success' AND  `confirmation_code` IS NULL)) AND `archived` = 0 AND `created` < DATE_SUB(NOW(), INTERVAL %d MINUTE)", ( $mins * self::$max_retries ) );
     $transactions = $wpdb->get_results( $sql , 'ARRAY_A' );
-    $sp = self::instance();
-    foreach($transactions as $transaction) {
-        $payment_id = $transaction['id'];
-        $transaction_id = $transaction['transaction_id'];
-        $sp->setEngine($transaction['engine']);
-        $retries = intval($transaction['retries']) + 1;
-        $data = null;
-        try {
-          $status = $sp->engine->verify($transaction_id);
-          if ($status) {
-            self::update($payment_id  ? $payment_id : $transaction_id, [
-              'status' => self::TRANSACTION_SUCCESS,
-              'confirmation_code' => $sp->engine->confirmation_code,
-              'retries' => $retries
-            ], !$payment_id);
-            continue;
-          }
-        } catch (Exception $e) {
-          $data['error_code'] = $e->getCode();
-          $data['error_description'] = substr($e->getMessage(), 0, 250);
-        }
-        if ($retries > $max_retries) {
-          if ($transaction['status'] != self::TRANSACTION_SUCCESS) $data['status'] = self::TRANSACTION_FAILED;
-        } else {
-          $data['retries'] = $retries;
-        }
-        if ($data) self::update($payment_id ? $payment_id : $transaction_id , $data, !$payment_id);
+    foreach( $transactions as $transaction ) {
+        self::verify( $transaction[ 'id' ] );
     }
-    do_action('sp_process_verify');
+    do_action( 'sp_process_verify' );
   }
 
-  protected static function process_pending($mins) {
-    if (!$mins) return;
+  protected static function process_pending( $mins ) {
+    if ( !$mins ) return;
     global $wpdb;
-    $sql = $wpdb->prepare("UPDATE ".$wpdb->prefix.self::$table_name." SET `status` = 'failed', `modified` = NOW() WHERE `status` IN ('created', 'pending') AND `created` < DATE_SUB(NOW(),INTERVAL %d MINUTE)", $mins);
-    $wpdb->query($sql);
-    do_action('sp_payment_process_pending', $mins);
+    $sql = $wpdb->prepare("UPDATE " . $wpdb->prefix.self::$table_name . " SET `status` = 'failed', `modified` = NOW() WHERE `status` IN ('created', 'pending') AND `created` < DATE_SUB(NOW(),INTERVAL %d MINUTE)", $mins );
+    $wpdb->query( $sql );
+    do_action( 'sp_payment_process_pending', $mins );
   }
 
   protected static function process_archive($days) {
-    if (!$days) return;
+    if ( !$days ) return;
     global $wpdb;
-    $sql = $wpdb->prepare('UPDATE '.$wpdb->prefix.self::$table_name.' SET `archived` = 1, `modified` = NOW() WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY)', $days);
-    $wpdb->query($sql);
-    do_action('sp_payment_process_archive', $days);
+    $sql = $wpdb->prepare('UPDATE ' . $wpdb->prefix.self::$table_name . ' SET `archived` = 1, `modified` = NOW() WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY)', $days );
+    $wpdb->query( $sql );
+    do_action( 'sp_payment_process_archive', $days );
   }
 
-  protected static function process_purge($days) {
-    if (!$days) return;
+  protected static function process_purge( $days ) {
+    if ( !$days ) return;
     global $wpdb;
-    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.'sp_history'.' WHERE `transaction_id` IN (SELECT `transaction_id` FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY))', $days);
-    $wpdb->query($sql);
-    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.'sp_history'.' WHERE `payment_id` IN (SELECT `id` FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY))', $days);
-    $wpdb->query($sql);
-    $sql = $wpdb->prepare('DELETE FROM '.$wpdb->prefix.self::$table_name.' WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY)', $days);
-    $wpdb->query($sql);
-    do_action('sp_payment_process_purge', $days);
+    $sql = $wpdb->prepare('DELETE FROM ' . $wpdb->prefix.'sp_history' . ' WHERE `transaction_id` IN (SELECT `transaction_id` FROM ' . $wpdb->prefix.self::$table_name . ' WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY))', $days );
+    $wpdb->query( $sql );
+    $sql = $wpdb->prepare('DELETE FROM ' . $wpdb->prefix.'sp_history' . ' WHERE `payment_id` IN (SELECT `id` FROM ' . $wpdb->prefix.self::$table_name . ' WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY))', $days );
+    $wpdb->query( $sql );
+    $sql = $wpdb->prepare('DELETE FROM ' . $wpdb->prefix.self::$table_name . ' WHERE `created` < DATE_SUB(NOW(),INTERVAL %d DAY)', $days );
+    $wpdb->query( $sql );
+    do_action( 'sp_payment_process_purge', $days );
   }
 
   function register_reading_setting() {
@@ -1308,6 +1284,36 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       load_plugin_textdomain( 'simple-payment', $lang_dir, str_replace(WP_PLUGIN_DIR, '', $lang_dir) );
     }
 
+    public static function verify( $id = null, $counter = true ) {
+      $sp = self::instance();
+      $transaction = $sp->fetch( $id );
+      $sp->payment_id = $transaction[ 'id' ];
+      $sp->setEngine( $transaction[ 'engine' ] );
+      $retries = intval( $transaction[ 'retries' ] ) + 1;
+      $data = null;
+      try {
+        $status = $sp->engine->verify( $transaction );
+        if ( $status ) {
+          self::update( $sp->payment_id  ? $sp->payment_id : $transaction[ 'transaction_id' ], [
+            'status' => self::TRANSACTION_SUCCESS,
+            'confirmation_code' => $sp->engine->confirmation_code,
+            'retries' => $retries
+          ], !$sp->payment_id );
+        }
+      } catch ( Exception $e ) {
+        $data[ 'error_code' ] = $e->getCode();
+        $data[ 'error_description' ] = substr( $e->getMessage(), 0, 250 );
+      }
+      if ( $retries > self::$max_retries ) {
+        if ( $transaction[ 'status' ] != self::TRANSACTION_SUCCESS ) $data[ 'status' ] = self::TRANSACTION_FAILED;
+      } else if ( $counter ) {
+        $data[ 'retries' ] = $retries;
+      }
+      if ( $data ) self::update( $sp->payment_id  ? $sp->payment_id  : $transaction[ 'transaction_id' ] , $data, !$sp->payment_id );
+      do_action( 'sp_payment_verify', $id );
+      //wp_redirect( wp_get_referer() );
+    }
+
     public static function archive($id = null) {
       self::update($id ? : $_REQUEST['transaction'], [
         'archived' => true
@@ -1350,30 +1356,30 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       return($value);
     }
 
-    public function save($params, $tablename = null, $id = null) {
+    public function save( $params, $tablename = null, $id = null ) {
       global $wpdb;
       $tablename = 'history';
-      if (isset($params['token'])) {
-        if ($params['token']) self::update($this->payment_id ? $this->payment_id  : $this->engine->transaction, [ 'token' => $params['token'] ], !$this->payment_id);
-        unset($params['token']);
+      if (isset( $params[ 'token' ] ) ) {
+        if ( $params[ 'token' ] ) self::update( $this->payment_id ? $this->payment_id  : $this->engine->transaction, [ 'token' => $params[ 'token' ] ], !$this->payment_id );
+        unset( $params[ 'token' ] );
       }
-      foreach ($params as $field => $value) $params[$field] = $this->sanitize_pci_dss($value);
-      if (!isset($params['payment_id'])) {
-        $payment_id = $this->payment_id ? $this->payment_id : (isset($_REQUEST['payment_id']) ? $_REQUEST['payment_id'] : null);
-        if ($payment_id) $params['payment_id'] = $payment_id;
+      foreach ( $params as $field => $value ) $params[ $field ] = $this->sanitize_pci_dss( $value );
+      if ( !isset( $params[ 'payment_id' ] ) ) {
+        $payment_id = $this->payment_id ? $this->payment_id : ( isset( $_REQUEST[ 'payment_id' ] ) ? $_REQUEST[ 'payment_id' ] : null );
+        if ( $payment_id ) $params[ 'payment_id' ] = $payment_id;
       }
-      if (!isset($params['ip_address'])) $params['ip_address'] = $_SERVER['REMOTE_ADDR'];
-      if (!isset($params['user_agent'])) $params['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-      if ($id) {
-        $params['modified'] = current_time('mysql');
-        $result = $wpdb->update($wpdb->prefix . 'sp_' . $tablename, $params, [ 'id' => $id ]);
+      if ( !isset( $params[ 'ip_address' ] ) ) $params[ 'ip_address' ] = $_SERVER[ 'REMOTE_ADDR' ];
+      if ( !isset( $params[ 'user_agent' ] ) ) $params[ 'user_agent' ] = $_SERVER[ 'HTTP_USER_AGENT' ];
+      if ( $id ) {
+        $params[ 'modified' ] = current_time( 'mysql' );
+        $result = $wpdb->update( $wpdb->prefix . 'sp_' . $tablename, $params, [ 'id' => $id ] );
       } else {
-        $params['modified'] = current_time('mysql');
-        $params['created'] = current_time('mysql');
-        $result = $wpdb->insert($wpdb->prefix . 'sp_' . $tablename, $params);
+        $params[ 'modified' ] = current_time( 'mysql' );
+        $params[ 'created' ] = current_time( 'mysql' );
+        $result = $wpdb->insert( $wpdb->prefix . 'sp_' . $tablename, $params );
       }
       // TODO: use and keep token
-      return($result != null ? $wpdb->insert_id : false);
+      return( $result != null ? $wpdb->insert_id : false );
     }
 
     public static function redirect($url, $target = '', $return = false) {

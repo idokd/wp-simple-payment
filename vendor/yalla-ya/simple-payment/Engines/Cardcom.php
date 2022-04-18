@@ -59,39 +59,48 @@ class Cardcom extends Engine {
     return($params['url']);
   }
 
-  public function verify($id) {
-    $this->transaction = $id;
+  public function verify( $transaction ) {
+    $this->transaction = $transaction[ 'transaction_id' ];
     $post = [];
     $post['terminalnumber'] = $this->terminal;
     $post['username'] = $this->username;
     $post['lowprofilecode'] = $this->transaction;
     $post['codepage'] = 65001;
 
-    $response = $this->post($this->api['indicator_request'], $post);
-    parse_str($response, $response);
+    $response = $this->post( $this->api['indicator_request' ], $post );
+    parse_str( $response, $response );
 
     $token = null;
-    if ($response['Token']) {
+    if ( $response[ 'Token' ] ) {
       $token = [
-          'token' => $response['Token'],
-          SimplePayment::CARD_OWNER => $response['CardOwnerID'],
-          SimplePayment::CARD_EXPIRY_YEAR => $response['CardValidityYear'],
-          SimplePayment::CARD_EXPIRY_MONTH => $response['CardValidityMonth'],
+          'token' => $response[ 'Token' ],
+          SimplePayment::CARD_OWNER => $response[ 'CardOwnerID' ],
+          SimplePayment::CARD_EXPIRY_YEAR => $response[ 'CardValidityYear' ],
+          SimplePayment::CARD_EXPIRY_MONTH => $response[ 'CardValidityMonth' ],
         //  'card_type' => '',
-          'expiry' => $response['TokenExDate'],
+          'expiry' => $response[ 'TokenExDate' ],
       ];
     }
-    $this->confirmation_code = $response['InternalDealNumber'];
-
-    $this->save([
+    $this->confirmation_code = $response[ 'InternalDealNumber' ];
+    $this->save( [
       'transaction_id' => $this->transaction,
-      'url' => $this->api['indicator_request'],
+      'url' => $this->api[ 'indicator_request' ],
       'status' => isset($response['OperationResponse']) ? $response['OperationResponse'] : (isset($response['DealResponse']) ? $response['DealResponse'] : ''),
       'description' => isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'],
-      'request' => json_encode($post),
-      'response' => json_encode($response),
-      'token' => $token
-    ]);
+      'request' => json_encode( $post ),
+      'response' => json_encode( $response )
+    ] );
+    if ( $token ) {
+      $this->save( [
+        'transaction_id' => $this->transaction,
+        'url' => $this->api[ 'indicator_request' ],
+        'status' => isset($response['OperationResponse']) ? $response['OperationResponse'] : (isset($response['DealResponse']) ? $response['DealResponse'] : ''),
+        'description' => isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'],
+        'request' => json_encode( $post ),
+        'response' => json_encode( $response ),
+        'token' => $token
+      ] );
+    }
     $operation = isset($response['Operation']) ? $response['Operation'] : null;
     $code = isset($response['OperationResponse']) ? $response['OperationResponse'] : 999;
     switch($operation) {

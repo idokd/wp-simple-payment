@@ -113,8 +113,8 @@ class SimplePayment {
 
   function callback() {}
 
-  function save($params, $schema = null) {
-    return(true);
+  function save( $params, $schema = null ) {
+    return( true );
   }
 
   protected function validate_key($key, $domain = null) {

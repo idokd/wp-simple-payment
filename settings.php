@@ -65,6 +65,11 @@ $sp_sections = [
     'description' => __('Setup your Simple Payment to accept iCount Payments', 'simple-payment'),
     'section' => 'icount'
   ],
+  'icount_recurring' => [
+    'title' => __('Recurring Payments', 'simple-payment'),
+    'description' => __('iCount accepts recurring payments (monthly), required settings below', 'simple-payment'),
+    'section' => 'icount'
+  ],
   'payme_settings' => [
     'title' => __('PayMe Gateway Settings', 'simple-payment'),
     'description' => __('Setup your Simple Payment to accept PayMe Payments', 'simple-payment'),
@@ -302,14 +307,14 @@ $sp_settings = [
 
 
   'cardcom.reurring' => [
-    'title' => __('Enable Recurring (Direct Debit) Payments', 'simple-payment'),
+    'title' => __( 'Enable Recurring (Direct Debit) Payments', 'simple-payment' ),
     'section' => 'cardcom_recurring',
     'type' => 'select',
-    'options' => [ 'disabled' => __('Disabled', 'simple-payment'), 'provider' => __('Provider', 'simple-payment')] // 'internal' => __('Internal', 'simple-payment')
+    'options' => [ 'disabled' => __( 'Disabled', 'simple-payment' ), 'provider' => __( 'Provider', 'simple-payment' )] // 'internal' => __('Internal', 'simple-payment')
   ],
 
   'cardcom.recurr_at' => [
-    'title' => __('Process Recurring Upon', 'simple-payment'),
+    'title' => __( 'Process Recurring Upon', 'simple-payment' ),
     'section' => 'cardcom_recurring',
     'type' => 'select',
     'options' => [ 'post' => __('Post Process', 'simple-payment'), 'status' => __('Status Process', 'simple-payment')]
@@ -377,6 +382,14 @@ $sp_settings = [
     'type' => 'check',
     'section' => 'icount_settings'
   ],
+
+  'icount.reurring' => [
+    'title' => __( 'Enable Recurring (Direct Debit) Payments', 'simple-payment' ),
+    'section' => 'icount_recurring',
+    'type' => 'select',
+    'options' => [ 'disabled' => __( 'Disabled', 'simple-payment' ), 'provider' => __( 'Provider', 'simple-payment' )] // 'internal' => __('Internal', 'simple-payment')
+  ],
+  
   'payme.password' => [
     'title' => __('Seller ID', 'simple-payment'),
     'section' => 'payme_settings',
