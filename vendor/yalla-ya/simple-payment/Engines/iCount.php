@@ -25,6 +25,25 @@ class iCount extends Engine {
 
     public static $supports = [ 'cvv', 'tokenization', 'card_owner_id' ];
 
+    public static function is_subscription( $params ) {
+      if ( !isset( $params[ 'payments' ] ) ) return( false );
+      $period = false;
+      switch( $params[ 'payments' ] ) {
+        case 'yearly':
+          $period = 12;
+          break;
+        case 'quarterly':
+          $period = 4;
+          break;
+        case 'semesterly':
+          $period = 6;
+          break;	
+        case 'monthly':
+          $period = 1;
+      }
+      return( $period );
+    }
+
     public function process($params) {
       $post = $this->basics($params);
       if ($this->sandbox) $post['is_test'] = true;
@@ -34,9 +53,21 @@ class iCount extends Engine {
       if (isset($params[SimplePayment::PAYMENTS]) && is_numeric($params[SimplePayment::PAYMENTS])) $post['num_of_payments'] = $params[SimplePayment::PAYMENTS];
 
       $service = 'bill';
-      if ( isset( $params[ 'payments' ] ) && $params[ 'payments' ] == 'monthly' && $this->param( 'reurring' ) == 'provider' ) {
+      $subscription = self::is_subscription( $params );
+      if ( $subscription && $this->param( 'reurring' ) == 'provider' ) {
         $service = 'recurr';
         $post[ 'items' ] = $this->items( $params );
+        $doctype = $this->param( 'doc_type' );
+        if (!$doctype || $doctype == 'none') return($params);
+        $post[ 'doc_title' ] = $params[ SimplePayment::PRODUCT ];
+        $post[ 'doctype' ] = $doctype;
+        $post[ 'currency' ] = $post['currency_code'];
+        $post[ 'issue_every' ] = $subscription;
+        if ( isset( $params[ SimplePayment::LANGUAGE ] ) ) $post[ 'lang' ] = $params[ SimplePayment::LANGUAGE ];
+        if ( $this->param( 'email_document' ) ) {
+          $post[ 'email_to_client' ] = $this->param( 'email_document' );
+        }
+        
       }
       $status = $this->post( $this->api[ $service ], $post );
       $response = json_decode( $status, true );
@@ -68,14 +99,15 @@ class iCount extends Engine {
           $item = [];
           if ( isset( $product[ 'id' ] ) ) $item[ 'sku' ] = $product[ 'id' ];
           $item[ 'quantity' ] = $product[ 'qty' ];
-          $item[ 'description' ] = $product[ 'description' ];
+          $item[ 'description' ] = $product[ 'name' ] ? $product[ 'name' ] : $params[ SimplePayment::PRODUCT ];
+          if ( trim( $product[ 'description' ] ) ) $item[ 'long_description' ] = $product[ 'description' ];
           $item[ $pricefield ] = $product[ 'amount' ];
           $item[ 'unitprice' ] = $product[ 'amount' ];
           $items[] = $item;
         }
       } else {
         $item = [
-          'description' => $params[SimplePayment::PRODUCT],  
+          'description' => $params[ SimplePayment::PRODUCT ],  
           'quantity' => 1
         ];
         if ( $this->param( 'doc_vat' ) == 'exempt' ) {
@@ -94,6 +126,9 @@ class iCount extends Engine {
       parent::post_process($params);
       if ( $this->param( 'use_storage' ) ) {
         $this->store( $params );
+      }
+      if ( self::is_subscription( $params ) && $this->param( 'reurring' ) == 'provider' ) {
+        return( true );
       }
       $doctype = $this->param('doc_type');
       if (!$doctype || $doctype == 'none') return($params);
@@ -138,7 +173,6 @@ class iCount extends Engine {
       if (!$response['status']) {
        throw new Exception($response['error_description'], intval($response['status']));
       }
-
       return( true );
     }
 
@@ -217,6 +251,7 @@ class iCount extends Engine {
       $this->password = $this->param( 'password' );
       $post[ 'pass' ] = $this->password;
       $post[ 'client_name' ] = $transaction[ 'card_owner' ];
+      $post[ 'email' ] = $transaction[ 'email' ];
       $post[ 'confirmation_code' ] = $transaction[ 'confirmation_code' ];
       $status = $this->post( $this->api[ 'verify' ], $post );
       $response = json_decode( $status, true );

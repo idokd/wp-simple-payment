@@ -220,14 +220,14 @@ class GFSimplePayment extends GFPaymentAddOn {
 				'label'    => esc_html__( 'Pay Period', 'simple-payment' ),
 				'type'     => 'select',
 				'choices' => array(
-								array( 'label' => esc_html__( 'Weekly', 'simple-payment' ), 'value' => 'WEEK' ),
-								array( 'label' => esc_html__( 'Every Two Weeks', 'simple-payment' ), 'value' => 'BIWK' ),
-								array( 'label' => esc_html__( 'Twice Every Month', 'simple-payment' ), 'value' => 'SMMO' ),
-								array( 'label' => esc_html__( 'Every Four Weeks', 'simple-payment' ), 'value' => 'FRWK' ),
-								array( 'label' => esc_html__( 'Monthly', 'simple-payment' ), 'value' => 'MONT' ),
-								array( 'label' => esc_html__( 'Quarterly', 'simple-payment' ), 'value' => 'QTER' ),
-								array( 'label' => esc_html__( 'Twice Every Year', 'simple-payment' ), 'value' => 'SMYR' ),
-								array( 'label' => esc_html__( 'Yearly', 'simple-payment' ), 'value' => 'YEAR' ),
+								array( 'label' => esc_html__( 'Weekly', 'simple-payment' ), 'value' => 'weekly' ),
+								array( 'label' => esc_html__( 'Every Two Weeks', 'simple-payment' ), 'value' => 'biweekly' ),
+								array( 'label' => esc_html__( 'Twice Every Month', 'simple-payment' ), 'value' => 'twicemonth' ),
+								array( 'label' => esc_html__( 'Every Four Weeks', 'simple-payment' ), 'value' => '4weeks' ),
+								array( 'label' => esc_html__( 'Monthly', 'simple-payment' ), 'value' => 'monthly' ),
+								array( 'label' => esc_html__( 'Quarterly', 'simple-payment' ), 'value' => 'quarterly' ),
+								array( 'label' => esc_html__( 'Twice Every Year', 'simple-payment' ), 'value' => 'semesterly' ),
+								array( 'label' => esc_html__( 'Yearly', 'simple-payment' ), 'value' => 'yearly' ),
 							),
 				'tooltip'  => '<h6>' . esc_html__( 'Pay Period', 'simple-payment' ) . '</h6>' . esc_html__( 'Select pay period.  This determines how often the recurring payment should occur.', 'simple-payment' ),
 			);
@@ -1204,8 +1204,29 @@ class GFSimplePayment extends GFPaymentAddOn {
 
 		// Billing Information
 		$args = array();
-		if ($feed['meta']['transactionType'] == 'subscription') { // other options: donation, product
-			$args['payments'] = 'monthly'; 
+		if ( $feed[ 'meta' ][ 'transactionType' ] == 'subscription' ) { // other options: donation, product
+			$period = 'monthly';
+			switch( $feed[ 'meta' ][ 'payPeriod' ] ) {
+				case 'yearly':
+				case 'YEAR':
+					$period = 'yearly';
+					break;
+				case 'quarterly':
+				case 'QTER':
+					$period = 'quarterly';
+					break;
+				case 'semesterly':
+				case 'SMYR':
+					$period = 'semesterly';
+					break;	
+				case 'monthly':
+				case 'MONT':
+					$period = 'monthly';
+				default:
+					$period = $feed[ 'meta' ][ 'payPeriod' ];
+			}
+			$args[ 'payments' ] = $period; 
+			$args[ 'times' ] = $feed[ 'meta' ][ 'recurringTimes' ];
 		}
 		
 		$engine_field = $this->get_fields_by_name( $form, 'engine' );
