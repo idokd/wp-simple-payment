@@ -57,12 +57,13 @@ class iCount extends Engine {
       if ( $subscription && $this->param( 'reurring' ) == 'provider' ) {
         $service = 'recurr';
         $post[ 'items' ] = $this->items( $params );
-        $doctype = $this->param( 'doc_type' );
-        if (!$doctype || $doctype == 'none') return($params);
-        $post[ 'doc_title' ] = $params[ SimplePayment::PRODUCT ];
-        $post[ 'doctype' ] = $doctype;
+        $post[ 'doctype' ] = $this->param( 'doc_type' );
         $post[ 'currency' ] = $post['currency_code'];
         $post[ 'issue_every' ] = $subscription;
+
+        // TODO: support: start_date, num_of_payments
+        $post[ 'tax_exempt' ] = $this->param( 'doc_vat' ) == 'exempt';
+        $post[ 'incvat' ] = $this->param( 'doc_vat' ) == 'include';
         if ( isset( $params[ SimplePayment::LANGUAGE ] ) ) $post[ 'lang' ] = $params[ SimplePayment::LANGUAGE ];
         if ( $this->param( 'email_document' ) ) {
           $post[ 'email_to_client' ] = $this->param( 'email_document' );
