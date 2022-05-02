@@ -70,6 +70,7 @@ $sp_sections = [
     'description' => __('iCount accepts recurring payments (monthly), required settings below', 'simple-payment'),
     'section' => 'icount'
   ],
+  
   'payme_settings' => [
     'title' => __('PayMe Gateway Settings', 'simple-payment'),
     'description' => __('Setup your Simple Payment to accept PayMe Payments', 'simple-payment'),
@@ -79,6 +80,11 @@ $sp_sections = [
     'title' => __('iCredit Gateway Settings', 'simple-payment'),
     'description' => __('Setup your Simple Payment to accept iCredit Payments', 'simple-payment'),
     'section' => 'icredit'
+  ],
+  'creditguard_settings' => [
+    'title' => __('CreditGuard Gateway Settings', 'simple-payment'),
+    'description' => __('Setup your Simple Payment to accept CreditGuard Payments', 'simple-payment'),
+    'section' => 'creditguard'
   ],
   'credit2000_settings' => [
     'title' => __('Credit 2000 Gateway Settings', 'simple-payment'),
@@ -91,7 +97,7 @@ $sp_settings = [
   'engine' => [
     'title' => __('Engine', 'simple-payment'),
     'type' => 'select',
-    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
+    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'CreditGuard' => __( 'CreditGuard', 'simple-payment' ), 'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
   'mode' => [ //Mode
     'title' => __('Mode', 'simple-payment'),
     'type' => 'radio',
@@ -453,11 +459,11 @@ $sp_settings = [
     'options' => [ 4 => 'Charge', 5 => 'Authorize', 7 => 'Refund' ],  
   ],
   'credit2000.vendor_name' => [
-    'title' => __('Vendor Name', 'simple-payment'),
+    'title' => __( 'Vendor Name', 'simple-payment' ),
     'section' => 'credit2000_settings', 
   ],
   'credit2000.password' => [
-    'title' => __('Company Key', 'simple-payment'),
+    'title' => __( 'Company Key', 'simple-payment' ),
     'section' => 'credit2000_settings',
     'type' => 'password',
  
@@ -467,11 +473,69 @@ $sp_settings = [
     'section' => 'credit2000_settings', 
   ],
   'credit2000.cvv' => [
-    'title' => __('Use CVV', 'simple-payment'),
+    'title' => __( 'Use CVV', 'simple-payment' ),
     'section' => 'credit2000_settings', 
     'type' => 'check',
-
   ],
+
+
+  'creditguard.gateway' => [
+    'title' => __( 'Gateway URL', 'simple-payment' ),
+    'section' => 'creditguard_settings'
+  ],
+  'creditguard.username' => [
+    'title' => __( 'Username', 'simple-payment' ),
+    'section' => 'creditguard_settings'
+  ],
+  'creditguard.password' => [
+    'title' => __( 'Password', 'simple-payment' ),
+    'section' => 'creditguard_settings',
+    'type' => 'password'
+  ],
+  'creditguard.terminal' => [
+    'title' => __( 'Terminal', 'simple-payment' ),
+    'section' => 'creditguard_settings',
+  ],
+  'creditguard.merchant' => [
+    'title' => __( 'Merchant ID', 'simple-payment' ),
+    'section' => 'creditguard_settings',
+  ],
+  'creditguard.supplier' => [
+    'title' => __( 'Supplier ID', 'simple-payment' ),
+    'section' => 'creditguard_settings',
+  ],
+  'creditguard.mode' => [ // Language
+    'title' => __( 'Integration Mode', 'simple-payment' ),
+    'type' => 'select',
+    'default' => 'redirect',
+    'options' => [ 'direct' => 'Direct', 'redirect' => 'Redirect (MPI)' ],
+    'section' => 'creditguard_settings'
+  ],
+  'creditguard.duplicates' => [ 
+    'title' => __( 'Check May Be Duplicate', 'simple-payment'),
+    'type' => 'check',
+    'section' => 'creditguard_settings'
+  ],
+  'creditguard.language' => [ // Language
+    'title' => __( 'Force Language Interface', 'simple-payment' ),
+    'type' => 'select',
+    'auto' => true,
+    'options' => [ 'heb' => 'Hebrew', 'eng' => 'English' ],
+    'section' => 'creditguard_settings'
+  ],
+  'creditguard.tokenize' => [ 
+    'title' => __( 'Create Tokens', 'simple-payment' ),
+    'type' => 'check',
+    'section' => 'creditguard_settings'
+  ],
+  'creditguard.operation' => [
+    'title' => __( 'Operation', 'simple-payment' ),
+    'section' => 'creditguard_settings',
+    'type' => 'select',
+    'options' => [ 'Regular' => 'Regular', 'Phone' => 'Phone', 'Signature' => 'Signature', 'Internet' => 'Internet' ],  
+  ],
+
+
   'api_key' => [
     'title' => __('API KEY', 'simple-payment'),
     'type' => 'random',

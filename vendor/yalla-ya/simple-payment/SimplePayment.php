@@ -46,7 +46,7 @@ class SimplePayment {
   public function setEngine($engine) {
     if ($engine != 'Custom' && !$this->sandbox) {
       $this->validate_license(self::$license, null, $engine);
-      if (!isset($_SERVER['HTTPS']) || !$_SERVER['HTTPS']) throw new Exception('HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500);
+     // if (!isset($_SERVER['HTTPS']) || !$_SERVER['HTTPS']) throw new Exception('HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500);
     }
     $class = __NAMESPACE__ . '\\Engines\\' . $engine;
     $settings = self::param(strtolower($engine));

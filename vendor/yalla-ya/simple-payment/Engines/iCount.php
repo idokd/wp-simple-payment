@@ -44,8 +44,8 @@ class iCount extends Engine {
       return( $period );
     }
 
-    public function process($params) {
-      $post = $this->basics($params);
+    public function process( $params ) {
+      $post = $this->basics( $params );
       if ($this->sandbox) $post['is_test'] = true;
       $post['currency_code'] = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param(SimplePayment::CURRENCY); // currency_code (cuurency_id / currency
       $post['is_credit'] = false;
@@ -66,9 +66,9 @@ class iCount extends Engine {
         $post[ 'incvat' ] = $this->param( 'doc_vat' ) == 'include';
         if ( isset( $params[ SimplePayment::LANGUAGE ] ) ) $post[ 'lang' ] = $params[ SimplePayment::LANGUAGE ];
         if ( $this->param( 'email_document' ) ) {
-          $post[ 'email_to_client' ] = $this->param( 'email_document' );
+          // This notifies everytime, event on fails, too much information...
+          // $post[ 'email_to_client' ] = $this->param( 'email_document' );
         }
-        
       }
       $status = $this->post( $this->api[ $service ], $post );
       $response = json_decode( $status, true );
@@ -80,43 +80,56 @@ class iCount extends Engine {
         'request' => json_encode( $post ),
         'response' => json_encode( $response )
       ]);
-      if (!$response['status']) {
-       throw new Exception($response['error_description'], intval($response['status']));
+      if ( !$response[ 'status' ] ) {
+       throw new Exception( $response[ 'error_description' ], intval( $response[ 'status' ] ) );
       }
       
-      $params['currency_code'] = $response['currency_code'];
-      $params['confirmation_code'] = $response['confirmation_code'];
-      $params['cc_card_type'] = $response['cc_card_type'];
-      $params['cc_type'] = $response['cc_type'];
-      $this->confirmation_code = $response['confirmation_code'];
+      $params[ 'currency_code' ] = $response['currency_code'];
+      $params[ 'confirmation_code' ] = $response['confirmation_code'];
+      $params[ 'cc_card_type' ] = $response['cc_card_type'];
+      $params[ 'cc_type' ] = $response[ 'cc_type' ];
+      $this->confirmation_code = $response[ 'confirmation_code' ];
       return($params);
     }
 
     public function items( $params ) {
       $items = [];
-      $pricefield =  $this->param( 'doc_vat' ) == 'exempt' ? 'unitprice_exempt' : ( $this->param( 'doc_vat' ) == 'include' ? 'unitprice_incvat' : 'unitprice' );
+      $pricefield = $this->param( 'doc_vat' ) == 'exempt' ? 'unitprice_exempt' : ( $this->param( 'doc_vat' ) == 'include' ? 'unitprice_incvat' : 'unitprice' );
       if ( isset( $params[ 'products' ] ) && is_array( $params[ 'products' ] ) ) {
         foreach ( $params[ 'products' ] as $product ) {
-          $item = [];
+          $item = []; 
+          $amount = $product[ 'amount' ];
+          if ( $this->param( 'doc_vat' ) == 'exempt' ) {
+            $item[ 'tax_exempt' ] = true;
+            $item[ 'unitprice' ] = $amount;
+          }
           if ( isset( $product[ 'id' ] ) ) $item[ 'sku' ] = $product[ 'id' ];
           $item[ 'quantity' ] = $product[ 'qty' ];
           $item[ 'description' ] = $product[ 'name' ] ? $product[ 'name' ] : $params[ SimplePayment::PRODUCT ];
           if ( trim( $product[ 'description' ] ) ) $item[ 'long_description' ] = $product[ 'description' ];
           $item[ $pricefield ] = $product[ 'amount' ];
-          $item[ 'unitprice' ] = $product[ 'amount' ];
+          // serial
           $items[] = $item;
         }
       } else {
+        $amount = $params[ SimplePayment::AMOUNT ];
         $item = [
           'description' => $params[ SimplePayment::PRODUCT ],  
-          'quantity' => 1
+          'quantity' => 1,
+          // long_description, serial
         ];
+        if ( $this->param( 'doc_vat' ) == 'exempt' ) {
+          $item[ 'tax_exempt' ] = true;
+          $item[ 'unitprice' ] = $amount;
+        }
+        $item[ $pricefield ] = $amount;
+        /*
         if ( $this->param( 'doc_vat' ) == 'exempt' ) {
           $item[ 'unitprice_exempt' ] = $amount;
           $item[ 'unitprice' ] = $amount;
         } else if ( $this->param( 'doc_vat' ) == 'include' ) {
           $item[ 'unitprice_incvat' ] = $amount;
-        } else $item[ 'unitprice' ] = $amount;
+        } else $item[ 'unitprice' ] = $amount;*/
         if ( isset( $params[ SimplePayment::PRODUCT_CODE ] ) ) $item[ 'sku' ] = $params[ SimplePayment::PRODUCT_CODE ];
         $items[] = $item;
       }
@@ -124,8 +137,8 @@ class iCount extends Engine {
     }
 
     public function post_process($params) {
-      parent::post_process($params);
-      if ( $this->param( 'use_storage' ) ) {
+      parent::post_process( $params );
+      if ( $this->param( 'use_storage' ) && isset( $params[ SimplePayment::FULL_NAME ] ) && $params[ SimplePayment::FULL_NAME ] ) {
         $this->store( $params );
       }
       if ( self::is_subscription( $params ) && $this->param( 'reurring' ) == 'provider' ) {
@@ -143,7 +156,7 @@ class iCount extends Engine {
 
       //vat_percent, tax_exempt
       $post['currency_code'] = $params['currency_code'];
-      $amount = $params[SimplePayment::AMOUNT];
+      $amount = $params[ SimplePayment::AMOUNT ];
       // Amount to be in ILS only
       //$post['totalsum'] = $amount;
      // $post['totalwithvat'] = $amount;
@@ -183,7 +196,7 @@ class iCount extends Engine {
       $post['user'] = $this->param('username');
       $this->password = $this->param('password');
       $post['pass'] = $this->password;
-      $post['client_name'] = isset($params[SimplePayment::FULL_NAME]) ? $params[SimplePayment::FULL_NAME] : $params[SimplePayment::CARD_OWNER];
+      $post['client_name'] = isset( $params[ SimplePayment::FULL_NAME ] ) ? $params[ SimplePayment::FULL_NAME ] : $params[ SimplePayment::CARD_OWNER ];
       if (isset($params[SimplePayment::TAX_ID])) $post['vat_id'] = $params[SimplePayment::TAX_ID];
       // custom_client_id
       if (isset($params[SimplePayment::EMAIL])) $post['email'] = $params[SimplePayment::EMAIL]; 

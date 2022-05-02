@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.2.0
+ * Version: 2.2.1
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -44,7 +44,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public static $instance;
 
   public static $table_name = 'sp_transactions';
-  public static $engines = [ 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'Credit2000', 'Custom' ];
+  public static $engines = [ 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'CreditGuard', 'Credit2000', 'Custom' ];
 
   public static $fields = [ 'payment_id', 'transaction_id', 'target', 'type', 'callback', 'display', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::PRODUCTS, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE ];
 
@@ -313,15 +313,15 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     add_settings_field(
         'sp_payment_page',
         __('Payment Page', 'simple-payment'),
-        [$this, 'setting_callback_function'],
+        [ $this, 'setting_callback_function' ],
         'reading',
         'default',
-        array( 'label_for' => 'sp_payment_page' )
+        [ 'label_for' => 'sp_payment_page' ]
     );
   }
 
-  function sanitize_text_field($args) {
-    return(sanitize_text_field($args));
+  function sanitize_text_field( $args ) {
+    return( sanitize_text_field( $args ) );
   }
   
   function setting_callback_function($args){
@@ -393,7 +393,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
     $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'sp';
     $section = $tab;
-    $tabs = apply_filters( 'sp_admin_tabs', [ 'General', 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'Credit2000', 'License', 'Extensions', 'Shortcode', 'Instructions' ] );
+    $tabs = apply_filters( 'sp_admin_tabs', [ 'General', 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'CreditGuard', 'Credit2000', 'License', 'Extensions', 'Shortcode', 'Instructions' ] );
     ?>
     <div class="wrap">
       <h1><?php _e('Simple Payment Settings', 'simple-payment'); ?></h1>
@@ -429,14 +429,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
 
   public function register_license_settings() {
-    register_setting('sp', 'sp_license', ['type' => 'string', 'sanitize_callback' => [$this, 'license_key_callback']]);
+    register_setting( 'sp', 'sp_license', [ 'type' => 'string', 'sanitize_callback' => [ $this, 'license_key_callback' ] ] );
     add_settings_field(
       'sp_license',
-      __('License Key', 'simple-payment'),
-      [$this, 'render_license_key_field'],
+      __( 'License Key', 'simple-payment' ),
+      [ $this, 'render_license_key_field' ],
       'license',
       'licensing',
-      array('label_for' => 'sp_license')
+      [ 'label_for' => 'sp_license' ]
     );
   }
   // Initialize our plugin's settings.
@@ -444,10 +444,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $this->register_reading_setting();
     $this->register_license_settings();
 
-    require('settings.php');
+    require( 'settings.php' );
     $this->sections = apply_filters( 'sp_admin_sections', $sp_sections );
     $sp_settings = apply_filters( 'sp_admin_settings', $sp_settings );
-    foreach ($sp_sections as $key => $section) {
+    foreach ( $sp_sections as $key => $section ) {
         add_settings_section(
           $key,
           $section['title'],
@@ -1100,10 +1100,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       switch ($type) {
           case self::TYPE_BUTTON:
             $url = $this->callback;
-            $params[self::OP] = 'redirect';
-            return sprintf('<a class="btn" href="%1$s"'.($target ? ' target="'.$target.'"' : '').'>%2$s</a>',
-                $url.'?'.http_build_query($params),
-                esc_html( $title ? $title : 'Buy' ));
+            $params[ self::OP ] = 'redirect';
+            if ( !isset( $params[ 'callback' ] ) ) $params[ 'callback' ] = $this->callback;
+            if ( $target ) $params[ 'callback' ] .= ( strpos( $params[ 'callback' ], '?' ) ? '&' : '?' ) . http_build_query( [ 'target' => $params[ 'target' ] ] );
+            $this->settings( $params );
+            return( sprintf( '<a class="btn" href="%1$s"' . ( $target ? ' target="' . $target . '"' : '' ) . '>%2$s</a>',
+                $url . '?' . http_build_query( $params ),
+                esc_html( $title ? $title : 'Buy' ) ) );
             break;
           case self::TYPE_HIDDEN:
               $form = 'hidden';

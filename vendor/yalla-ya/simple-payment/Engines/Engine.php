@@ -25,11 +25,11 @@ class Engine {
   protected static $params;
   protected $sandbox;
 
-  public function __construct($params = null, $handler = null, $sandbox = true) {
+  public function __construct( $params = null, $handler = null, $sandbox = true ) {
     self::$params = $params;
     $this->handler = $handler;
     $this->sandbox = $sandbox;
-    $this->password = $this->sandbox ? $this->password : $this->param('password');
+    $this->password = $this->sandbox ? $this->password : $this->param( 'password' );
   }
 
   protected function param( $key ) {
@@ -120,7 +120,7 @@ class Engine {
       );
     }
 
-    public function url($type, $params = null) {
+    public function url( $type, $params = null ) {
       $url = $this->callback;
       $qry = [];
       if (strpos($url, 'transaction_id') === false) $qry['transaction_id'] = $this->transaction;
@@ -131,20 +131,21 @@ class Engine {
       return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='.$this->name.($qry ? '&'.http_build_query($qry) : ''));
     }
 
-    protected function post($url, $vars, $headers = null, $fail = true) {
+    protected function post( $url, $vars, $headers = null, $fail = true ) {
       $curl = curl_init();
-      curl_setopt($curl, CURLOPT_URL, $url);
-      curl_setopt($curl, CURLOPT_POST, 1);
-      curl_setopt($curl, CURLOPT_POSTFIELDS, is_array($vars) ? http_build_query($vars, null, '&') : $vars);
-      curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0); // TODO: consider enabling it
-      curl_setopt($curl, CURLOPT_FAILONERROR, $fail);
-      if ($headers) curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-      $response = curl_exec($curl);
-      $error = curl_error($curl);
+      curl_setopt( $curl, CURLOPT_URL, $url );
+      curl_setopt( $curl, CURLOPT_POST, 1 );
+      curl_setopt( $curl, CURLOPT_POSTFIELDS, is_array( $vars ) ? http_build_query( $vars, null, '&' ) : $vars );
+      curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
+      curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, 0 ); // TODO: consider enabling it
+      curl_setopt( $curl, CURLOPT_FAILONERROR, $fail );
+      //curl_setopt( $curl, CURLOPT_VERBOSE, true );
+      if ( $headers ) curl_setopt( $curl, CURLOPT_HTTPHEADER, $headers );
+      $response = curl_exec( $curl );
+      $error = curl_error( $curl );
       # some error , send email to developer // TODO: Handle Error
-      if (!empty($error)) throw new Exception($error. ' '.$response. ' - '.$url. print_r($vars, true), 500);
-      curl_close($curl);
-      return($response);
+      if ( !empty( $error ) ) throw new Exception( $error . ' ' . $response. ' - ' . $url . print_r( $vars, true ), 500 );
+      curl_close( $curl );
+      return( $response );
     }
 }

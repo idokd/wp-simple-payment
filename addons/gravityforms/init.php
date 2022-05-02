@@ -347,6 +347,20 @@ class GFSimplePayment extends GFPaymentAddOn {
 				)
 			),
 			array(
+				'name'     => 'multiline',
+				'label'    => esc_html__( 'Multi-line Documents', 'simple-payment' ),
+				'type'     => 'checkbox',
+				'class'    => 'medium',
+				'hidden'  		=> ! $this->get_setting( 'customSettingsEnabled' ),
+				'tooltip' 		=> '<h6>' . esc_html__( 'Where possible issue receipt with products details', 'simple-payment' ) . '</h6>' . esc_html__( 'When receipt details is requried.', 'simple-payment' ),
+				'choices' 	=> array(
+					array(
+						'label' => 'Enable',
+						'name'	=> 'multiline',
+					),
+				)
+			),
+			array(
 				'name'     => 'template',
 				'label'    => esc_html__( 'Template', 'simple-payment' ),
 				'type'     => 'text',
@@ -586,6 +600,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 
 		if ( isset( $gf_sp_payment ) && $gf_sp_payment ) {
 			$submission_data = $gf_sp_payment[ 'submission_data' ];
+			$feed = $gf_sp_payment[ 'feed' ];
 		} else {
 			$entry_id = $params[ 'source_id' ];
 			$entry = GFAPI::get_entry( $entry_id );
@@ -594,16 +609,19 @@ class GFSimplePayment extends GFPaymentAddOn {
 			$feed = $this->get_payment_feed( $entry, $form );
 			$submission_data = $this->get_order_data( $feed, $form, $entry );
 		}
-		foreach ( $submission_data[ 'line_items' ] as $item ) {
-			$product = [
-				'id' => $item[ 'id' ],
-				'name' => $item[ 'name' ],
-				'description' => $item[ 'description' ],
-				'amount' => $item[ 'unit_price' ],
-				'qty' => $item[ 'quantity' ]
-			];
-			if ( !isset( $params[ 'products' ] ) ) $params[ 'products' ] = [];
-			$params[ 'products' ][] = $product;
+		if ( rgar( $feed[ 'meta' ], 'multiline' ) ) {
+			unset( $params[ 'products' ] );
+			foreach ( $submission_data[ 'line_items' ] as $item ) {
+				$product = [
+					'id' => $item[ 'id' ],
+					'name' => $item[ 'name' ],
+					'description' => $item[ 'description' ],
+					'amount' => $item[ 'unit_price' ],
+					'qty' => $item[ 'quantity' ]
+				];
+				if ( !isset( $params[ 'products' ] ) ) $params[ 'products' ] = [];
+				$params[ 'products' ][] = $product;
+			}
 		}
 		return( $params );
 	}
@@ -1179,6 +1197,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 				'display' => rgar( $meta, 'display' ),
 				'template' => rgar( $meta, 'template' ),
 				'installments' => rgar( $meta, 'installments' ),
+				'multiline' => rgar( $meta, 'multiline' ),
 				'settings'   => rgar( $meta, 'settings' ),
 			);
 		} else {
@@ -1263,31 +1282,33 @@ class GFSimplePayment extends GFPaymentAddOn {
 
 		// Product Information
 		$i = 0;
-		$args[$this->SPWP::CURRENCY] = GFCommon::get_currency();
-		$args[$this->SPWP::PRODUCT] = '';
-		foreach ( $submission_data['line_items'] as $line_item ) {
-			//if ( $feed['meta']['transactionType'] == 'product' ) {
-			//	$args["L_NAME$i"]   = $line_item['name'];
-			//	$args["L_DESC$i"]   = $line_item['description'];
-			//	$args["L_AMT$i"]    = $line_item['unit_price'];
-			//	$args["L_NUMBER$i"] = $i + 1;
-			//	$args["L_QTY$i"]    = $line_item['quantity'];
-			//} else {
-				$args[$this->SPWP::PRODUCT] .= $i >= 1 ? ', ' . $line_item['name'] : $line_item['name']; // ?? TO DO figure out why there is warning that desc is undefined
+		$args[ $this->SPWP::CURRENCY ] = GFCommon::get_currency();
+		$args[ $this->SPWP::PRODUCT ] = '';
+		foreach ( $submission_data['line_items'] as $item ) {
+			if ( rgar( $feed[ 'meta' ], 'multiline' ) ) {
+				$product = [
+					'id' => $item[ 'id' ],
+					'name' => $item[ 'name' ],
+					'description' => $item[ 'description' ],
+					'amount' => $item[ 'unit_price' ],
+					'qty' => $item[ 'quantity' ]
+				];
+				$product[ $this->SPWP::PRODUCTS ][] = $product;
+			} // else {
+				$args[ $this->SPWP::PRODUCT ] .= ( $i >= 1 ? ', ' : '' ) . $item[ 'name' ]; // ?? TO DO figure out why there is warning that desc is undefined
 			//}
 			$i++;
 		}
-		if (!$args[$this->SPWP::PRODUCT]) $args[$this->SPWP::PRODUCT] = $form['title'];
-		$args[$this->SPWP::AMOUNT] = $submission_data['payment_amount'];
+		if ( !$args[ $this->SPWP::PRODUCT ] ) $args[ $this->SPWP::PRODUCT ] = $form[ 'title' ];
+		$args[ $this->SPWP::AMOUNT ] = $submission_data[ 'payment_amount' ];
 
-		$args['source'] = 'gravityforms';
-		$args['source_id'] = $entry['id'];
-
-		return $args;
+		$args[ 'source' ] = 'gravityforms';
+		$args[ 'source_id' ] = $entry[ 'id' ];
+		return( $args );
 	}
 
 	public function has_credit_card_field( $form ) {
-		return true;
+		return( true );
 	}
 
 	public function get_card_owner_id_field( $form ) {
