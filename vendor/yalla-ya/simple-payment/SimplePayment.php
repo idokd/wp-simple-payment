@@ -44,9 +44,11 @@ class SimplePayment {
   }
 
   public function setEngine($engine) {
-    if ($engine != 'Custom' && !$this->sandbox) {
-      $this->validate_license(self::$license, null, $engine);
-     // if (!isset($_SERVER['HTTPS']) || !$_SERVER['HTTPS']) throw new Exception('HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500);
+    if ( $engine != 'Custom' && !$this->sandbox ) {
+      // TODO: Consider removing  the validate_license here, so customer will not have end of service
+      // after end.
+      $this->validate_license( self::$license, null, $engine );
+      if ( !isset($_SERVER['HTTPS'] ) || !$_SERVER['HTTPS']) throw new Exception('HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500);
     }
     $class = __NAMESPACE__ . '\\Engines\\' . $engine;
     $settings = self::param(strtolower($engine));
@@ -162,14 +164,14 @@ class SimplePayment {
     return($license);
   }
 
-  private function fetch_license($key, $domain) {
-    $res = $this->post('https://licensing.yalla-ya.com/validate', [
+  private function fetch_license( $key, $domain ) {
+    $res = $this->post( 'https://licensing.yalla-ya.com/validate', [
       'body' => [
           'fingerprint' => $domain,
           'key' => $key
       ]
-    ]);
-    return(json_decode($res));
+    ]) ;
+    return( json_decode( $res ) );
   }
 
   protected function post($url, $post) {

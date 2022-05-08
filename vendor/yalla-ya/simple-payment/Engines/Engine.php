@@ -148,4 +148,9 @@ class Engine {
       curl_close( $curl );
       return( $response );
     }
+
+    public static function century() {
+      return( floor( date( 'Y' ) / 100 ) * 100 );
+    }
+
 }

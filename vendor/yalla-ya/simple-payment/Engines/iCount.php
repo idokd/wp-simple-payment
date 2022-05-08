@@ -57,7 +57,7 @@ class iCount extends Engine {
       if ( $subscription && $this->param( 'reurring' ) == 'provider' ) {
         $service = 'recurr';
         $post[ 'items' ] = $this->items( $params );
-        $post[ 'doctype' ] = $this->param( 'doc_type' );
+        //$post[ 'doctype' ] = $this->param( 'doc_type' );
         $post[ 'currency' ] = $post['currency_code'];
         $post[ 'issue_every' ] = $subscription;
 
@@ -184,7 +184,7 @@ class iCount extends Engine {
         'request' => json_encode($post),
         'response' => json_encode($response)
       ]);
-      if (!$response['status']) {
+      if ( !$response[ 'status' ] ) {
        throw new Exception($response['error_description'], intval($response['status']));
       }
       return( true );
@@ -206,7 +206,7 @@ class iCount extends Engine {
         else {
           $post['cc_number'] = $params[SimplePayment::CARD_NUMBER];
           $post['cc_cvv'] = $params[SimplePayment::CARD_CVV];
-          $post['cc_validity'] = $params[SimplePayment::CARD_EXPIRY_YEAR].'-'.$params[SimplePayment::CARD_EXPIRY_MONTH];
+          $post['cc_validity'] = $params[ SimplePayment::CARD_EXPIRY_YEAR ] . '-' . $params[ SimplePayment::CARD_EXPIRY_MONTH ];
           $post['cc_holder_name'] = $params[SimplePayment::CARD_OWNER];
           if (isset($params[SimplePayment::CARD_OWNER_ID])) $post['cc_holder_id'] = $params[SimplePayment::CARD_OWNER_ID];
         }

@@ -18,7 +18,7 @@ class Credit2000 extends Engine {
   public $interactive = true;
   protected $recurrAt = 'post'; // status
 
-  public static $supports = ['iframe', 'modal', 'tokenization', 'card_owner_id'];
+  public static $supports = [ 'iframe', 'modal', 'tokenization', 'card_owner_id' ];
 
   public $api = [
     'wsdl' => 'https://www.credit2000.co.il/pci_tkn_ver7/wcf/wscredit2000.asmx?WSDL'

@@ -16,7 +16,7 @@ class PayMe extends Engine {
   public $interactive = true;
   protected $recurrAt = 'post'; // status
 
-  public static $supports = ['iframe', 'modal', 'tokenization'];
+  public static $supports = [ 'iframe', 'modal', 'tokenization' ];
 
   public $api = [
     'live' => [

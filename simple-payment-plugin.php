@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.2.1
+ * Version: 2.2.2
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -92,9 +92,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function setEngine($engine) {
     if ($this->engine && $this->engine->name == $engine) return;
-    if ($this->param('mode') == 'live' && self::$license) {
-      $this->sandbox = false;
-    }
     parent::setEngine($engine);
     if ($this->engine) $this->engine->setCallback(strpos($this->callback, '://') ? $this->callback : get_bloginfo('url') . $this->callback);
   }
@@ -181,12 +178,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     $this->callback = $this->payment_page($callback);
   }
 
-  public function payment_page($callback = null) {
-      if ($this->payment_page) $this->callback = get_page_link($this->payment_page);
-      else $this->callback = $callback? $callback : self::param('callback_url');
-      if (!$this->callback) $this->callback = $_SERVER["REQUEST_URI"];
-      if (!$this->callback) $this->callback = get_bloginfo('url');
-      return($this->callback);
+  public function payment_page( $callback = null, $params = null ) {
+      if ( $this->payment_page ) $this->callback = get_page_link( $this->payment_page );
+      else $this->callback = $callback ? $callback : self::param( 'callback_url' );
+      if ( !$this->callback ) $this->callback = $_SERVER[ 'REQUEST_URI' ];
+      if ( !$this->callback ) $this->callback = get_bloginfo( 'url' );
+      if ( $params ) 
+        foreach( $params as $key => $value ) $this->callback = add_query_arg( $key, $value, $this->callback );
+      return( $this->callback );
   }
 
   function notices() {
@@ -1433,4 +1432,54 @@ require_once('addons/gravityforms/init.php');
 
 //require_once('addons/recaptcha/init.php');
 
+function sp_pro_get_license_defaults() {
+	return apply_filters(
+		'sp_license_defaults',
+		[
+			'key' => '',
+			'status' => '',
+			'beta' => false,
+    ]
+	);
+}
 
+add_action( 'init', 'sp_pro_updater' );
+/**
+ * Check for and receive updates.
+ *
+ * @since 1.0.0
+ */
+function sp_pro_updater() {
+	$doing_cron = defined( 'DOING_CRON' ) && DOING_CRON;
+
+	if ( ! current_user_can( 'manage_options' ) && ! $doing_cron ) {
+		return;
+	}
+
+	if ( ! class_exists( 'SimplePayment_Plugin_Updater' ) ) {
+		include SPWP_PLUGIN_DIR . '/updater.php';
+	}
+
+	if ( ! function_exists( 'sp_pro_get_license_defaults' ) ) {
+		return;
+	}
+
+	$license_settings = wp_parse_args(
+		get_option( 'sp_license', array() ),
+		sp_pro_get_license_defaults()
+	);
+
+	$license_key = trim( $license_settings['key'] );
+
+	$edd_updater = new SimplePayment_Plugin_Updater(
+		'https://simple-payment.yalla-ya.com',
+		__FILE__,
+		[
+			'version' => SimplePaymentPlugin::$version,
+			'license' => esc_attr( $license_key ),
+			'item_id' => 1393, // TODO: define item key
+			'author'  => 'SimplePayment',
+			'beta'    => isset( $license_settings[ 'beta' ] ) && $license_settings[ 'beta' ] ? true : false,
+    ]
+	);
+}

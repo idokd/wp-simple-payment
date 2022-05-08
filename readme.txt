@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal
 Requires at least: 4.6
 Tested up to: 5.9.1
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -91,10 +91,16 @@ I hope it is useful for you and look forward to reading your reviews! 😉 Thank
 
 == Changelog ==
 
+= 2.2.2 =
+*Release Date - 9 May 2022*
+* CreditGuard Support
+* Minor bug fixes and improvements
+
 = 2.2.1 =
 *Release Date - 9 May 2022*
-* Fixed issues with multiple products on invoice iCount
-* Fixed issues with CC Storage iCount ( must have Client Name to enable )
+* Addition of Multi products flag on GF Feed
+* Fixed issues with GF multiple products on invoice iCount
+* Fixed issues with CC Storage iCount ( must have Client Name to enable, or pre-existing client )
 
 = 2.1.5 =
 *Release Date - 9 Mar 2022*

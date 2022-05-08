@@ -18,7 +18,7 @@ class CreditGuard extends Engine {
   public $version = '2000';
   public $password = null;
 
-  public static $supports = [ 'iframe', 'modal', 'tokenization' ];
+  public static $supports = [ 'iframe', 'modal', 'tokenization', 'card_owner_id', 'cvv' ];
 
   public $api = null;
 
@@ -29,13 +29,20 @@ class CreditGuard extends Engine {
     $this->sandbox = false;
     $this->username = $this->sandbox ? $this->username : $this->param( 'username' );
     $this->password = $this->sandbox ? $this->password : $this->param( 'password' );
-    $this->api =  $this->param( 'gateway' );
+    $this->api = $this->param( 'gateway' );
   }
 
   public function process( $params ) {
-
+    $mode = $this->param( 'mode' );
+    if ( $mode == 'redirect' ) {
+      if ( isset( $params[ 'mpiHostedPageUrl' ] ) ) return( $params[ 'mpiHostedPageUrl' ] );
+      throw new Exception( 'REDIRECT_URL_NOT_PROVIDED' );
+    }
+    if ( isset( $params[ 'status' ] ) && intval( $params[ 'status' ] ) != 0 ) {
+      throw new Exception( isset( $params[ 'statusText' ] ) && $params[ 'statusText' ] ? $params[ 'statusText' ] : 'UNKOWN ERROR', $params[ 'status' ] );
+    }
     // TODO: Handle standard processing without iframe
-    return( $params[ 'doDeal' ][ 'mpiHostedPageUrl' ] );
+    return( $params );
   }
 
   public function xml2array( $xmlObject, $out = [] ) {
@@ -50,13 +57,13 @@ class CreditGuard extends Engine {
     foreach ( $params as $key => $value ) {
       if ( !$value ) continue;
       if ( is_array( $value ) ) $xml .= '<' . $key . '>' . $this->array2xml( $value ) . '</' . $key . '>';
-      else $xml .= '<' . $key . '>' . $value . '</' . $key . '>';
+      else $xml .= '<' . $key . '>' . $value . '</' . $key . '>'; // htmlentities
     }
     return( $xml );
   }
 
-  public function command( $command, $params = null, $version = null ) {  
-    $xml = 'user=' . $this->username . '&password= ' . $this->password . '&int_in=<ashrait>
+  public function command( $command, $params = null, $version = null ) { 
+    $xml = '<ashrait>
           <request>' .
                 '<command>' . $command . '</command>' .
                 '<dateTime>' . date( 'Y-m-d h:i:s' ) . '</dateTime>' .
@@ -72,153 +79,143 @@ class CreditGuard extends Engine {
 
   public function post( $command, $vars, $version = null, $headers = null, $fail = true ) {
     // TODO: do we need?
-    $headers = [ 'Content-Type: application/x-www-form-urlencoded' ];
+    //$headers = [ 'Content-Type: application/x-www-form-urlencoded' ];
     $xml = $this->command( $command, $vars, $version );
-    $response = parent::post( $this->api, $xml, $headers, $fail );
+    $post = [
+      'user' => $this->username,
+      'password' => $this->password,
+      'int_in' => $xml
+
+    ];
+    $response = parent::post( $this->api, $post, $headers, $fail );
+    $this->save( [
+      'transaction_id' => $this->transaction,
+      'url' => $this->api,
+      'status' => null,
+      'description' => $command,
+      'request' => $xml,
+      'response' => $response
+    ] );
+
     $response = iconv( 'utf-8', 'iso-8859-8', $response );
     return( $this->xml2array( simplexml_load_string( $response ) ) );
   }
 
-  public function verify( $id ) {
-    $this->transaction = $id;
-    $inquire = [];
+  public function verify( $transaction = null ) {
+    if ( $transaction ) {
+      $this->transaction = $transaction[ 'transaction_id' ];
+      $type = isset( $transaction[ 'card_number' ] ) && $transaction[ 'card_number' ] ? 'direct' : 'redirect';
+    }
+    $post = [];
     $post[ 'terminalNumber' ] = $this->param( 'terminal' );
-    $post[ 'queryName' ] = 'mpiTransaction';
-    $post[ 'mid' ] = $this->param( 'supplier' );
-    $post[ 'mpiTransactionId' ] = $this->transaction;
-    $this->post( 'inquireTransactions', $post );
+    if (  $type == 'redirect' ) {
+      $post[ 'queryName' ] = 'mpiTransaction'; // TODO: when it id direct, not redirect
+      $post[ 'mpiTransactionId' ] = $this->transaction;
+    } else {
+      $post[ 'tranId' ] = $this->transaction;
+    }
+    $post[ 'mid' ] = $this->param( 'merchant' );
     
+    $response = $this->post( 'inquireTransactions', $post );
+    $transaction = isset( $response[ 'response' ][ 'inquireTransactions' ][ 'row' ] ) ? $response[ 'response' ][ 'inquireTransactions' ][ 'row' ] : $response[ 'response' ][ 'inquireTransactions' ][ 'transactions' ][ 'transaction' ];
+    $status = $type == 'redirect' 
+      ? isset( $transaction[ 'errorCode' ] ) && intval( $transaction[ 'errorCode' ] ) == 0
+      : isset( $transaction[ 'status' ] ) && intval( $transaction[ 'status' ] ) == 0;
+    $message = $type == 'redirect' 
+      ? $transaction[ 'errorText' ]
+      : $transaction[ 'statusText' ];
     $this->save( [
       'transaction_id' => $this->transaction,
       'url' => $this->api,
-      'status' => isset( $response[ 'Status' ] ) ? $response[ 'Status' ] : null,
-      'description' => isset( $response[ 'DebugMessage' ] ) ? $response[ 'DebugMessage' ] : null,
+      'status' => $type == 'redirect' ? $transaction[ 'errorCode' ] : $transaction[ 'status' ],
+      'description' => $message,
       'request' => json_encode( $post ),
       'response' => json_encode( $response )
     ] );
-    $code = isset( $response[ 'AuthNum' ] ) ? $response[ 'AuthNum' ] : null;
+    if ( !$transaction || !$status ) 
+      throw new Exception( $message ? $message  : 'DID_NOT_VERIFY', $status );
+    $code = isset( $transaction[ 'authNumber' ] ) ? $transaction[ 'authNumber' ] : null;
     if ( $code ) {
       $this->confirmation_code = $code;
       return( $code ); 
     } 
-    throw new Exception( isset( $response[ 'Status' ] ) ? $response[ 'Status' ] : 'DID_NOT_VERIFY', $code );
+    return( false );
   }
 
   public function status( $params ) {
     parent::status( $params );
-    $this->transaction = $params['Token'];
+    $this->transaction = $params[ 'mpiTransactionId' ];
+    // cgGatewayResponseXML, amount, merchantUniqueOrderId, currency, languageCode, cgGatewayResponseCode, cgGatewayResponseText
+    // personalId, cardExpiration, authNumber, creditCardToken, errorCode, errorText, cardExpiration
     $this->save([
       'transaction_id' => $this->transaction,
-      'url' => $_SERVER[ 'REQUEST_URI' ],
-      'status' => isset( $params[ 'Status' ] ) ? $params[ 'Status' ] : null,
-      'description' => isset( $params[ 'Status' ] ) ? $params[ 'Status' ] : null,
+      'url' => ':status', //$_SERVER[ 'REQUEST_URI' ],
+      'status' => isset( $params[ 'statusCode' ] ) ? $params[ 'statusCode' ] : null,
+      'description' => isset( $params[ 'statusText' ] ) ? $params[ 'statusText' ] : null,
       'request' => json_encode( $_REQUEST ),
       'response' => null
     ] );
-    $post = [];
-
-    $post['SaleId'] = $this->transaction;
-    $response = $this->post($this->api['sale-details'], json_encode($post), [ 'Content-Type: application/json' ]);
-    $response = json_decode($response, true);
-
-    $this->save([
-      'transaction_id' => $this->transaction,
-      'url' => $this->api['sale-details'],
-      'status' => isset($response['Status']) ? $response['Status'] : null,
-      'description' => isset($response['Status']) ? $response['Status'] : null,
-      'request' => json_encode($post),
-      'response' => json_encode($response)
-    ]);
-    if (!isset($response['Status']) || $response['Status'] != 'VERIFIED') {
-      throw new Exception(isset($response['Status']) ? $response['Status'] : 'UNKOWN_ERROR');
-    }
-
-    $post = [];
-    $post['GroupPrivateToken'] = $this->password;
-    $post['SaleId'] = $this->transaction;
-    $post['TotalAmount'] = $response['Amount'];
-
-    $response = $this->post($this->api['sale-details'], json_encode($post), [ 'Content-Type: application/json' ]);
-    $response = json_decode($response, true);
-
-    $this->save( [
-      'transaction_id' => $this->transaction,
-      'url' => $this->api['sale-details'],
-      'status' => isset($response['Status']) ? $response['Status'] : null,
-      'description' => isset($response['DebugMessage']) ? $response['DebugMessage'] : null,
-      'request' => json_encode($post),
-      'response' => json_encode($response)
-    ] );
-    if (!isset($response['Status']) || $response['Status'] != 'VERIFIED') {
-      throw new Exception(isset($response['Status']) ? $response['Status'] : 'UNKOWN_ERROR');
-    }
-
-    $this->confirmation_code = $response['AuthNum'];
-
-    // if token found, fetch token info...
-    if (isset($response['Token']) && $response['Token'] != '00000000-0000-0000-0000-000000000000') {
-      $post = [
-        'Token' => $response['Token'],
-        'CreditboxToken'=> $this->box,
-      ];
-      $response = $this->post($this->api['sale-details'], json_encode($post), [ 'Content-Type: application/json' ]);
-      $response = json_decode($response, true);
-      $this->save([
-        'transaction_id' => $this->transaction,
-        'url' => $this->api['sale-details'],
-        'status' => isset($response['Status']) ? $response['Status'] : null,
-        'description' => isset($response['DebugMessage']) ? $response['DebugMessage'] : null,
-        'request' => json_encode($post),
-        'response' => json_encode($response)
-      ]);
-    }
-
-    //if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
-    //  if ($this->param('recurr_at') == 'status' && $this->param('reurring') == 'provider') $this->recur_by_provider($params);
+    $this->confirmation_code = $this->verify();
+    // TODO: should we use tokens here too?
+    
+    // TODO: do we enable recurring here?
+    //if ( $params[ 'Operation' ] == 2 && isset( $params[ 'payments' ] ) && $params[ 'payments' ] == 'monthly' ) {
+    //  if ( $this->param( 'recurr_at' ) == 'status' && $this->param( 'reurring' ) == 'provider' ) $this->recur_by_provider( $params );
     //}
-    return($response['AuthNum']);
+    return( $this->confirmation_code );
   }
 
   public function post_process( $params ) {
-    $this->transaction = $_REQUEST[ 'Token' ];
-    $response = $_REQUEST;
-    $this->save([
-      'transaction_id' => $this->transaction,
-      'url' => ':post_process',
-      'status' => isset($response['Status']) ? $response['Status'] : '',
-      'description' => isset($response['DebugMessage']) ? $response['DebugMessage'] : null,
-      'request' => json_encode($params),
-      'response' => json_encode($response)
-    ]);
-
-    $post = [];
-    $post['GroupPrivateToken'] = $this->password;
-    $post['SaleId'] = $this->transaction;
-    $post['TotalAmount'] = $params['amount'];
-
-    $response = $this->post($this->api['verify'], json_encode($post), [ 'Content-Type: application/json' ]);
-    $response = json_decode($response, true);
-
-    $this->save([
-      'transaction_id' => $this->transaction,
-      'url' => $this->api['verify'],
-      'status' => isset($response['Status']) ? $response['Status'] : null,
-      'description' => isset($response['DebugMessage']) ? $response['DebugMessage'] : $response['Status'],
-      'request' => json_encode($post),
-      'response' => json_encode($response)
-    ]);
-    if (!isset($response['Status']) || $response['Status'] != 'VERIFIED') {
-      // Do not fail if not verified
-      throw new Exception(isset($response['Status']) ? $response['Status'] : 'UNKOWN_ERROR');
+    if ( $this->param( 'mode' ) == 'redirect' ) {
+      $status = isset( $params[ 'ErrorCode' ] ) && intval( $params[ 'ErrorCode' ] ) == 0;
+      $this->transaction = $params[ 'txId' ];
+      $token = ( isset( $params[ 'cardToken' ] ) && $params[ 'cardToken' ] ) ? $params[ 'cardToken' ] : null;
+      $owner_id = ( isset( $params[ 'personalId' ] ) && $params[ 'personalId' ] ) ? $params[ 'personalId' ] : null;
+      $uniqueId = ( isset( $params[ 'uniqueID' ] ) && $params[ 'uniqueID' ] ) ? $params[ 'uniqueID' ] : null;
+      $signature = hash( 'sha256', 
+        $this->password . $this->transaction . $params[ 'ErrorCode' ] . $token . $params[ 'cardExp' ] . $owner_id . $uniqueId
+      );
+      $status = $status && $signature == $params[ 'responseMac' ];
+      if ( $status ) $status = $this->verify();
+      $expiration = $params[ 'cardExp' ];
+    } else {
+      $status = isset( $params[ 'status' ] ) && intval( $params[ 'status' ] ) == 0;
+      $token = $params[ 'cardId' ];
+      $expiration = $params[ 'cardExpiration' ];
     }
 
-    //if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
-    //  if ($this->param('recurr_at') == 'post' && $this->param('reurring') == 'provider') return($this->recur_by_provider($params));
+    $this->confirmation_code = $params[ 'authNumber' ];
+    $response = $_REQUEST;
+    $args = [
+      'transaction_id' => $this->transaction,
+      'url' => ':post_process',
+      'status' => isset( $params[ 'status' ] ) ? $params[ 'status' ] : '',
+      'description' => isset( $params[ 'statusText' ] ) ? $params[ 'statusText' ] : null,
+      'request' => json_encode( $params ),
+      'response' => $this->param( 'mode' ) == 'redirect' ? json_encode( $response ) : null,
+    ];
+
+    // TODO: should we consider the engine confirmation for keeping tokens?
+    if ( $status && $token && $this->param( 'tokenize' ) ) $args[ 'token' ] = [
+      'token' => $token,
+      SimplePayment::CARD_OWNER_ID => isset( $owner_id ) ? $owner_id : $params[ SimplePayment::CARD_OWNER_ID ],
+      SimplePayment::CARD_EXPIRY_YEAR => intval( substr( $params[ 'cardExp' ], 2, 2 ) ) + self::century(), 
+      SimplePayment::CARD_EXPIRY_MONTH => substr( $params[ 'cardExp' ], 0, 2 ),
+      'card_type' => $params[ 'cardBrand' ] ? $params[ 'cardBrand' ] : null  
+    ];
+    $this->save( $args );
+    if ( !$status )
+      throw new Exception( isset( $params[ 'ErrorText' ] ) && $params[ 'ErrorText' ] ? $params[ 'ErrorText' ] : 'ERROR_IN_TRANSACTION', $params[ 'ErrorCode' ] );
+   
+    // TODO: enable recurring payments
+    //if ( $params[ 'Operation' ] == 2 && isset( $params[ 'payments' ] ) && $params[ 'payments' ] == 'monthly' ) {
+    //  if ( $this->param( 'recurr_at' ) == 'post' && $this->param( 'reurring' ) == 'provider' ) $this->recur_by_provider( $params );
     //}
-    return( $code );
+    return( $status ? $this->confirmation_code : false );
   }
 
   public function pre_process( $params ) {
+    $this->transaction = self::uuid();
     $post = [];
     $mode = $this->param( 'mode' );
 
@@ -228,9 +225,9 @@ class CreditGuard extends Engine {
     if ( isset( $params[ 'token' ] ) && $params[ 'token' ] ) $post[ 'cardId' ] = $params[ 'token' ];
     else if ( $mode == 'redirect' ) $post[ 'cardNo' ] = 'CGMPI'; 
     else {
-      $post[ 'cardNo' ] = $param[ SimplePayment::CARD_NUMBER ];
-      if ( isset( $params[ SimplePayment::CARD_EXPIRY_YEAR ] ) ) $post[ 'cardExpiration' ] = str_pad( $params[ SimplePayment::CARD_EXPIRY_MONTH ], 2, "0", STR_PAD_LEFT ) . ( $param[ SimplePayment::CARD_EXPIRY_YEAR ] - 2000 );
-      if ( isset( $params[ SimplePayment::CARD_CVV ] ) ) $post[ 'cvv' ] = $param[ SimplePayment::CARD_CVV ];
+      $post[ 'cardNo' ] = $params[ SimplePayment::CARD_NUMBER ];
+      if ( isset( $params[ SimplePayment::CARD_EXPIRY_YEAR ] ) ) $post[ 'cardExpiration' ] = str_pad( $params[ SimplePayment::CARD_EXPIRY_MONTH ], 2, '0', STR_PAD_LEFT ) . ( $params[ SimplePayment::CARD_EXPIRY_YEAR ] - self::century() );
+      if ( isset( $params[ SimplePayment::CARD_CVV ] ) ) $post[ 'cvv' ] = $params[ SimplePayment::CARD_CVV ];
     }
     $amount = floatval( $params[ SimplePayment::AMOUNT ] ) * 100;
     $post[ 'total' ] = $amount;
@@ -259,14 +256,16 @@ class CreditGuard extends Engine {
       $post[ 'description' ] = $params[ SimplePayment::PRODUCT ];
       $post[ 'validation' ] = 'TxnSetup';
       $post[ 'mid' ] = $this->param( 'merchant' );
-      $post[ 'mpiValidation' ] = 'AutoComm'; // TODO: determine the validation via parameter
-      $post[ 'successUrl' ] = $this->url( SimplePayment::OPERATION_SUCCESS, $params );
-      $post[ 'errorUrl' ] = $this->url( SimplePayment::OPERATION_ERROR, $params );
-     // $post[ 'IndicatorUrl' ] = $this->url( SimplePayment::OPERATION_STATUS, $params );
+      $post[ 'mpiValidation' ] = $this->param( 'validation' ); 
+      $post[ 'successUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_SUCCESS, $params ) );
+      $post[ 'errorUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_ERROR, $params ) );
+      $post[ 'cancelUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_CANCEL, $params ) );
+      $post[ 'uniqueid' ] = self::uuid();
+     // $post[ 'IndicatorUrl' ] = urlencode( $this->url( SimplePayment::OPERATION_STATUS, $params ) );
     } else {
-      $post[ 'validation' ] = 'TxnSetup'; // TODO: determine the validation via parameter
+      $post[ 'validation' ] = $this->param( 'validation' ); // TODO: determine the validation via parameter
+      
     }
-    $post[ 'uniqueid' ] = self::uuid();
     if ( isset( $params[ SimplePayment::EMAIL ] ) ) $post[ 'email' ] = $params[ SimplePayment::EMAIL ];
 
     /*$post[ 'customerData' ] = [
@@ -295,6 +294,7 @@ class CreditGuard extends Engine {
     // paymentPageData
 
     $response = $this->post( 'doDeal', $post );
+    $this->transaction = $mode == 'redirect' ? ( isset( $response[ 'response' ][ 'doDeal' ][ 'token' ] ) ? $response[ 'response' ][ 'doDeal' ][ 'token' ] : $this->transaction ) : $this->transaction = $response[ 'response' ][ 'tranId' ];
     $this->save( [
       'transaction_id' => $this->transaction,
       'url' => $this->api,
@@ -306,50 +306,7 @@ class CreditGuard extends Engine {
     if ( isset( $response[ 'response'][ 'result' ] ) && intval( $response[ 'response'][ 'result' ] ) != 0 ) {
       throw new Exception( isset( $response[ 'response'][ 'message' ] ) && $response[ 'response'][ 'message' ] ? $response[ 'response'][ 'message' ] : 'REDIRECT_URL_NOT_PROVIDED', $response[ 'response'][ 'result' ] );
     }
-    return( $mode == 'redirect' ? $response[ 'response'][ 'doDeal' ][ 'mpiHostedPageUrl' ] : $response[ 'response'][ 'doDeal' ] );
-    /* 
-    $xml_to_send = "user={$user_name}&password={$pass}&int_in=<ashrait>
-						   <request>
-							" . ( $this->ott_options[ 'enable_emv' ] == 'on' ? '<version>2000</version>' : '<version>1000</version>' ) . "			
-				<language>HEB</language>
-							<dateTime></dateTime>
-							<command>doDeal</command>
-							<doDeal>
-								 <terminalNumber>{$terminal}</terminalNumber>
-								 <mainTerminalNumber/>
-								 <cardNo>CGMPI</cardNo>
-								 <total>{$sum}</total>
-								 <transactionType>Debit</transactionType>
-								 <creditType>{$payment_type}</creditType>
-								 <currency>ILS</currency>
-								 <transactionCode>" . ( $this->ott_options[ 'enable_emv' ] == 'on' ? 'Phone' : 'Phone' ). "</transactionCode>
-								 <paymentPageData><useCvv>1</useCvv><useId>1</useId></paymentPageData>
-								 <authNumber/>
-								 <numberOfPayments>{$num_of_payments}</numberOfPayments>
-								 <firstPayment/>
-								 <periodicalPayment/>
-								 <validation>TxnSetup</validation>
-								 <dealerNumber/>
-								 <user>{$unique_order_id}</user>
-								 <mid>{$mid}</mid>
-								 <uniqueid>".uniqid()."</uniqueid>
-								 <mpiValidation>autoComm</mpiValidation>
-								 <successUrl>{$this->ipn_redirect}</successUrl><errorUrl>{$this->ipn_redirect}</errorUrl>
-								 <clientIP/>
-								 <customerData>
-								  <userData1>{$this->order_id}</userData1>
-								 </customerData>
-							</doDeal>
-						   </request>
-						  </ashrait>";
-    */
-    /*$postData = array(
-      'Custom1'=>$order->id,
-      'Custom2'=>$wpml_token,
-      'Custom3'=>$ipn_integration,
-      'Custom4'=>get_current_user_id(),
-      'Custom5'=>$_POST['wc-icredit_payment-new-payment-method'],
-    );*/
+    return( $response[ 'response'][ 'doDeal' ] );
   }
 
 }

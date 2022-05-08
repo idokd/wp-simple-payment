@@ -534,6 +534,12 @@ $sp_settings = [
     'type' => 'select',
     'options' => [ 'Regular' => 'Regular', 'Phone' => 'Phone', 'Signature' => 'Signature', 'Internet' => 'Internet' ],  
   ],
+  'creditguard.validation' => [
+    'title' => __( 'Validation', 'simple-payment' ),
+    'section' => 'creditguard_settings',
+    'type' => 'select',
+    'options' => [ 'NoComm' => 'NoComm', 'Normal' => 'Normal', 'CreditLimit' => 'CreditLimit', 'AutoComm' => 'AutoComm', 'Verify' => 'Verify', 'Dealer' => 'Dealer', 'AutoCommHold' => 'AutoCommHold', 'Token' => 'Token', 'AutoCommRelease' => 'AutoCommRelease', 'cardNo' => 'cardNo' ],  
+  ],
 
 
   'api_key' => [
