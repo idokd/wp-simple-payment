@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.2.2
+ * Version: 2.2.3
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -765,32 +765,32 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     }
     if ($this->param('user_create') != 'disabled' && $this->param('user_create_step') == 'pre' && !get_current_user_id()) $this->create_user($params);
     do_action('sp_payment_pre_process', $params);
-    return($process);
+    return( $process );
   }
 
-  function recur($params = []) {
-    $params = apply_filters('sp_payment_recur_filter', $params);
-    if (parent::recur($params)) {
-      do_action('sp_payment_recur', $params);
-      return(true);
+  function recur( $params = [] ) {
+    $params = apply_filters( 'sp_payment_recur_filter', $params );
+    if ( parent::recur( $params ) ) {
+      do_action( 'sp_payment_recur', $params );
+      return( true );
     }
-    return(false);
+    return( false );
   }
   
   public static function supports($feature, $engine = null) {
-    return(parent::supports($feature, $engine ? : self::param('engine')));
+    return(parent::supports( $feature, $engine ? : self::param( 'engine' ) ) );
   }
 
   function callback() {
-    $callback = parse_url($this->callback);
-    $info = parse_url($_SERVER["REQUEST_URI"]);
+    $callback = parse_url( $this->callback );
+    $info = parse_url( $_SERVER[ "REQUEST_URI" ] );
     if (isset($info['path']) && isset($callback['path']) && $info['path'] != $callback['path']) return;
     if (!isset($_REQUEST[self::OP])) return;
     $url = null;
     $engine = isset($_REQUEST['engine']) ? sanitize_text_field($_REQUEST['engine']) : self::param('engine');
     $op = strtolower(sanitize_text_field($_REQUEST[self::OP]));
     try {
-      switch ($op) {
+      switch ( $op ) {
           case self::OPERATION_SUCCESS:
             $rmop = false;
             $url = isset($_REQUEST['redirect_url']) && $_REQUEST['redirect_url'] ? esc_url_raw($_REQUEST['redirect_url']) : self::param('redirect_url');
@@ -856,7 +856,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             die; break;
             break;
           case self::OPERATION_CANCEL:
-            $url = $this->cancel($_REQUEST);
+            $url = $this->cancel( $_REQUEST );
             break;
           /*case self::OPERATION_ZAPIER:
             $this->zapier();
@@ -867,14 +867,22 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             echo self::param(strtolower($engine).'.css');
             die; break;
           case self::OPERATION_CSS:
-            header('Content-Type: text/css');
+            header( 'Content-Type: text/css' );
             echo self::param('css');
             die; break;
+          case self::OPERATION_FEEDBACK:
+            $this->setEngine( $engine );
+            $payment = $this->feedback( $_REQUEST );
+            if ( $payment ) {
+              $payment_id = isset( $payment[ 'transaction_id' ] ) && $payment[ 'transaction_id' ] ? $payment[ 'transaction_id' ] : $payment[ 'payment_id' ];
+              $data = $payment_id ? $this->fetch( $payment_id, ( isset( $payment[ 'transaction_id' ] ) && $payment[ 'transaction_id' ] ? $engine : null ) ) : [];
+              do_action( 'sp_payment_feedback', array_merge( $payment, $data ) );
+            }
+            die; break;
           case 'recur':
-
             die; break;
           default:
-            do_action('sp_extension_'.$op);
+            do_action( 'sp_extension_' . $op );
             die; break;
       }
     } catch (Exception $e) {
@@ -1189,14 +1197,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
       $list = new Transaction_List();
   }
 
-  public function fetch($id, $engine = null) {
+  public function fetch( $id, $engine = null ) {
     global $wpdb;
     $table_name = $wpdb->prefix.self::$table_name;
-    if (!$engine) {
-        $sql = "SELECT * FROM ".$table_name." WHERE `id` = %d LIMIT 1";
-        $sql = sprintf($sql, absint($id));
+    if ( !$engine ) {
+        $sql = "SELECT * FROM " . $table_name . " WHERE `id` = %d LIMIT 1";
+        $sql = sprintf( $sql, absint( $id ) );
     } else {
-        $sql = "SELECT * FROM ".$table_name." WHERE `engine` = '%s' AND `transaction_id` = %d LIMIT 1";
+        $sql = "SELECT * FROM " . $table_name . " WHERE `engine` = '%s' AND `transaction_id` = %d LIMIT 1";
         $sql = sprintf($sql, esc_sql($engine), esc_sql($id));
     }
     $result = $wpdb->get_results( $sql , 'ARRAY_A' );

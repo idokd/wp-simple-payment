@@ -46,6 +46,12 @@ class Engine {
     return( true );
   }
 
+  public function feedback( $params ) {
+    // Process the feedback, for example
+    // Return FALSE if transaction failed
+    return( true );
+  }
+
   public function status( $params ) {
     // Process the statuc callback, for example
     // Return FALSE if transaction failed

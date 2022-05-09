@@ -126,6 +126,20 @@ class Cardcom extends Engine {
     throw new Exception(isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'], $code);
   }
 
+  public function feedback( $params ) {
+    parent::feedback( $params );
+    $params[ 'payment_id' ] = $params[ 'ReturnValue' ];
+    $this->save( [
+      'payment_id' => $params[ 'payment_id' ],
+      'url' => ':callback',
+      'status' => isset( $params[ 'ResposeCode' ] ) ? $params[ 'ResposeCode' ] : $params[ 'ResponseCode' ],
+      'description' => isset( $params[  'OperationResponseText' ] ) ? $params[  'OperationResponseText  '] : $params['Description'],
+      'request' => json_encode( $params ),
+      'response' => null
+    ] );
+    return( $params );
+  }
+
   public function status($params) {
     parent::status($params);
     $this->transaction = $params['lowprofilecode'];
@@ -460,17 +474,17 @@ class Cardcom extends Engine {
     return($this->confirmation_code);
   }
 
-  public function recharge($params) {
+  public function recharge( $params ) {
     $this->transaction = self::uuid();
-    $this->confirmation_code = $this->charge($params);
+    $this->confirmation_code = $this->charge( $params );
     return($this->confirmation_code);
   }
 
-  public function recur($params) {
+  public function recur( $params ) {
     $this->transaction = self::uuid();
     //$this->transaction = $params['transaction_id'];
-    $this->confirmation_code = $this->charge($params);
-    return($this->confirmation_code);
+    $this->confirmation_code = $this->charge( $params );
+    return( $this->confirmation_code );
   }
 
   public function charge($params, $refund = false) {

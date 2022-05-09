@@ -257,6 +257,11 @@ class iCount extends Engine {
       return( base64_encode( pack( 'h*', $uuid ) ) );
     }
 
+    public function feedback( $params ) {
+      $data = json_decode( file_get_contents( 'php://input' ), true );
+      return( $data );
+    }
+
     public function verify( $transaction ) {
       $this->transaction = $transaction[ 'transaction_id' ];
       $post = [];

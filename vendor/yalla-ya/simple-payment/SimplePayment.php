@@ -17,6 +17,7 @@ class SimplePayment {
   const OPERATION_CANCEL = 'cancel';
   const OPERATION_STATUS = 'status';
   const OPERATION_ERROR = 'error';
+  const OPERATION_FEEDBACK = 'feedback';
 
   const ENGINE = 'engine'; const METHOD = 'method';
 
@@ -110,7 +111,11 @@ class SimplePayment {
   }
 
   function recur($params = []) {
-    return($this->engine->recur($params));
+    return( $this->engine->recur( $params ) );
+  }
+
+  function feedback( $params = [] ) {
+    return( $this->engine->feedback( $params ) );
   }
 
   function callback() {}
