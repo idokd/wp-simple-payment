@@ -369,7 +369,7 @@ $sp_settings = [
   'icount.doc_type' => [
     'title' => __('Document Type Upon Success', 'simple-payment'),
     'type' => 'select',
-    'options' => ['' => __('None', 'simple-payment'), 'invrec' => __('Invoice / Receipt', 'simple-payment'), 'receipt' => __('Receipt', 'simple-payment'), 'invoice' => __('Invoice', 'simple-payment'), 'deal' => __('Deal', 'simple-payment'), 'offer' => __('Offer', 'simple-payment'), 'order' => __('Order', 'simple-payment')],
+    'options' => ['' => __('None', 'simple-payment'), 'invrec' => __( 'Invoice / Receipt', 'simple-payment'), 'receipt' => __('Receipt', 'simple-payment'), 'invoice' => __('Invoice', 'simple-payment'), 'deal' => __('Deal', 'simple-payment'), 'offer' => __('Offer', 'simple-payment'), 'order' => __('Order', 'simple-payment')],
     'section' => 'icount_settings'
   ],  // may consider additionals as trec.
   'icount.doc_vat' => [

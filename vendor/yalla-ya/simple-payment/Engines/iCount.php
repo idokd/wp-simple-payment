@@ -144,8 +144,8 @@ class iCount extends Engine {
       if ( self::is_subscription( $params ) && $this->param( 'reurring' ) == 'provider' ) {
         return( true );
       }
-      $doctype = $this->param('doc_type');
-      if (!$doctype || $doctype == 'none') return($params);
+      $doctype = $this->param( 'doc_type' );
+      if ( !$doctype || $doctype == 'none ') return( $params );
       // Process the result of the transactions save
 
       $post = $this->basics($params, false );

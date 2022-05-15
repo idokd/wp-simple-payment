@@ -50,7 +50,7 @@ class Cardcom extends Engine {
 
   public function __construct($params = null, $handler = null, $sandbox = true) {
     parent::__construct($params, $handler, $sandbox);
-    $this->sandbox = $this->sandbox ? : !($this->param('terminal') && $this->param('username'));
+    $this->sandbox = $sandbox ? : !($this->param('terminal') && $this->param('username'));
   }
 
   public function process($params) {

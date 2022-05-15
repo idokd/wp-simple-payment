@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.2.3
+ * Version: 2.2.4
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -92,6 +92,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function setEngine($engine) {
     if ($this->engine && $this->engine->name == $engine) return;
+    if ( $this->param('mode') == 'live' ) {
+      $this->sandbox = false;
+    }
     parent::setEngine($engine);
     if ($this->engine) $this->engine->setCallback(strpos($this->callback, '://') ? $this->callback : get_bloginfo('url') . $this->callback);
   }
@@ -1049,6 +1052,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             'amount' => null,
             'currency' => null,
             'product' => null,
+            'product_code' => null,
             'fixed' => false,
             'title' => null,
             'type' => self::TYPE_FORM,
@@ -1076,6 +1080,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
           'method' => $method,
           'target' => $target,
           'template' => $template,
+          'product_code' => $product_code,
           'type' => $type,
           'display' => isset($display) && $this->supports($display, $engine ? : self::param('engine')) ? $display : null,
           'redirect_url' => $redirect_url,
