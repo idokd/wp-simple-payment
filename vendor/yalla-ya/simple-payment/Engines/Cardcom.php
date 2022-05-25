@@ -12,7 +12,7 @@ if (!defined("ABSPATH")) {
 
 class Cardcom extends Engine {
 
-  public $name = 'Cardcom';
+  public static $name = 'Cardcom';
   public $interactive = true;
   protected $cancelType = 2;
   // CancelType (0 - no cancel, 1 - back button, 2 - cancel url)
@@ -48,22 +48,29 @@ class Cardcom extends Engine {
   const CREDIT_TYPES = [ 1 => 'Normal', 6 => 'Credit'];
   const DOC_OPERATIONS = [ 0 => 'No Invoice', 1 => 'Invoice', 2 => 'Forward (Do not show)'];
 
-  public function __construct($params = null, $handler = null, $sandbox = true) {
-    parent::__construct($params, $handler, $sandbox);
-    $this->sandbox = $sandbox ? : !($this->param('terminal') && $this->param('username'));
+  public function __construct($params = null, $handler = null, $sandbox = true ) {
+    parent::__construct( $params, $handler, $sandbox );
+    $this->sandbox = $this->sandbox ? : !($this->param( 'terminal' ) && $this->param( 'username' ) );
   }
 
   public function process($params) {
     //header("Location: ".$params['url']);
     //return(true);
-    return($params['url']);
+    return( $params[ 'url' ] );
   }
 
   public function verify( $transaction ) {
     $this->transaction = $transaction[ 'transaction_id' ];
     $post = [];
-    $post['terminalnumber'] = $this->terminal;
-    $post['username'] = $this->username;
+    if ( !$this->sandbox ) {
+      $post['terminalnumber'] = $this->param_part($params);
+      $post['username'] = $this->param_part($params, 'username');
+    } else {
+      $post['terminalnumber'] = $this->terminal;
+      $post['username'] = $this->username;
+    }
+    //$post['terminalnumber'] = $this->terminal;
+    //$post['username'] = $this->username;
     $post['lowprofilecode'] = $this->transaction;
     $post['codepage'] = 65001;
 
@@ -152,7 +159,7 @@ class Cardcom extends Engine {
       'response' => null
     ]);
     $post = [];
-    if (!$this->sandbox) {
+    if ( !$this->sandbox ) {
       $post['terminalnumber'] = $this->param_part($params);
       $post['username'] = $this->param_part($params, 'username');
     } else {

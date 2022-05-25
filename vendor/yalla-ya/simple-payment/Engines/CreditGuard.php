@@ -12,11 +12,12 @@ if (!defined("ABSPATH")) {
 
 class CreditGuard extends Engine {
 
-  public $name = 'CreditGuard';
+  public static $name = 'CreditGuard';
   public $interactive = true;
   public $terminal = null;
   public $version = '2000';
   public $password = null;
+  public $merchant = null;
 
   public static $supports = [ 'iframe', 'modal', 'tokenization', 'card_owner_id', 'cvv' ];
 
@@ -29,6 +30,8 @@ class CreditGuard extends Engine {
     $this->sandbox = false;
     $this->username = $this->sandbox ? $this->username : $this->param( 'username' );
     $this->password = $this->sandbox ? $this->password : $this->param( 'password' );
+    $this->terminal = $this->sandbox ? $this->terminal : $this->param( 'terminal' );
+    $this->merchant = $this->sandbox ? $this->merchant : $this->param( 'merchant' );
     $this->api = $this->param( 'gateway' );
   }
 
@@ -46,10 +49,16 @@ class CreditGuard extends Engine {
   }
 
   public function xml2array( $xmlObject, $out = [] ) {
-    foreach ( ( array ) $xmlObject as $index => $node )
-        $out[$index] = ( is_object ( $node ) ) ? $this->xml2array ( $node ) : $node;
-    return( $out );
-  }
+		foreach ( $xmlObject->children() as $index => $node ) {
+			if ( !is_object ( $node ) ) $out[ $index ] = $node;
+			else {
+				$attributes = (array) $node->attributes();
+				if ( isset( $attributes[ '@attributes' ] ) ) foreach( $attributes[ '@attributes' ] as $key => $value ) $out[ $index . ':attributes' ][ $key ] = is_array( $value ) ? $value[ 0 ] : $value;
+				$out[ $index ] = $node->count() ? $this->xml2array( $node ) : dom_import_simplexml( $node )->nodeValue;;
+			}
+		}
+		return( $out );
+	}
 
   public function array2xml( $params ) {
     $xml = '';
@@ -88,46 +97,47 @@ class CreditGuard extends Engine {
 
     ];
     $response = parent::post( $this->api, $post, $headers, $fail );
+    $response = iconv( 'utf-8', 'iso-8859-8', $response );
+    $data = $this->xml2array( simplexml_load_string( $response  ) );
     $this->save( [
-      'transaction_id' => $this->transaction,
+      'transaction_id' => $this->transaction ? $this->transaction : ( isset( $response[ 'response' ][ 'doDeal' ][ 'token' ] ) ? $response[ 'response' ][ 'doDeal' ][ 'token' ] : null ),
       'url' => $this->api,
       'status' => null,
       'description' => $command,
       'request' => $xml,
       'response' => $response
     ] );
-
-    $response = iconv( 'utf-8', 'iso-8859-8', $response );
-    return( $this->xml2array( simplexml_load_string( $response ) ) );
+    return( $data  );
   }
 
   public function verify( $transaction = null ) {
+    $mode = $this->param( 'mode' );
     if ( $transaction ) {
       $this->transaction = $transaction[ 'transaction_id' ];
-      $type = isset( $transaction[ 'card_number' ] ) && $transaction[ 'card_number' ] ? 'direct' : 'redirect';
+      $mode = isset( $transaction[ 'card_number' ] ) && $transaction[ 'card_number' ] ? 'direct' : $this->param( 'mode' );
     }
     $post = [];
-    $post[ 'terminalNumber' ] = $this->param( 'terminal' );
-    if (  $type == 'redirect' ) {
+    $post[ 'terminalNumber' ] = $this->terminal;
+    if (  $mode == 'redirect' ) {
       $post[ 'queryName' ] = 'mpiTransaction'; // TODO: when it id direct, not redirect
       $post[ 'mpiTransactionId' ] = $this->transaction;
     } else {
       $post[ 'tranId' ] = $this->transaction;
     }
-    $post[ 'mid' ] = $this->param( 'merchant' );
+    $post[ 'mid' ] = $this->merchant;
     
     $response = $this->post( 'inquireTransactions', $post );
     $transaction = isset( $response[ 'response' ][ 'inquireTransactions' ][ 'row' ] ) ? $response[ 'response' ][ 'inquireTransactions' ][ 'row' ] : $response[ 'response' ][ 'inquireTransactions' ][ 'transactions' ][ 'transaction' ];
-    $status = $type == 'redirect' 
+    $status = $mode == 'redirect' 
       ? isset( $transaction[ 'errorCode' ] ) && intval( $transaction[ 'errorCode' ] ) == 0
       : isset( $transaction[ 'status' ] ) && intval( $transaction[ 'status' ] ) == 0;
-    $message = $type == 'redirect' 
+    $message = $mode == 'redirect' 
       ? $transaction[ 'errorText' ]
       : $transaction[ 'statusText' ];
     $this->save( [
       'transaction_id' => $this->transaction,
       'url' => $this->api,
-      'status' => $type == 'redirect' ? $transaction[ 'errorCode' ] : $transaction[ 'status' ],
+      'status' => $mode == 'redirect' ? $transaction[ 'errorCode' ] : $transaction[ 'status' ],
       'description' => $message,
       'request' => json_encode( $post ),
       'response' => json_encode( $response )
@@ -167,6 +177,7 @@ class CreditGuard extends Engine {
 
   public function post_process( $params ) {
     if ( $this->param( 'mode' ) == 'redirect' ) {
+      $response = $_REQUEST;
       $status = isset( $params[ 'ErrorCode' ] ) && intval( $params[ 'ErrorCode' ] ) == 0;
       $this->transaction = $params[ 'txId' ];
       $token = ( isset( $params[ 'cardToken' ] ) && $params[ 'cardToken' ] ) ? $params[ 'cardToken' ] : null;
@@ -176,19 +187,28 @@ class CreditGuard extends Engine {
         $this->password . $this->transaction . $params[ 'ErrorCode' ] . $token . $params[ 'cardExp' ] . $owner_id . $uniqueId
       );
       $status = $status && $signature == $params[ 'responseMac' ];
+      $this->save( [
+        'transaction_id' => $this->transaction,
+        'url' => ':post_process',
+        'status' => $status,
+        'description' => isset( $params[ 'statusText' ] ) ? $params[ 'statusText' ] : null,
+        'request' => json_encode( $params ),
+        'response' => json_encode( $response )
+      ] );
       if ( $status ) $status = $this->verify();
       $expiration = $params[ 'cardExp' ];
     } else {
       $status = isset( $params[ 'status' ] ) && intval( $params[ 'status' ] ) == 0;
-      $token = $params[ 'cardId' ];
-      $expiration = $params[ 'cardExpiration' ];
     }
+
+    $token = $params[ 'cardId' ];
+    $expiration = $params[ 'cardExpiration' ];
 
     $this->confirmation_code = $params[ 'authNumber' ];
     $response = $_REQUEST;
     $args = [
       'transaction_id' => $this->transaction,
-      'url' => ':post_process',
+      'url' => ':verify_process',
       'status' => isset( $params[ 'status' ] ) ? $params[ 'status' ] : '',
       'description' => isset( $params[ 'statusText' ] ) ? $params[ 'statusText' ] : null,
       'request' => json_encode( $params ),
@@ -215,16 +235,16 @@ class CreditGuard extends Engine {
   }
 
   public function pre_process( $params ) {
-    $this->transaction = self::uuid();
     $post = [];
     $mode = $this->param( 'mode' );
 
-    $post[ 'terminalNumber' ] = $this->param( 'terminal' );
+    $post[ 'terminalNumber' ] = $this->terminal;
     
     // track2 if swiped
     if ( isset( $params[ 'token' ] ) && $params[ 'token' ] ) $post[ 'cardId' ] = $params[ 'token' ];
     else if ( $mode == 'redirect' ) $post[ 'cardNo' ] = 'CGMPI'; 
     else {
+      $this->transaction = self::uuid();
       $post[ 'cardNo' ] = $params[ SimplePayment::CARD_NUMBER ];
       if ( isset( $params[ SimplePayment::CARD_EXPIRY_YEAR ] ) ) $post[ 'cardExpiration' ] = str_pad( $params[ SimplePayment::CARD_EXPIRY_MONTH ], 2, '0', STR_PAD_LEFT ) . ( $params[ SimplePayment::CARD_EXPIRY_YEAR ] - self::century() );
       if ( isset( $params[ SimplePayment::CARD_CVV ] ) ) $post[ 'cvv' ] = $params[ SimplePayment::CARD_CVV ];
@@ -255,7 +275,7 @@ class CreditGuard extends Engine {
     if ( $mode == 'redirect' ) {
       $post[ 'description' ] = $params[ SimplePayment::PRODUCT ];
       $post[ 'validation' ] = 'TxnSetup';
-      $post[ 'mid' ] = $this->param( 'merchant' );
+      $post[ 'mid' ] = $this->merchant;
       $post[ 'mpiValidation' ] = $this->param( 'validation' ); 
       $post[ 'successUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_SUCCESS, $params ) );
       $post[ 'errorUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_ERROR, $params ) );
@@ -294,7 +314,7 @@ class CreditGuard extends Engine {
     // paymentPageData
 
     $response = $this->post( 'doDeal', $post );
-    $this->transaction = $mode == 'redirect' ? ( isset( $response[ 'response' ][ 'doDeal' ][ 'token' ] ) ? $response[ 'response' ][ 'doDeal' ][ 'token' ] : $this->transaction ) : $this->transaction = $response[ 'response' ][ 'tranId' ];
+    $this->transaction = $mode == 'redirect' ? ( isset( $response[ 'response' ][ 'doDeal' ][ 'token' ] ) ? $response[ 'response' ][ 'doDeal' ][ 'token' ] : $this->transaction ) : $response[ 'response' ][ 'tranId' ];
     $this->save( [
       'transaction_id' => $this->transaction,
       'url' => $this->api,

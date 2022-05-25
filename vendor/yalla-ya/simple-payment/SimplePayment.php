@@ -44,20 +44,20 @@ class SimplePayment {
     self::$params = $params;
   }
 
-  public function setEngine($engine) {
+  public function setEngine( $engine ) {
     if ( $engine != 'Custom' && !$this->sandbox ) {
       // TODO: Consider removing  the validate_license here, so customer will not have end of service
       // after end.
       $this->validate_license( self::$license, null, $engine );
-      if ( !isset($_SERVER['HTTPS'] ) || !$_SERVER['HTTPS']) throw new Exception('HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500);
+      if ( !$this->is_cli() && ( !isset( $_SERVER[ 'HTTPS' ] ) || !$_SERVER[ 'HTTPS' ] ) ) throw new Exception( 'HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500 );
     }
     $class = __NAMESPACE__ . '\\Engines\\' . $engine;
-    $settings = self::param(strtolower($engine));
-    foreach (self::$params as $key => $value) if (!is_array($value) && !isset($settings[$key])) $settings[$key] = $value; 
-    $this->engine = new $class($settings, $this, $this->sandbox);
+    $settings = self::param( strtolower( isset( $class::$name ) ? $class::$name : $engine ) );
+    foreach ( self::$params as $key => $value ) if ( !is_array( $value ) && !isset( $settings[ $key ] ) ) $settings[ $key ] = $value; 
+    $this->engine = new $class( $settings, $this, $this->sandbox );
   }
 
-  public static function supports($feature, $engine = null) {
+  public static function supports( $feature, $engine = null ) {
     if (!$engine) {
       $engine = $this->engine;
       $class = get_class($this->engine);
@@ -77,7 +77,7 @@ class SimplePayment {
     return($value);
   }
 
-  function refund($params = []) {
+  function refund( $params = [] ) {
     return($this->engine->refund($params));
   }
 
@@ -118,14 +118,25 @@ class SimplePayment {
     return( $this->engine->feedback( $params ) );
   }
 
+  function subscriptions( $params = [] ) {
+    return( $this->engine->subscriptions( $params ) );
+  }
+
+  function do( $action, $params = [] ) {
+    if ( method_exists( $this->engine, $action ) ) {
+      return( $this->engine->$action( $params ) );
+    }
+    return( null );
+  }
+
   function callback() {}
 
   function save( $params, $schema = null ) {
     return( true );
   }
 
-  protected function validate_key($key, $domain = null) {
-      if ($domain == null) $domain = $_SERVER['SERVER_NAME'];
+  protected function validate_key( $key, $domain = null ) {
+      if ( $domain == null ) $domain = isset( $_SERVER[ 'SERVER_NAME' ] ) ? $_SERVER[ 'SERVER_NAME' ] : null;
       $license = $this->fetch_license($key, $domain);
       if (isset($license->errors)) {
         $error = $license->errors[0];
@@ -138,11 +149,11 @@ class SimplePayment {
       return($this->validate_license($license, $domain));
   }
 
-  private function validate_license($license, $domain = null, $engine = null) {
-    if (!$license) throw new Exception('NO_LICENSE', 401);
-    if ($domain == null) $domain = $_SERVER['SERVER_NAME'];
-		$domain = preg_replace('/(^www\\.)?(.*)/', '${2}', $domain, -1);
-    if (is_object($license)) $license = json_decode(json_encode($license), true);
+  private function validate_license( $license, $domain = null, $engine = null ) {
+    if ( !$license ) throw new Exception( 'NO_LICENSE', 401 );
+    if ( $domain == null ) $domain = isset( $_SERVER[ 'SERVER_NAME' ] ) ? $_SERVER[ 'SERVER_NAME' ] : null;
+		$domain = preg_replace( '/(^www\\.)?(.*)/', '${2}', $domain, -1 );
+    if ( is_object( $license ) ) $license = json_decode( json_encode( $license ), true);
     $meta = isset($license['meta']['valid']) ? $license['meta'] : $license;
     if (!isset($meta['valid']) || !$meta['valid']) throw new Exception(isset($meta['constant']) ? $meta['constant'] : 'INVALID', 401);
     $metadata = isset($license['data']['attributes']['metadata']) ? $license['data']['attributes']['metadata'] : $license['meta'];
@@ -157,11 +168,16 @@ class SimplePayment {
     $suspended = isset($attributes['suspended']) ? $attributes['suspended'] : null;
     if ($suspended) throw new Exception('SUSPENDED', 401);
 
-    $domains = isset($metadata['domain']) ? $metadata['domain'] : null;
-    if (!$domains) throw new Exception('FINGERPRINT_SCOPE_MISSING', 401);
-    else if ($domains != 'ANY' && !in_array($domain, explode(',', $domains))) throw new Exception('FINGERPRINT_SCOPE_ERROR', 401);
-
-    if ($engine) {
+    if ( !$this->is_cli() ) {
+      $domains = isset( $metadata[ 'domain' ] ) ? $metadata['domain'] : null;
+      if ( !$domains ) throw new Exception( 'FINGERPRINT_SCOPE_MISSING', 401 );
+      else {
+        $domains = explode( ',', $domains );
+        $domains[] = 'localhost';
+        if ( $domains != 'ANY' && !in_array( $domain, $domains ) ) throw new Exception('FINGERPRINT_SCOPE_ERROR', 401);
+      }
+    }
+    if ( $engine ) {
       $engines = isset($metadata['engine']) ? $metadata['engine'] : null;
       if (!$engines) throw new Exception('ENGINE_SCOPE_MISSING', 401);
       else if ($engines != 'ANY' && !in_array($engine, explode(',', $engines))) throw new Exception('ENGINE_SCOPE_ERROR', 401);
@@ -248,6 +264,16 @@ class SimplePayment {
           if ($type) break;
     }
     return($errors);
+  }
+
+  function is_cli() {
+    if ( defined( 'STDIN' ) ) {
+      return( true ) ;
+	  }
+    if ( empty( $_SERVER[ 'REMOTE_ADDR' ] ) && !isset( $_SERVER[ 'HTTP_USER_AGENT' ]) && count( $_SERVER[ 'argv' ] ) > 0 ) {
+      return( true );
+    } 
+    return( false );
   }
 
 }

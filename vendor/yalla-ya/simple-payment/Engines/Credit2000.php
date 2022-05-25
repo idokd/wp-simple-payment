@@ -14,7 +14,7 @@ if (!defined("ABSPATH")) {
 
 class Credit2000 extends Engine {
 
-  public $name = 'Credit2000';
+  public static $name = 'Credit2000';
   public $interactive = true;
   protected $recurrAt = 'post'; // status
 

@@ -5,14 +5,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Make sure Elementor is active
-if (!in_array('gravityforms/gravityforms.php', apply_filters('active_plugins', get_option('active_plugins')))) 
+if ( !in_array( 'gravityforms/gravityforms.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) 
 	return;
 
 // If Gravity Forms is loaded, bootstrap the Simple Payment Add-On.
-add_action('gform_loaded', ['GF_SimplePayment_Bootstrap', 'load'], 5);
+add_action( 'gform_loaded', [ 'GF_SimplePayment_Bootstrap', 'load' ], 5 );
 
-add_action('wp', ['GFSimplePayment', 'maybe_repayment_page'], 20);
-add_action('wp', ['GFSimplePayment', 'maybe_thankyou_page'], 50);
+add_action( 'wp', [ 'GFSimplePayment', 'maybe_repayment_page' ], 20 );
+add_action( 'wp', [ 'GFSimplePayment', 'maybe_thankyou_page' ], 50 );
 
 
 class GF_SimplePayment_Bootstrap {
@@ -92,8 +92,9 @@ class GFSimplePayment extends GFPaymentAddOn {
 
     function pre_init() {
 		parent::pre_init();
-		add_action('sp_payment_success', [$this, 'payment_success']);
-		add_action('gform_enqueue_scripts', [$this, 'load_scripts'], 10, 2);
+		add_action( 'sp_payment_success', [ $this, 'payment_success' ] );
+		//add_action( 'sp_payment_post_process', [ $this, 'payment_success' ] );
+		add_action( 'gform_enqueue_scripts', [ $this, 'load_scripts'], 10, 2 );
 		add_filter( 'sp_payment_pre_process_filter', [ $this, 'sp_payment_pre_process_filter' ] );
         $this->SPWP = SimplePaymentPlugin::instance();
 		$this->_version = $this->SPWP::$version;
@@ -266,6 +267,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 										jQuery('#gform_setting_engine').show();
 										jQuery('#gform_setting_display').show();
 										jQuery('#gform_setting_installments').show();
+										jQuery('#gform_setting_multiline').show();
 										jQuery('#gform_setting_template').show();
 										jQuery('#gform_setting_settings').show();
 										jQuery('#gaddon-setting-row-engine').show();
@@ -277,6 +279,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 										jQuery('#gform_setting_engine').hide();
 										jQuery('#gform_setting_display').hide();
 										jQuery('#gform_setting_installments').hide();
+										jQuery('#gform_setting_multiline').hide();
 										jQuery('#gform_setting_template').hide();
 										jQuery('#gform_setting_settings').hide();
 										jQuery('#gaddon-setting-row-engine').hide();
@@ -446,10 +449,10 @@ class GFSimplePayment extends GFPaymentAddOn {
 				list( $form_id, $entry_id ) = explode( '|', $query['ids'] );
 				$form = GFAPI::get_form( $form_id );
 				$entry = GFAPI::get_entry( $entry_id );
-				$feed = $this->get_feed( $retry );
+				$feed = $instance->get_feed( $retry );
 				$submission_data = $instance->get_submission_data( $feed, $form, $entry );
 
-				$is_subscription = $feed['meta']['transactionType'] == 'subscription';
+				$is_subscription = $feed[ 'meta' ][ 'transactionType' ] == 'subscription';
 				//if ( ! $is_subscription ) {
 					//Running an authorization only transaction if function is implemented and this is a single payment
 					//$authorization = $instance->authorize( $feed, $submission_data, $form, $entry );
@@ -653,7 +656,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		}
 		$params['redirect_url'] = $this->return_url( $form['id'], $entry['id']).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
 		
-		$this->add_sp_pre_process(  $feed, $submission_data, $form, $entry );
+		$this->add_sp_pre_process( $feed, $submission_data, $form, $entry );
 
 		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form['id'], $submission_data, $feed, $entry );
 		GFAPI::update_entry_property( $entry['id'], 'payment_method', 'SimplePayment' );
@@ -707,19 +710,32 @@ class GFSimplePayment extends GFPaymentAddOn {
 	 * @param array $form            The form object currently being processed.
 	 * @param array $entry           The entry object currently being processed.
 	 *
-	 * @return array
+ 	 * @return array {
+	 *     Return an $authorization array.
+	 *
+	 *     @type bool   $is_authorized  True if the payment is authorized. Otherwise, false.
+	 *     @type string $error_message  The error message, if present.
+	 *     @type string $transaction_id The transaction ID.
+	 *     @type array  $captured_payment {
+	 *         If payment is captured, an additional array is created.
+	 *
+	 *         @type bool   $is_success     If the payment capture is successful.
+	 *         @type string $error_message  The error message, if any.
+	 *         @type string $transaction_id The transaction ID of the captured payment.
+	 *         @type int    $amount         The amount of the captured payment, if successful.
+	 *     }
 	 */
 	public function authorize( $feed, $submission_data, $form, $entry ) {
 		$settings = $this->get_settings( $feed );
 		
 		$params = $settings ? $settings : [];
-		if (isset($params['settings']) && $params['settings']) $params = array_merge($params, $params['settings']);
-		$params = array_merge($params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ));
+		if ( isset( $params[ 'settings' ] ) && $params[ 'settings' ] ) $params = array_merge( $params, $params[ 'settings' ] );
+		$params = array_merge( $params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ));
 		
-		$engine = isset($params['engine']) ? $params['engine'] : null; 
+		$engine = isset( $params[ 'engine' ] ) ? $params[ 'engine' ] : null; 
 
 		// get engine from params
-		if (!SimplePaymentPlugin::supports('cvv', $engine)) return(false);
+		if ( !SimplePaymentPlugin::supports( 'cvv', $engine ) ) return( false );
 
 		/**
 		 * Filter the transaction properties for the product and service feed.
@@ -733,15 +749,16 @@ class GFSimplePayment extends GFPaymentAddOn {
 		 * @param array $feed            The feed object currently being processed.
 		 * @param array $entry           The entry object currently being processed.
 		 */
-		$params['redirect_url'] = get_bloginfo( 'url' ) . '/?page=gf_simplepayment_ipn&entry_id='.$entry['id'].'&redirect_url='.urlencode($this->return_url( $form['id'], $entry['id'])).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
+		$params[ 'redirect_url' ] = get_bloginfo( 'url' ) . '/?page=gf_simplepayment_ipn&entry_id=' . $entry[ 'id' ].'&redirect_url=' . urlencode($this->return_url( $form['id'], $entry['id'])).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
 		
-		$this->add_sp_pre_process(  $feed, $submission_data, $form, $entry );
+		$this->add_sp_pre_process( $feed, $submission_data, $form, $entry );
 
-		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form['id'], $submission_data, $feed, $entry );
+		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form[ 'id' ], $submission_data, $feed, $entry );
+		$is_subscription = $feed[ 'meta' ][ 'transactionType' ] == 'subscription';
 
 		try {
-			$this->redirect_url = $this->SPWP->payment($params, $engine);
-		} catch (Exception $e) {
+			$this->redirect_url = $this->SPWP->payment( $params, $engine );
+		} catch ( Exception $e ) {
 			$captured_payment = array(
 				'is_success'     => false,
 				'error_message'  => $e->getMessage(),
@@ -754,27 +771,30 @@ class GFSimplePayment extends GFPaymentAddOn {
 				'error_message'  => $e->getMessage(),
 				'captured_payment' => $captured_payment,
 			);
-			return($auth);
+			return( $auth );
 		}
 
 		if ( $this->redirect_url === true || !$this->redirect_url ) {
 			$captured_payment = array(
+				// Possible name for setup fee
 				'is_success'     => true,
 				'error_message'  => '',
 				'transaction_id' => $this->SPWP->engine->transaction,
-				'amount'         => $params[$this->SPWP::AMOUNT],
+				'amount'         => $params[ $this->SPWP::AMOUNT ],
 			);
 			$auth = array(
 				'is_authorized'    => true,
 				'transaction_id'   => $this->SPWP->engine->transaction,
 				'captured_payment' => $captured_payment,
 			);
+			if ( $is_subscription ) $auth[ 'subscription_id' ] = $this->SPWP->payment_id;
+
 			$this->redirect_url = null;
 		} else {
 			$captured_payment = array(
 				'is_success'     => false,
 				'transaction_id' => $this->SPWP->engine->transaction,
-				'amount'         => $params[$this->SPWP::AMOUNT],
+				'amount'         => $params[ $this->SPWP::AMOUNT ],
 			);
 			$auth = array(
 				'is_authorized'    => false,
@@ -782,9 +802,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 				'captured_payment' => $captured_payment,
 			);
 		}
-		return $auth;
+		return( $auth );
 	}
-
 
 	public function validation( $validation_result ) {
 		if ( ! $validation_result['is_valid'] ) {
@@ -808,7 +827,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$submission_data = $this->get_submission_data( $feed, $form, $entry );
 
 		//Do not process payment if payment amount is 0
-		if ( floatval( $submission_data['payment_amount'] ) <= 0 ) {
+		if ( floatval( $submission_data[ 'payment_amount' ] ) <= 0 ) {
 			$this->log_debug( __METHOD__ . '(): Payment amount is zero or less. Not sending to payment gateway.' );
 			return $validation_result;
 		}
@@ -820,45 +839,86 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$this->current_submission_data = $submission_data;
 
 		$performed_authorization = false;
-		$is_subscription = $feed['meta']['transactionType'] == 'subscription';
+		$is_subscription = $feed[ 'meta' ][ 'transactionType' ] == 'subscription';
 
-		//if ( ! $is_subscription ) {
+		if ( ! $is_subscription ) {
 			//Running an authorization only transaction if function is implemented and this is a single payment
 			$this->authorization = $this->authorize( $feed, $submission_data, $form, $entry );
-			$performed_authorization = $this->authorization;
-		//}
-		// TODO: handle subscriptions
+			$performed_authorization = true;
+		} else {
+			$subscription = $this->subscribe( $feed, $submission_data, $form, $entry );
+			$this->authorization[ 'is_authorized' ] = rgar( $subscription,'is_success' );
+			$this->authorization[ 'error_message' ] = rgar( $subscription, 'error_message' );
+			$this->authorization[ 'subscription' ]  = $subscription;
+			$performed_authorization = true;
+		}
+
 		if ( $performed_authorization ) {
 			$this->log_debug( __METHOD__ . "(): Authorization result for form #{$form['id']} submission => " . print_r( $this->authorization, true ) );
 		}
 		if ( $performed_authorization && ! rgar( $this->authorization, 'is_authorized' ) ) {
 			$validation_result = $this->get_validation_result( $validation_result, $this->authorization );
 			//Setting up current page to point to the credit card page since that will be the highlighted field
-			GFFormDisplay::set_current_page( $validation_result['form']['id'], $validation_result['credit_card_page'] );
+			GFFormDisplay::set_current_page( $validation_result[ 'form' ][ 'id' ], $validation_result[ 'credit_card_page' ] );
 		}
 		return $validation_result;
 	}
 
+	/**
+	 * Authorize and capture the transaction for the product & services type feed.
+	 *
+	 * @param array $feed            The feed object currently being processed.
+	 * @param array $submission_data The customer and transaction data.
+	 * @param array $form            The form object currently being processed.
+	 * @param array $entry           The entry object currently being processed.
+	 *
+	* @return array {
+	 *     Return an $subscription array in the following format:
+	 *
+	 *     @type bool   $is_success      If the subscription is successful.
+	 *     @type string $error_message   The error message, if applicable.
+	 *     @type string $subscription_id The subscription ID.
+	 *     @type int    $amount          The subscription amount.
+	 *     @type array  $captured_payment {
+	 *         If payment is captured, an additional array is created.
+	 *
+	 *         @type bool   $is_success     If the payment capture is successful.
+	 *         @type string $error_message  The error message, if any.
+	 *         @type string $transaction_id The transaction ID of the captured payment.
+	 *         @type int    $amount         The amount of the captured payment, if successful.
+	 *     }
+	 *
+	 * 
+	 * */
+
+	public function subscribe( $feed, $submission_data, $form, $entry ) {
+		$subscription = $this->authorize( $feed, $submission_data, $form, $entry );
+		$subscription[ 'is_success' ] = $subscription[ 'captured_payment' ][ 'is_success' ];
+		$subscription[ 'subscription_id' ] = $subscription[ 'subscription_id' ];
+		$subscription[ 'amount' ] = $subscription[ 'captured_payment' ][ 'amount' ];
+		return( $subscription );
+	}
 
 	//------- PROCESSING CALLBACK -----------//
 
-	public function payment_success($params) {
-		if (!isset($params['source']) || $params['source'] != 'gravityforms') return;
-		if (!isset($params['source_id'])) return;
+	public function payment_success( $params ) {
+		global $gf_sp_payment;
+		if ( !isset( $params[ 'source' ] ) || $params[ 'source' ] != 'gravityforms' ) return;
+		if ( !isset( $params[ 'source_id' ] ) && !$gf_sp_payment ) return;
 
-		$entry = GFAPI::get_entry( $params['source_id'] );
+		$entry = isset( $params[ 'source_id' ] ) ? GFAPI::get_entry( $params[ 'source_id' ] ) : $gf_sp_payment[ 'entry' ];
 
-		if ( $entry['status'] == 'spam' ) {
+		if ( isset( $entry[ 'status' ] ) && $entry[ 'status' ] == 'spam' ) {
 			$this->log_error( __METHOD__ . '(): Entry is marked as spam. Aborting.' );
 			return false;
 		}
 
-		if ( strtolower( $entry['payment_status'] ) == 'paid' ) {
+		if ( isset( $entry[ 'payment_status' ] ) && strtolower( $entry[ 'payment_status' ] ) == 'paid' ) {
 			$this->log_error( __METHOD__ . '(): Entry is marked as already paid. Aborting.' );
 			return false;
 		}
 
-		$feed = $this->get_payment_feed( $entry );
+		$feed = isset( $gf_sp_payment[ 'feed' ] ) ? $gf_sp_payment[ 'feed' ] : $this->get_payment_feed( $entry );
 		// Ignore IPN messages from forms that are no longer configured with the add-on
 		if ( ! $feed || ! rgar( $feed, 'is_active' ) ) {
 			$this->log_error( __METHOD__ . "(): Form no longer is configured with Simple Payment Addon. Form ID: {$entry['form_id']}. Aborting." );
@@ -866,13 +926,11 @@ class GFSimplePayment extends GFPaymentAddOn {
 		}
 
 		$action = [];
-		$action['transaction_id']   = $params['transaction_id'];
-		$action['amount']           = $params['amount'];
-		$action['payment_method']	= 'SimplePayment';
-		$action['type']	= 'complete_payment';
-
-		$result = $this->complete_payment($entry, $action);
-
+		$action[ 'transaction_id' ]   = $params[ 'transaction_id' ];
+		$action[ 'amount' ]           = $params[ 'amount' ];
+		$action[ 'payment_method' ]	= 'SimplePayment';
+		$action[ 'type' ]	= 'complete_payment';
+		$result = $this->complete_payment( $entry, $action );
 	}
 
 	public function supported_notification_events( $form ) {
@@ -882,10 +940,11 @@ class GFSimplePayment extends GFPaymentAddOn {
 
 		return array(
 				'complete_payment'          => esc_html__( 'Payment Completed', 'simple-payment' ),
-				/*'fail_payment'              => esc_html__( 'Payment Failed', 'simple-payment' ),
+				'fail_payment'              => esc_html__( 'Payment Failed', 'simple-payment' ),
+				'create_subscription'       => esc_html__( 'Subscription Created', 'simple-payment' ),
+				/*
 				'add_pending_payment'       => esc_html__( 'Payment Pending', 'simple-payment' ),
 				'void_authorization'        => esc_html__( 'Authorization Voided', 'simple-payment' ),
-				'create_subscription'       => esc_html__( 'Subscription Created', 'simple-payment' ),
 				'cancel_subscription'       => esc_html__( 'Subscription Canceled', 'simple-payment' ),
 				'expire_subscription'       => esc_html__( 'Subscription Expired', 'simple-payment' ),
 				'add_subscription_payment'  => esc_html__( 'Subscription Payment Added', 'simple-payment' ),
@@ -944,110 +1003,15 @@ class GFSimplePayment extends GFPaymentAddOn {
 		//----- Processing IPN ------------------------------------------------------------//
 		$this->log_debug( __METHOD__ . '(): Processing IPN...' );
 		$action = [];
-		$action['transaction_id']   = $entry['transaction_id'];
-		$action['amount']           = $entry['payment_amount'];
-		$action['payment_method']	= 'SimplePayment';
+		$action[ 'transaction_id' ]   = $entry['transaction_id'];
+		$action[ 'amount']           = $entry['payment_amount'];
+		$action[ 'payment_method' ]	= 'SimplePayment';
 		$action[ 'type' ] = 'complete_payment';
 		$result = $this->complete_payment( $entry, $action );
-		$this->log_debug( __METHOD__ . '(): IPN processing complete.' );
+		$this->log_debug( __METHOD__ . '(): SimplePayment processing complete.' );
 		
-		return $action;
+		return( $action );
 	}
-
-	/**
-	 * Create a recurring profile for the user and return any errors which occur.
-	 *
-	 * @param array $feed            The feed object currently being processed.
-	 * @param array $submission_data The customer and transaction data.
-	 * @param array $form            The form object currently being processed.
-	 * @param array $entry           The entry object currently being processed.
-	 *
-	 * @return array
-	 */
-    /*
-	public function subscribe( $feed, $submission_data, $form, $entry ) {
-
-		$subscription = $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry );
-
-		// Setting up recurring transaction parameters
-		$subscription['TRXTYPE'] = 'R';
-		$subscription['ACTION']  = 'A';
-
-		$subscription['START']             = date( 'mdY', mktime( 0, 0, 0, date( 'm' ), date( 'd' ) + 1, date( 'y' ) ) );
-		$subscription['PROFILENAME']       = $subscription['FIRSTNAME'] . ' ' . $subscription['LASTNAME'];
-		$subscription['MAXFAILEDPAYMENTS'] = '0';
-		$subscription['PAYPERIOD']         = $feed['meta']['payPeriod'];
-		$subscription['TERM']              = $feed['meta']['recurringTimes'];
-		$subscription['AMT']               = $submission_data['payment_amount'];
-
-		if ( $feed['meta']['setupFee_enabled'] && ! empty( $submission_data['setup_fee'] ) && $submission_data['setup_fee'] > 0 ) {
-			$subscription['OPTIONALTRX']    = 'S';
-			$subscription['OPTIONALTRXAMT'] = $submission_data['setup_fee'];
-		} else {
-			$subscription['OPTIONALTRX'] = 'A';
-		}
-*/
-		/**
-		 * Filter the subscription transaction properties.
-		 *
-		 * @since 1.0.0
-		 * @since 2.0.0 Added the $submission_data, $feed, and $entry parameters.
-		 *
-		 * @param array $subscription    The subscription transaction properties.
-		 * @param int   $form_id         The ID of the form currently being processed.
-		 * @param array $submission_data The customer and transaction data.
-		 * @param array $feed            The feed object currently being processed.
-		 * @param array $entry           The entry object currently being processed.
-		 */
-        
-        /* $subscription = apply_filters( 'gform_simplepayment_args_before_subscription', $subscription, $form['id'], $submission_data, $feed, $entry );
-
-		if ( empty( $subscription['ACCT'] ) ) {
-			return array(
-				'is_success' => false,
-				'error_message' => esc_html__( 'Please enter your credit card information.', 'simple-payment' ),
-			);
-		}
-
-		$this->log_debug( __METHOD__ . '(): Creating recurring profile.' );
-		$settings = $this->get_settings( $feed );
-		$response = $this->post_to_payflow( $subscription, $settings, $form['id'] );
-
-		if ( $response['RESULT'] == 0 ) {
-
-			$subscription_id = $response['PROFILEID'];
-			$this->log_debug( __METHOD__ . "(): Subscription created successfully. Subscription Id: {$subscription_id}" );
-
-			if ( $feed['meta']['setupFee_enabled'] ) {
-				$captured_payment    = array(
-						'is_success'     => true,
-						'transaction_id' => rgar( $response, 'RPREF' ),
-						'amount'         => $submission_data['setup_fee'],
-				);
-				$subscription_result = array(
-						'is_success'       => true,
-						'subscription_id'  => $subscription_id,
-						'captured_payment' => $captured_payment,
-						'amount'           => $subscription['AMT'],
-				);
-			} else {
-				$subscription_result = array(
-					'is_success'      => true,
-					'subscription_id' => $subscription_id,
-					'amount'          => $subscription['AMT'],
-				);
-			}
-
-		} else {
-			$this->log_error( __METHOD__ . '(): There was an error creating Subscription.' );
-			$error_message       = $this->get_error_message( $response );
-			$subscription_result = array( 'is_success' => false, 'error_message' => $error_message );
-		}
-
-		return $subscription_result;
-	}
-
-    */
 
 	// # CRON JOB ------------------------------------------------------------------------------------------------------
 

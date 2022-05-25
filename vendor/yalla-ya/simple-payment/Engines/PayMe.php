@@ -12,7 +12,7 @@ if (!defined("ABSPATH")) {
 
 class PayMe extends Engine {
 
-  public $name = 'PayMe';
+  public static $name = 'PayMe';
   public $interactive = true;
   protected $recurrAt = 'post'; // status
 
@@ -20,32 +20,32 @@ class PayMe extends Engine {
 
   public $api = [
     'live' => [
-      'capture-sale' => 'https://ng.paymeservice.com/api/capture-sale',
-      'generate-sale' => 'https://ng.paymeservice.com/api/generate-sale',
-      'refund-sale' => 'https://ng.paymeservice.com/api/refund-sale',
-      'get-sales' => 'https://ng.paymeservice.com/api/get-sales',
-      'generate-subscription' => 'https://ng.paymeservice.com/api/generate-subscription',
-      'cancel-subscription' => 'https://ng.paymeservice.com/api/cancel-subscription',
-      'get-subscriptions' => 'https://ng.paymeservice.com/api/get-subscriptions',
+      'capture-sale' => 'https://live.payme.io/api/capture-sale',
+      'generate-sale' => 'https://live.payme.io/api/generate-sale',
+      'refund-sale' => 'https://live.payme.io/api/refund-sale',
+      'get-sales' => 'https://live.payme.io/api/get-sales',
+      'generate-subscription' => 'https://live.payme.io/api/generate-subscription',
+      'cancel-subscription' => 'https://live.payme.io/api/cancel-subscription',
+      'get-subscriptions' => 'https://live.payme.io/api/get-subscriptions',
     ],
     'sandbox' => [
-      'capture-sale' => 'https://preprod.paymeservice.com/api/capture-sale',
-      'generate-sale' => 'https://preprod.paymeservice.com/api/generate-sale',
-      'refund-sale' => 'https://preprod.paymeservice.com/api/refund-sale',
-      'get-sales' => 'https://preprod.paymeservice.com/api/get-sales',
-      'generate-subscription' => 'https://preprod.paymeservice.com/api/generate-subscription',
-      'cancel-subscription' => 'https://preprod.paymeservice.com/api/cancel-subscription',
-      'get-subscriptions' => 'https://preprod.paymeservice.com/api/get-subscriptions',
+      'capture-sale' => 'https://sandbox.payme.io/api/capture-sale',
+      'generate-sale' => 'https://sandbox.payme.io/api/generate-sale',
+      'refund-sale' => 'https://sandbox.payme.io/api/refund-sale',
+      'get-sales' => 'https://sandbox.payme.io/api/get-sales',
+      'generate-subscription' => 'https://sandbox.payme.io/api/generate-subscription',
+      'cancel-subscription' => 'https://sandbox.payme.io/api/cancel-subscription',
+      'get-subscriptions' => 'https://sandbox.payme.io/api/get-subscriptions',
     ]
   ];
 
   public $password = 'XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX';
 
-  public function __construct($params = null, $handler = null, $sandbox = true) {
-    parent::__construct($params, $handler, $sandbox);
+  public function __construct( $params = null, $handler = null, $sandbox = true ) {
+    parent::__construct( $params, $handler, $sandbox );
     // payme_client_key, payme_merchant_secret
-    $this->password = $this->sandbox ? $this->password : $this->param('seller_id');
-    $this->api = $this->api[$this->sandbox ? 'sandbox' : 'live'];
+    //$this->password = $this->sandbox ? $this->password : $this->param( 'password' );
+    $this->api = $this->api[ $this->sandbox ? 'sandbox' : 'live' ];
   }
 
   public function process($params) {
@@ -165,6 +165,19 @@ class PayMe extends Engine {
       // status_additional_info
     }
     return($response);
+  }
+
+  public function subscriptions( $params = [] ) {
+    $post = [
+      'seller_payme_id' => $this->password,
+    ];
+    $response = $this->post( $this->api[ 'get-subscriptions' ], json_encode( $post ), [ 'Content-Type: application/json' ]);
+    $response = json_decode( $response, true );
+    if ( isset( $response[ 'status_code' ] ) && $response[ 'status_code' ] != 0 ) {
+      throw new Exception( $status[ 'status_error_details' ], $status[ 'status_error_code' ] );
+      // status_additional_info
+    }
+    return( $response[ 'items' ] );
   }
 
   /*

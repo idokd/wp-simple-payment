@@ -19,7 +19,7 @@ if (!defined("ABSPATH")) {
 
 class PayPal extends Engine {
 
-  public $name = 'PayPal';
+  public static $name = 'PayPal';
   public $api = [
       'post' => 'https://www.paypal.com/cgi-bin/webscr',
       'sandbox' => [

@@ -10,7 +10,7 @@ if (!defined("ABSPATH")) {
 
 class Engine {
 
-  public $name = 'Base';
+  public static $name = 'Base';
   public $transaction = null;
   public $confirmation_code = null;
   public $handler;
@@ -105,7 +105,7 @@ class Engine {
 
   protected function save( $params ) {
     if ( !isset( $params[ 'transaction_id' ] ) && $this->transaction ) $params[ 'transaction_id' ] = $this->transaction;
-    return( $this->handler->save( $params, $this->name ) );
+    return( $this->handler->save( $params, self::$name ) );
   }
 
   public static function uuid() {
@@ -134,7 +134,7 @@ class Engine {
       if (isset($params['payment_id']) && strpos($url, 'payment_id') === false) $qry['payment_id'] = $params['payment_id'];
       if (isset($params['target']) && strpos($url, 'target') === false) $qry['target'] = $params['target'];
       if (isset($params['redirect_url']) && strpos($url, 'redirect_url') === false) $qry['redirect_url'] = $params['redirect_url'];
-      return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='.$this->name.($qry ? '&'.http_build_query($qry) : ''));
+      return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='. self::$name . ($qry ? '&'.http_build_query($qry) : ''));
     }
 
     protected function post( $url, $vars, $headers = null, $fail = true ) {
@@ -157,6 +157,10 @@ class Engine {
 
     public static function century() {
       return( floor( date( 'Y' ) / 100 ) * 100 );
+    }
+
+    public function subscriptions( $params = [] ) {
+      return( null );
     }
 
 }

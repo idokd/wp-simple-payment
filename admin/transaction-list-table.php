@@ -279,7 +279,11 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   public function verify_transaction( $id ) {
-    SimplePaymentPlugin::verify( $id );
+    add_action( 'sp_payment_verify', function( $id ) {
+      $payment = SimplePaymentPlugin::instance()->fetch( $id );
+      set_transient( 'sp_message', __( 'Verification result for $id:  %s', 'simple-payment' ),  $id, print_r( $payment, true ) );
+    } );;
+    $result = SimplePaymentPlugin::verify( $id );
   }
 
   public function archive_transaction($id) {

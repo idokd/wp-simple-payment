@@ -13,7 +13,7 @@ class iCount extends Engine {
 
     static $CARD_TYPES = [ 'VISA' => 1, 'MASTERCARD' => 2, 'AMEX' => 3, 'DINERS' => 5, 'JCB' => 6, 'MAESTRO' => 7, 'LEUMICARD' => 8, 'ISRACARD' => 22 ];
 
-    public $name = 'iCount';
+    public static $name = 'iCount';
     public $api = [
       'bill' => 'https://api.icount.co.il/api/v3.php/cc/bill',
       'store' => 'https://api.icount.co.il/api/v3.php/cc_storage/store',
@@ -84,12 +84,12 @@ class iCount extends Engine {
        throw new Exception( $response[ 'error_description' ], intval( $response[ 'status' ] ) );
       }
       
-      $params[ 'currency_code' ] = $response['currency_code'];
-      $params[ 'confirmation_code' ] = $response['confirmation_code'];
-      $params[ 'cc_card_type' ] = $response['cc_card_type'];
-      $params[ 'cc_type' ] = $response[ 'cc_type' ];
+      if ( isset( $response[ 'currency_code' ] ) ) $params[ 'currency_code' ] = $response[ 'currency_code' ];
+      if ( isset( $response[ 'confirmation_code' ] ) ) $params[ 'confirmation_code' ] = $response[ 'confirmation_code' ];
+      if ( isset( $response[ 'cc_card_type' ] ) ) $params[ 'cc_card_type' ] = $response[ 'cc_card_type' ];
+      if ( isset( $response[ 'cc_type' ] ) ) $params[ 'cc_type' ] = $response[ 'cc_type' ];
       $this->confirmation_code = $response[ 'confirmation_code' ];
-      return($params);
+      return( $params );
     }
 
     public function items( $params ) {
@@ -142,6 +142,14 @@ class iCount extends Engine {
         $this->store( $params );
       }
       if ( self::is_subscription( $params ) && $this->param( 'reurring' ) == 'provider' ) {
+        $this->save( [
+          'transaction_id' => $this->transaction,
+          'url' => ':subscription',
+          'status' => true,
+          'description' => null,
+          'request' => json_encode( $params ),
+          'response' => null
+        ] );
         return( true );
       }
       $doctype = $this->param( 'doc_type' );

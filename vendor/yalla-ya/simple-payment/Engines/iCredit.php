@@ -12,7 +12,7 @@ if (!defined("ABSPATH")) {
 
 class iCredit extends Engine {
 
-  public $name = 'iCredit';
+  public static $name = 'iCredit';
   public $interactive = true;
   public $box = '7cd9f149-d25a-4df3-9b01-d1ecce097c31';
 
