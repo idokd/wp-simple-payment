@@ -105,7 +105,7 @@ class Engine {
 
   protected function save( $params ) {
     if ( !isset( $params[ 'transaction_id' ] ) && $this->transaction ) $params[ 'transaction_id' ] = $this->transaction;
-    return( $this->handler->save( $params, self::$name ) );
+    return( $this->handler->save( $params, static::$name ) );
   }
 
   public static function uuid() {
@@ -134,7 +134,7 @@ class Engine {
       if (isset($params['payment_id']) && strpos($url, 'payment_id') === false) $qry['payment_id'] = $params['payment_id'];
       if (isset($params['target']) && strpos($url, 'target') === false) $qry['target'] = $params['target'];
       if (isset($params['redirect_url']) && strpos($url, 'redirect_url') === false) $qry['redirect_url'] = $params['redirect_url'];
-      return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='. self::$name . ($qry ? '&'.http_build_query($qry) : ''));
+      return($url.(strpos($url, '?') ? '&' : '?').'op='.$type.'&engine='. static::$name . ($qry ? '&'.http_build_query($qry) : ''));
     }
 
     protected function post( $url, $vars, $headers = null, $fail = true ) {
