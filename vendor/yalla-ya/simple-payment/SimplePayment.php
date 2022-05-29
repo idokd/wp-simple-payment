@@ -270,7 +270,7 @@ class SimplePayment {
     if ( defined( 'STDIN' ) ) {
       return( true ) ;
 	  }
-    if ( empty( $_SERVER[ 'REMOTE_ADDR' ] ) && !isset( $_SERVER[ 'HTTP_USER_AGENT' ]) && count( $_SERVER[ 'argv' ] ) > 0 ) {
+    if ( empty( $_SERVER[ 'REMOTE_ADDR' ] ) || empty( $_SERVER[ 'HTTP_USER_AGENT' ] ) || ( !empty( $_SERVER[ 'argv' ] ) && count( $_SERVER[ 'argv' ] ) > 0 ) ) {
       return( true );
     } 
     return( false );

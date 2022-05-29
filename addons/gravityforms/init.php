@@ -840,11 +840,10 @@ class GFSimplePayment extends GFPaymentAddOn {
 
 		$performed_authorization = false;
 		$is_subscription = $feed[ 'meta' ][ 'transactionType' ] == 'subscription';
-
 		if ( ! $is_subscription ) {
 			//Running an authorization only transaction if function is implemented and this is a single payment
 			$this->authorization = $this->authorize( $feed, $submission_data, $form, $entry );
-			$performed_authorization = true;
+			$performed_authorization = $this->authorization;
 		} else {
 			$subscription = $this->subscribe( $feed, $submission_data, $form, $entry );
 			$this->authorization[ 'is_authorized' ] = rgar( $subscription,'is_success' );
@@ -856,8 +855,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		if ( $performed_authorization ) {
 			$this->log_debug( __METHOD__ . "(): Authorization result for form #{$form['id']} submission => " . print_r( $this->authorization, true ) );
 		}
-		if ( $performed_authorization && ! rgar( $this->authorization, 'is_authorized' ) ) {
-			$validation_result = $this->get_validation_result( $validation_result, $this->authorization );
+		if ( $performed_authorization && !rgar( $this->authorization, 'is_authorized' ) ) {
 			//Setting up current page to point to the credit card page since that will be the highlighted field
 			GFFormDisplay::set_current_page( $validation_result[ 'form' ][ 'id' ], $validation_result[ 'credit_card_page' ] );
 		}
