@@ -51,7 +51,7 @@ class SimplePayment {
       $this->validate_license( self::$license, null, $engine );
       if ( !$this->is_cli() && ( !isset( $_SERVER[ 'HTTPS' ] ) || !$_SERVER[ 'HTTPS' ] ) ) throw new Exception( 'HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500 );
     }
-    $class = __NAMESPACE__ . '\\Engines\\' . $engine;
+    $class = class_exists( $engine ) ? $engine : __NAMESPACE__ . '\\Engines\\' . $engine;
     $settings = self::param( strtolower( isset( $class::$name ) ? $class::$name : $engine ) );
     foreach ( self::$params as $key => $value ) if ( !is_array( $value ) && !isset( $settings[ $key ] ) ) $settings[ $key ] = $value; 
     $this->engine = new $class( $settings, $this, $this->sandbox );
@@ -61,7 +61,7 @@ class SimplePayment {
     if (!$engine) {
       $engine = $this->engine;
       $class = get_class($this->engine);
-    } else $class = __NAMESPACE__ . '\\Engines\\' . $engine;
+    } else $class = class_exists( $engine ) ? $engine : __NAMESPACE__ . '\\Engines\\' . $engine;
     return(in_array($feature, $class::$supports) || self::param(strtolower($engine).'.'.$feature));
   }
 

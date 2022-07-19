@@ -98,7 +98,6 @@ class GFSimplePayment extends GFPaymentAddOn {
 		add_filter( 'sp_payment_pre_process_filter', [ $this, 'sp_payment_pre_process_filter' ] );
         $this->SPWP = SimplePaymentPlugin::instance();
 		$this->_version = $this->SPWP::$version;
-		
     }
 	
 	function load_scripts( $form, $is_ajax ) {
@@ -181,13 +180,13 @@ class GFSimplePayment extends GFPaymentAddOn {
 			array(
 				'name'     => 'settings',
 				'label'    => esc_html__( 'Settings', 'simple-payment' ),
-				'type'     => 'textarea',
+				'type'     => 'json',
 				'class'    => 'medium',
 				'tooltip' 		=> '<h6>' . esc_html__( 'Custom & advanced checkout settings', 'simple-payment' ) . '</h6>' . esc_html__( 'Use if carefully', 'simple-payment' ),
 			)
 			)
 		)
-			);
+		);
 	}
 
 	//-------- Form Settings ---------
@@ -207,6 +206,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 	 * @return array The feed settings.
 	 */
 	public function feed_settings_fields() {
+		require_once( 'class-json.php' );
 		$default_settings = parent::feed_settings_fields();
 
         // Remove default options before adding custom.
@@ -428,6 +428,16 @@ class GFSimplePayment extends GFPaymentAddOn {
 						'label'    => esc_html__( 'First Name', 'simple-payment' ),
 						'required' => false,
 				),
+				array(
+					'name'     => 'phone',
+					'label'    => esc_html__( 'Phone', 'simple-payment' ),
+					'required' => false,
+				),
+				array(
+					'name'     => 'company',
+					'label'    => esc_html__( 'Company', 'simple-payment' ),
+					'required' => false,
+				),
 		);
 		return array_merge( $fields, parent::billing_info_fields() );
 	}
@@ -528,17 +538,19 @@ class GFSimplePayment extends GFPaymentAddOn {
 	// -------- Entry Detail ---------
 
 	public function return_url( $form_id, $lead_id ) {
-		$pageURL = GFCommon::is_ssl() ? 'https://' : 'http://';
+		// Lets use wordpress built-in function site_url
+		/*$pageURL = GFCommon::is_ssl() ? 'https://' : 'http://';
 		$server_port = apply_filters( 'gform_simplepayment_return_url_port', $_SERVER['SERVER_PORT'] );
 		if ( $server_port != '80' && $server_port != 443) {
 			$pageURL .= $_SERVER['SERVER_NAME'] . ':' . $server_port . $_SERVER['REQUEST_URI'];
 		} else {
 			$pageURL .= $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-		}
+		}*/
+		$pageURL = site_url( $_SERVER[ 'REQUEST_URI' ] );
 		$ids_query = "ids={$form_id}|{$lead_id}";
 		$ids_query .= '&hash=' . wp_hash( $ids_query );
-		$url = remove_query_arg('gf_simplepayment_retry', $pageURL);
-		$url = add_query_arg('gf_simplepayment_return', base64_encode( $ids_query ), $url);
+		$url = remove_query_arg( 'gf_simplepayment_retry', $pageURL );
+		$url = add_query_arg( 'gf_simplepayment_return', base64_encode( $ids_query ), $url );
 		/**
 		 * Filters SimplePayment's return URL, which is the URL that users will be sent to after completing the payment on SimplePayment's site.
 		 * Useful when URL isn't created correctly (could happen on some server configurations using PROXY servers).
@@ -550,7 +562,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		 * @param int $entry_id	The ID of the entry that was just created.
 		 * @param string $query	The query string portion of the URL.
 		 */
-		return apply_filters( 'gform_simplepayment_return_url', $url, $form_id, $lead_id );
+		return( apply_filters( 'gform_simplepayment_return_url', $url, $form_id, $lead_id ) );
 	}
 
 	/**
@@ -657,7 +669,6 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$params['redirect_url'] = $this->return_url( $form['id'], $entry['id']).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
 		
 		$this->add_sp_pre_process( $feed, $submission_data, $form, $entry );
-
 		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form['id'], $submission_data, $feed, $entry );
 		GFAPI::update_entry_property( $entry['id'], 'payment_method', 'SimplePayment' );
 		GFAPI::update_entry_property( $entry['id'], 'payment_status', 'Processing' );
@@ -684,7 +695,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 			//$params['redirect_url'] = add_query_arg('target', '_parent', $params['redirect_url']);
 			GFSimplePayment::$params = $params;
 			$this->redirect_url = null;
-			add_filter( 'gform_confirmation', function ($confirmation, $form, $entry, $ajax ) {
+			add_filter( 'gform_confirmation', function ( $confirmation, $form, $entry, $ajax ) {
 				if (isset($confirmation['redirect'])) {
 					$url = esc_url_raw( $confirmation['redirect'] );
 					GFCommon::log_debug( __METHOD__ . '(): Redirect to URL: ' . $url );
@@ -694,7 +705,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 				// TODO: check if the previous was redirect from javascript to also disable the previous;
 				// otherwise preset html/text from confirmation
 				$confirmation = $this->SPWP->checkout(GFSimplePayment::$params);
-
+				remove_all_filters( 'gform_confirmation' );
 				return $confirmation;
 			}, 10, 4 );
 		}
@@ -750,12 +761,10 @@ class GFSimplePayment extends GFPaymentAddOn {
 		 * @param array $entry           The entry object currently being processed.
 		 */
 		$params[ 'redirect_url' ] = get_bloginfo( 'url' ) . '/?page=gf_simplepayment_ipn&entry_id=' . $entry[ 'id' ].'&redirect_url=' . urlencode($this->return_url( $form['id'], $entry['id'])).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
-		
 		$this->add_sp_pre_process( $feed, $submission_data, $form, $entry );
 
 		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form[ 'id' ], $submission_data, $feed, $entry );
 		$is_subscription = $feed[ 'meta' ][ 'transactionType' ] == 'subscription';
-
 		try {
 			$this->redirect_url = $this->SPWP->payment( $params, $engine );
 		} catch ( Exception $e ) {
@@ -846,10 +855,12 @@ class GFSimplePayment extends GFPaymentAddOn {
 			$performed_authorization = $this->authorization;
 		} else {
 			$subscription = $this->subscribe( $feed, $submission_data, $form, $entry );
-			$this->authorization[ 'is_authorized' ] = rgar( $subscription,'is_success' );
-			$this->authorization[ 'error_message' ] = rgar( $subscription, 'error_message' );
-			$this->authorization[ 'subscription' ]  = $subscription;
-			$performed_authorization = true;
+			if ( $subscription !== false ) {
+				$this->authorization[ 'is_authorized' ] = rgar( $subscription,'is_success' );
+				$this->authorization[ 'error_message' ] = rgar( $subscription, 'error_message' );
+				$this->authorization[ 'subscription' ]  = $subscription;
+				$performed_authorization = true;
+			}
 		}
 
 		if ( $performed_authorization ) {
@@ -891,6 +902,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 
 	public function subscribe( $feed, $submission_data, $form, $entry ) {
 		$subscription = $this->authorize( $feed, $submission_data, $form, $entry );
+		if ( $subscription === false ) return( false );
 		$subscription[ 'is_success' ] = $subscription[ 'captured_payment' ][ 'is_success' ];
 		$subscription[ 'subscription_id' ] = $subscription[ 'subscription_id' ];
 		$subscription[ 'amount' ] = $subscription[ 'captured_payment' ][ 'amount' ];
@@ -1213,7 +1225,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$engine_field = $this->get_fields_by_name( $form, 'engine' );
 		if ( $engine_field ) {
 			$engine = rgpost( "input_{$engine_field[0]->id}" );
-			if ($engine) $args['engine'] = $engine;
+			if ($engine) $args[ 'engine' ] = $engine;
 		}
 		
 		$card_owner_field = $this->get_card_owner_id_field( $form );
@@ -1239,8 +1251,10 @@ class GFSimplePayment extends GFPaymentAddOn {
         
 		// Customer Information
 		if (isset($submission_data['firstName'])) $args[$this->SPWP::FIRST_NAME] = $submission_data['firstName'];
-		if (isset($submission_data['lastName'])) $args[$this->SPWP::LAST_NAME]  = $submission_data['lastName'];
-		if (isset($submission_data['email'])) $args[$this->SPWP::EMAIL]     = $submission_data['email'];
+		if (isset($submission_data['lastName'])) $args[$this->SPWP::LAST_NAME] = $submission_data['lastName'];
+		if (isset($submission_data['email'])) $args[ $this->SPWP::EMAIL ] = $submission_data['email'];
+		if (isset($submission_data['phone'])) $args[ $this->SPWP::PHONE ] = $submission_data['phone'];
+		if (isset($submission_data['company'])) $args[ $this->SPWP::COMPANY ] = $submission_data['company'];
 
 		// Product Information
 		$i = 0;
@@ -1299,20 +1313,20 @@ class GFSimplePayment extends GFPaymentAddOn {
 		return $fields;
 	}
 
-	public function settings_json( $field, $echo = true ) {
-		$field['type'] = 'textarea'; //making sure type is set to textarea
+	/*public function settings_json( $field, $echo = true ) {
+		$field[ 'type' ] = 'textarea'; //making sure type is set to textarea
 		$attributes    = $this->get_field_attributes( $field );
 		$default_value = rgar( $field, 'value' ) ? rgar( $field, 'value' ) : rgar( $field, 'default_value' );
-		$value         = $this->get_setting( $field['name'], $default_value );
+		$value = $this->get_setting( $field[ 'name' ], $default_value );
 
-		$name    = '' . esc_attr( $field['name'] );
-		$html    = '';
-
+		$name = '' . esc_attr( $field['name'] );
+		$html = '';
+		$html .= print_r( $value, true );
 		$html .= '<textarea
 				name="_gaddon_setting_' . $name . '" ' .
 				implode( ' ', $attributes ) .
-				'>' .
-				($value ? json_encode($value) : '').
+				'>' . 
+				( $value ? json_encode( $value ) : '' ).
 				'</textarea>';
 
 		if ( $this->field_failed_validation( $field ) ) {
@@ -1324,7 +1338,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		}
 
 		return $html;
-	}
+	}*/
 }
 
 class GF_Field_Card_Owner_ID extends GF_Field_Text {

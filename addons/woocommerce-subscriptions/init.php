@@ -42,10 +42,10 @@ add_filter('sp_wc_payment_args', function($params, $order_id) {
     return($params);
 }, 100, 2);
 
-add_filter('sp_woocommerce_supports', function($supports, $engine = null) {
+add_filter('sp_woocommerce_supports', function( $supports, $engine = null ) {
    // TODO: apply this support when it is gateway which handles the renewals: gateway_scheduled_payments
-    return(array_merge($supports, [ 'subscription_suspension', 'subscription_cancellation', 'subscription_reactivation' ] ));
-}, 10, 2);
+    return( array_merge( $supports, [ 'subscription_suspension', 'subscription_cancellation', 'subscription_reactivation' ] ));
+}, 10, 2 );
 
 function sp_wcs_test($order_id) {
     $order = wc_get_order($order_id);

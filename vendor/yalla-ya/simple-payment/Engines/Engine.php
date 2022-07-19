@@ -8,7 +8,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-class Engine {
+abstract class Engine {
 
   public static $name = 'Base';
   public $transaction = null;

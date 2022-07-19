@@ -58,21 +58,29 @@ function sp_wc_gateway_init() {
         }
         
 		public function __construct() {
+            $supports = [ 'products', 'subscriptions', 'refunds',  'default_credit_card_form' ];
+
             $this->SPWP = SimplePaymentPlugin::instance();
-// 
 			$this->id = 'simple-payment';
-            $this->icon = apply_filters('woocommerce_offline_icon', '');
-            $engine = $this->get_option('engine') ? $this->get_option('engine') : null;
-			$this->has_fields =  $this->SPWP->supports('cvv', $engine);
+            $this->icon = apply_filters( 'woocommerce_offline_icon', '' );
+            $engine = $this->get_option( 'engine' ) ? $this->get_option( 'engine' ) : null;
+			if ( $this->SPWP->supports( 'cvv', $engine ) ) {
+                $this->has_fields = true;
+                //$supports[] = 'credit_card_form_cvc_on_saved_method';
+            }
 			$this->method_title = __( 'Simple Payment', 'simple-payment' );
 			$this->method_description = __( 'Allows integration of Simple Payment gateways into woocommerce', 'simple-payment' );
-            $this->supports =  apply_filters('sp_woocommerce_supports', [ 'products', 'tokenization', 'subscriptions', 'refunds',  'default_credit_card_form' ], $engine); 
+            if ( $this->SPWP->supports( 'cvv', $engine ) ) {
+                $supports[] = 'tokenization';
+            }
+
+            $this->supports = apply_filters( 'sp_woocommerce_supports', $supports, $engine ); 
             
             // TODO: consider taking these values from the specific engine; tokenization, subscriptions
 
             // TODO: credit_card_form_cvc_on_saved_method - add this to support when CVV is not required on tokenized cards - credit_card_form_cvc_on_saved_method
             // TODO: tokenization- in order to support tokinzation consider using the javascript
-            $this->new_method_label = __('new payment method', 'simple-payment');
+            $this->new_method_label = __( 'new payment method', 'simple-payment' );
 
             // Load the settings.
 			$this->init_form_fields();            
@@ -87,7 +95,7 @@ function sp_wc_gateway_init() {
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 			add_action( 'woocommerce_thankyou_'.$this->id, array($this, 'thankyou_page'));
           
-            if (!$this->has_fields || in_array($this->get_option('display'), ['iframe', 'modal'])) add_action('woocommerce_receipt_'.$this->id, array(&$this, 'provider_step'));
+            if ( !$this->has_fields || in_array($this->get_option('display'), ['iframe', 'modal'])) add_action( 'woocommerce_receipt_'.$this->id, array( &$this, 'provider_step' ) );
             add_action( "woocommerce_api_{$this}", array( $this, 'gateway_response' ) );
             
             // Customer Emails
@@ -104,10 +112,46 @@ function sp_wc_gateway_init() {
                 // Setting some value so it will go into the payment_fields() function
                 $this->description = ' ';
             }
+
+            add_filter( 'woocommerce_credit_card_form_fields', [ $this, 'fields' ], 50, 2 );
         }
     
         public function needs_setup() {
             return( false );
+        }
+
+        public function fields( $default_fields, $id ) {
+            if ( $id != $this->id ) return( $fields );
+            $fields = [
+                'card-name-field' => '<p class="form-row form-row-first">
+                    <label for="' . esc_attr( $this->id ) . '-card-name">' . esc_html__( 'Name on card', 'simple-payment' ) . '&nbsp;<span class="required">*</span></label>
+                    <input id="' . esc_attr( $this->id ) . '-card-name" class="input-text wc-credit-card-form-card-name" inputmode="text" autocomplete="cc-name" autocorrect="no" autocapitalize="no" spellcheck="no" type="text" placeholder="" ' . $this->field_name
+                    ( 'card-name' ) . ' />
+                </p>',
+                'card-owner-id-field' => '<p class="form-row form-row-last">
+                    <label for="' . esc_attr( $this->id ) . '-card-owner-id">' . esc_html__( 'Card Owner ID', 'simple-payment' ) . '&nbsp;<span class="required">*</span></label>
+                    <input id="' . esc_attr( $this->id ) . '-card-owner-id" class="input-text wc-credit-card-form-card-owner-id" inputmode="numeric" autocomplete="cc-owner-id" autocorrect="no" autocapitalize="no" spellcheck="no" type="tel" placeholder="" ' . $this->field_name( 'card-owner-id' ) . ' />
+                </p>',
+            ];
+
+            $default_fields = array_merge( $fields, $default_fields );
+            $installments = $this->get_option( 'installments' ) == 'yes' ? $this->SPWP->param( 'installments_default' ) : false;
+            $installments_min = $this->SPWP->param( 'installments_min' );
+            $installments_max = $this->SPWP->param( 'installments_max' );
+            if ( isset( $installments ) && $installments
+                 && isset( $installments_min ) && $installments_min 
+                && isset( $installments_max ) && $installments_max && $installments_max > 1 ) {
+                    $options = '';
+                    for ( $installment = $installments_min; $installment <= $installments_max; $installment++ ) $options .= '<option' . selected( $installments, $installment, false ) . '>' . $installment . '</option>';
+                    $fields = [
+                        'card-insallments-field' => '<p class="form-row form-row-first">
+                            <label for="' . esc_attr( $this->id ) . '-card-payments">' . esc_html__( 'Installments', 'simple-payment' ) . '</label>
+                            <select id="' . esc_attr( $this->id ) . '-card-payments" class="input-text wc-credit-card-form-card-name" inputmode="text" autocomplete="cc-payments" autocorrect="no" autocapitalize="no" spellcheck="no" type="text" placeholder="" ' . $this->field_name
+                            ( 'payments' ) . ' />' . $options . '</select>
+                        </p>' ];
+                $default_fields = array_merge( $default_fields, $fields );
+            }
+            return( $default_fields );
         }
 
 		/**
@@ -391,7 +435,7 @@ function sp_wc_gateway_init() {
 
         public function validate_fields() {
             $ok = parent::validate_fields();
-            if ($this->has_fields) {
+            if ( $this->has_fields ) {
                 $params = $this->params($_REQUEST);
                 $validations = $this->SPWP->validate($params);
                 foreach ($validations as $key => $description) {
@@ -425,11 +469,13 @@ function sp_wc_gateway_init() {
             // TODO: support product_code
             if ($this->has_fields) { 
                 // TODO: when tokenized we do not have this value
-                if (isset($params[$this->id.'-card-owner-id'])) $params[$this->SPWP::CARD_OWNER_ID] = $params[$this->id.'-card-owner-id'];
-                if (!isset($params[$this->SPWP::CARD_OWNER])) $params[$this->SPWP::CARD_OWNER] = $params['first_name'].' '.$params['last_name'];
-                if (!isset($params[$this->SPWP::CARD_OWNER]) || !$params[$this->SPWP::CARD_OWNER]) $params[$this->SPWP::CARD_OWNER] = $params['billing_first_name'].' '.$params['billing_last_name'];
-                if (isset($params[$this->id.'-card-number'])) $params[$this->SPWP::CARD_NUMBER] = str_replace(' ', '', $params[$this->id.'-card-number']);
-                if (isset($params[$this->id.'-card-cvc'])) {
+                if ( !isset( $params[$this->SPWP::CARD_OWNER])) $params[ $this->SPWP::CARD_OWNER ] = $params[ $this->id.'-card-name' ];
+
+                if ( isset($params[$this->id.'-card-owner-id'])) $params[$this->SPWP::CARD_OWNER_ID] = $params[$this->id.'-card-owner-id'];
+                if ( !isset($params[$this->SPWP::CARD_OWNER])) $params[$this->SPWP::CARD_OWNER] = $params['first_name'].' '.$params['last_name'];
+                if ( !isset($params[$this->SPWP::CARD_OWNER]) || !$params[$this->SPWP::CARD_OWNER]) $params[$this->SPWP::CARD_OWNER] = $params['billing_first_name'].' '.$params['billing_last_name'];
+                if ( isset($params[$this->id.'-card-number'])) $params[$this->SPWP::CARD_NUMBER] = str_replace(' ', '', $params[$this->id.'-card-number']);
+                if ( isset($params[$this->id.'-card-cvc'])) {
                     $params[$this->SPWP::CARD_CVV] = $params[$this->id.'-card-cvc'];
                     $expiry = $params[$this->id.'-card-expiry'];
                     $expiry = explode('/', $expiry);
@@ -545,15 +591,20 @@ function sp_wc_gateway_init() {
             ]);
         }
         
+        public function field_name( $name ) {
+            // $this->supports( 'tokenization' ) ? '' :
+            return  ' name="' . esc_attr( $this->id . '-' . $name ) . '" ';
+        }
+
         public function save_token( $payment_id, $user_id = 0 ) {
             $transaction = $this->SPWP->fetch($payment_id);
-            if (!$this->SPWP::supports('tokenization', $transaction['engine'])) return(null);
+            if ( !$this->SPWP::supports( 'tokenization', $transaction[ 'engine' ] ) ) return( null );
             //$token_number 		= $transaction->Token;
             //$token_card_type 	= $this->get_card_type( $transaction );
             //$token_last4 		= substr( $transaction->CreditCardNumber, -4 );
             //$token_expiry_month = substr( $transaction->CreditCardExpDate, 0, 2 );
             //$token_expiry_year 	= substr( date( 'Y' ), 0, 2 ) . substr( $transaction->CreditCardExpDate, -2 );
-            require('payment-token.php');
+            require( 'payment-token.php' );
             $token = new WC_Payment_Token_SimplePayment();
             $token->set_token( $transaction['transaction_id'] );
             $token->set_gateway_id( $this->id );
@@ -631,6 +682,33 @@ function sp_wc_gateway_init() {
                 'american express' 	=> __( 'American Express', 'simple-payment' )
             ) ) );
         }
+
+        /*
+        <div class="col-md-4 mb-3">
+        <?php if (isset($installments) && $installments && isset($installments_min) && $installments_min && isset($installments_max) && $installments_max && $installments_max > 1) { ?>
+        <label for="payments"><?php _e('Installments', 'simple-payment'); ?></label>
+        <select class="custom-select d-block w-100 form-control" id="payments" name="<?php echo $SPWP::PAYMENTS; ?>" required="">
+          <?php for ($installment = $installments_min; $installment <= $installments_max; $installment++) echo '<option'.selected( $installments, $installment, true).'>'.$installment.'</option>'; ?>
+        </select>
+        <div class="invalid-feedback">
+          <?php _e('Number of Installments is required.', 'simple-payment'); ?>
+        </div>
+        <?php } ?>
+      </div>
+    </div>
+    <?php if (isset($owner_id) && $owner_id) { ?>
+    <div class="row form-row">
+      <div class="col-md-6 mb-3">
+        <label for="cc-card-owner-id"><?php _e('Card Owner ID', 'simple-payment'); ?></label>
+        <input type="text" class="form-control" id="cc-card-owner-id" name="<?php echo $SPWP::CARD_OWNER_ID; ?>" placeholder="">
+        <small class="text-muted"><?php _e('Document ID as registered with card company', 'simple-payment'); ?></small>
+        <div class="invalid-feedback">
+          <?php _e('Card owner Id is required or invalid.', 'simple-payment'); ?>
+        </div>
+      </div>
+    </div>
+    <?php } ?>
+    */
   } 
 
 }

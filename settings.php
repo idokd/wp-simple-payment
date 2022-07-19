@@ -81,6 +81,13 @@ $sp_sections = [
     'description' => __('Setup your Simple Payment to accept iCredit Payments', 'simple-payment'),
     'section' => 'icredit'
   ],
+
+  'meshulam_settings' => [
+    'title' => __( 'Meshulam Gateway Settings', 'simple-payment' ),
+    'description' => __( 'Setup your Simple Payment to accept Meshulam Payments', 'simple-payment' ),
+    'section' => 'meshulam'
+  ],
+
   'creditguard_settings' => [
     'title' => __('CreditGuard Gateway Settings', 'simple-payment'),
     'description' => __('Setup your Simple Payment to accept CreditGuard Payments', 'simple-payment'),
@@ -97,7 +104,7 @@ $sp_settings = [
   'engine' => [
     'title' => __('Engine', 'simple-payment'),
     'type' => 'select',
-    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'CreditGuard' => __( 'CreditGuard', 'simple-payment' ), 'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
+    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'CreditGuard' => __( 'CreditGuard', 'simple-payment' ), 'Meshulam' => __( 'Meshulam', 'simple-payment' ), 'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
   'mode' => [ //Mode
     'title' => __('Mode', 'simple-payment'),
     'type' => 'radio',
@@ -150,7 +157,7 @@ $sp_settings = [
       'title' => __('Purge Period (days)', 'simple-payment'),
     ],
     'css' => [ 
-    'title' => __('CSS', 'simple-payment'),
+    'title' => __( 'CSS', 'simple-payment' ),
     'type' => 'textarea'
   ],
     'sp_uninstall' => [ //Mode
@@ -417,8 +424,42 @@ $sp_settings = [
     'section' => 'payme_settings'
   ],
 
+  'meshulam.username' => [
+    'title' => __( 'User ID', 'simple-payment' ),
+    'section' => 'meshulam_settings',
+    'type' => 'text'
+  ],
+  'meshulam.password' => [
+    'title' => __( 'Page Code (CC)', 'simple-payment' ),
+    'section' => 'meshulam_settings',
+    'type' => 'password'
+  ],
+  'meshulam.subscriptions' => [
+    'title' => __( 'Page Code (Subscriptions)', 'simple-payment' ),
+    'section' => 'meshulam_settings',
+    'type' => 'password'
+  ],
+  'meshulam.bit' => [
+    'title' => __( 'Page Code (bit)', 'simple-payment' ),
+    'section' => 'meshulam_settings',
+    'type' => 'password'
+  ],
+  'meshulam.apikey' => [
+    'title' => __( 'API KEY', 'simple-payment' ),
+    'section' => 'meshulam_settings',
+  ],
+  'meshulam.tokenize' => [
+    'title' => __( 'Tokenize', 'simple-payment' ),
+    'section' => 'meshulam_settings',
+    'type' => 'check'
+  ],
+  'meshulam.commision' => [
+    'title' => __( 'Commission', 'simple-payment' ),
+    'section' => 'meshulam_settings',
+  ],
+
   'icredit.password' => [
-    'title' => __('Payment Token', 'simple-payment'),
+    'title' => __( 'Payment Token', 'simple-payment'),
     'section' => 'icredit_settings',
     'type' => 'password'
   ],
@@ -516,6 +557,21 @@ $sp_settings = [
     'type' => 'check',
     'section' => 'creditguard_settings'
   ],
+  'creditguard.usecvv' => [ 
+    'title' => __( 'Use CVV on Payment Page', 'simple-payment'),
+    'type' => 'check',
+    'section' => 'creditguard_settings'
+  ],
+  'creditguard.useid' => [ 
+    'title' => __( 'Use Personal ID on Payment Page', 'simple-payment'),
+    'type' => 'check',
+    'section' => 'creditguard_settings'
+  ],
+  'creditguard.urls' => [ 
+    'title' => __( 'Use frameAncestorURLs Protection', 'simple-payment'),
+    'type' => 'check',
+    'section' => 'creditguard_settings'
+  ],
   'creditguard.language' => [ // Language
     'title' => __( 'Force Language Interface', 'simple-payment' ),
     'type' => 'select',
@@ -540,7 +596,17 @@ $sp_settings = [
     'type' => 'select',
     'options' => [ 'NoComm' => 'NoComm', 'Normal' => 'Normal', 'CreditLimit' => 'CreditLimit', 'AutoComm' => 'AutoComm', 'Verify' => 'Verify', 'Dealer' => 'Dealer', 'AutoCommHold' => 'AutoCommHold', 'Token' => 'Token', 'AutoCommRelease' => 'AutoCommRelease', 'cardNo' => 'cardNo' ],  
   ],
-
+  'creditguard.css' => [
+    'title' => __( 'Custom CSS', 'simple-payment' ),
+    'section' => 'creditguard_settings',
+    'type' => 'textarea'
+  ],
+  'creditguard.texts' => [
+    'title' => __( 'Custom Texts ( JSON )', 'simple-payment' ),
+    'section' => 'creditguard_settings',
+    'type' => 'textarea'
+  ],
+  
 
   'api_key' => [
     'title' => __('API KEY', 'simple-payment'),

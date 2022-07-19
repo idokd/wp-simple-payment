@@ -1,11 +1,11 @@
 <?php
-require(SPWP_PLUGIN_DIR.'/templates/preparation.php');
+require( SPWP_PLUGIN_DIR.'/templates/preparation.php' );
 ?>
 <div class="col-md-8 order-md-1" id="simple-payment">
-    <div class="row">
+    <div class="row form-row">
       <div class="col-md-6 mb-3">
         <label for="cc-name"><?php _e('Name on card', 'simple-payment'); ?></label>
-        <input type="text" class="form-control" id="cc-name" name="<?php echo $SPWP::CARD_OWNER; ?>" placeholder="" required="">
+        <input type="text" class="form-control input-text" id="cc-name" name="<?php echo $SPWP::CARD_OWNER; ?>" placeholder="" required="">
         <small class="text-muted"><?php _e('Full name as displayed on card', 'simple-payment'); ?></small>
         <div class="invalid-feedback">
           <?php _e('Name on card is required.', 'simple-payment'); ?>
@@ -13,13 +13,13 @@ require(SPWP_PLUGIN_DIR.'/templates/preparation.php');
       </div>
       <div class="col-md-6 mb-3">
         <label for="cc-number"><?php _e('Credit card number', 'simple-payment'); ?></label>
-        <input type="text" class="form-control" id="cc-number" name="<?php echo $SPWP::CARD_NUMBER; ?>" maxlength="16" placeholder="" required="">
+        <input type="text" class="form-control input-text wc-credit-card-form-card-number" id="cc-number" name="<?php echo $SPWP::CARD_NUMBER; ?>" maxlength="16" placeholder="" required="" inputmode="numeric" autocomplete="cc-number" autocorrect="no" autocapitalize="no" spellcheck="no" type="tel">
         <div class="invalid-feedback">
           <?php _e('Credit card number is required.', 'simple-payment'); ?>
         </div>
       </div>
     </div>
-    <div class="row">
+    <div class="row form-row">
       <div class="col-md-3 mb-3">
         <label for="cc-expiry-month"><?php _e('Expiration', 'simple-payment'); ?></label>
         <select class="custom-select d-block w-100 form-control" id="cc-expiry-month" name="<?php echo $SPWP::CARD_EXPIRY_MONTH; ?>" required=""><option></option>
@@ -42,7 +42,7 @@ require(SPWP_PLUGIN_DIR.'/templates/preparation.php');
       </div>
       <div class="col-md-2 mb-3">
         <label for="cc-cvv"><?php _e('CVV', 'simple-payment'); ?></label>
-        <input type="text" class="form-control" id="cc-cvv" name="<?php echo $SPWP::CARD_CVV; ?>" maxlength="4" placeholder="" required="">
+        <input type="text" class="form-control input-text wc-credit-card-form-card-cvc" id="cc-cvv" name="<?php echo $SPWP::CARD_CVV; ?>" maxlength="4" placeholder="" required="" inputmode="numeric" autocomplete="off" autocorrect="no" autocapitalize="no" spellcheck="no" type="tel">
         <div class="invalid-feedback">
           <?php _e('Required.', 'simple-payment'); ?>
         </div>
@@ -60,7 +60,7 @@ require(SPWP_PLUGIN_DIR.'/templates/preparation.php');
       </div>
     </div>
     <?php if (isset($owner_id) && $owner_id) { ?>
-    <div class="row">
+    <div class="row form-row">
       <div class="col-md-6 mb-3">
         <label for="cc-card-owner-id"><?php _e('Card Owner ID', 'simple-payment'); ?></label>
         <input type="text" class="form-control" id="cc-card-owner-id" name="<?php echo $SPWP::CARD_OWNER_ID; ?>" placeholder="">

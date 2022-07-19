@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.2.7
+ * Version: 2.2.8
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -44,7 +44,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   public static $instance;
 
   public static $table_name = 'sp_transactions';
-  public static $engines = [ 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'CreditGuard', 'Credit2000', 'Custom' ];
+  public static $engines = [ 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'CreditGuard', 'Meshulam', 'Credit2000', 'Custom' ];
 
   public static $fields = [ 'payment_id', 'transaction_id', 'target', 'type', 'callback', 'display', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::PRODUCTS, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE ];
 
@@ -78,7 +78,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
   public function __construct( $params = [] ) {
     $option = get_option( 'sp' ) ? : [];
-    parent::__construct( array_merge( array_merge( $this->defaults, $params ), $option ) );
+    parent::__construct( apply_filters( 'sp_settings', array_merge( array_merge( $this->defaults, $params ), $option ) ) );
     self::$license = get_option( 'sp_license' );
     $plugin = get_file_data( __FILE__, array( 'Version' => 'Version' ), false );
     self::$version = $plugin[ 'Version' ];
@@ -399,7 +399,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
     $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'sp';
     $section = $tab;
-    $tabs = apply_filters( 'sp_admin_tabs', [ 'General', 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'CreditGuard', 'Credit2000', 'License', 'Extensions', 'Shortcode', 'Instructions' ] );
+    $tabs = apply_filters( 'sp_admin_tabs', [ 'General', 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'Meshulam', 'iCredit', 'CreditGuard', 'Credit2000', 'License', 'Extensions', 'Shortcode', 'Instructions' ] );
     ?>
     <div class="wrap">
       <h1><?php _e('Simple Payment Settings', 'simple-payment'); ?></h1>
@@ -786,7 +786,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
   }
   
   public static function supports($feature, $engine = null) {
-    return(parent::supports( $feature, $engine ? : self::param( 'engine' ) ) );
+    return( parent::supports( $feature, $engine ? : self::param( 'engine' ) ) );
   }
 
   function callback() {

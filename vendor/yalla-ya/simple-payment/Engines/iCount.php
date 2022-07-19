@@ -25,6 +25,16 @@ class iCount extends Engine {
 
     public static $supports = [ 'cvv', 'tokenization', 'card_owner_id' ];
 
+    public function __construct($params = null, $handler = null, $sandbox = true) {
+      parent::__construct( $params, $handler, $sandbox );
+      //if ( $this->param( 'use_storage' ) ) self::$supports[] = 'tokenization';
+      //$this->password = $this->sandbox ? $this->password : $this->param('password');
+      //$this->box = $this->sandbox ? $this->box : $this->param('box');
+      //$this->api = $this->api[$this->sandbox? 'sandbox' : 'live'];
+    }
+
+
+    // 
     public static function is_subscription( $params ) {
       if ( !isset( $params[ 'payments' ] ) ) return( false );
       $period = false;

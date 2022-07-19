@@ -107,7 +107,7 @@ class CreditGuard extends Engine {
       'request' => $xml,
       'response' => $response
     ] );
-    return( $data  );
+    return( $data );
   }
 
   public function verify( $transaction = null ) {
@@ -176,45 +176,43 @@ class CreditGuard extends Engine {
   }
 
   public function post_process( $params ) {
+    $response = $_REQUEST;
     if ( $this->param( 'mode' ) == 'redirect' ) {
-      $response = $_REQUEST;
-      $status = isset( $params[ 'ErrorCode' ] ) && intval( $params[ 'ErrorCode' ] ) == 0;
+      $status = !isset( $params[ 'ErrorCode' ] ) || intval( $params[ 'ErrorCode' ] ) == 0;
       $this->transaction = $params[ 'txId' ];
       $token = ( isset( $params[ 'cardToken' ] ) && $params[ 'cardToken' ] ) ? $params[ 'cardToken' ] : null;
       $owner_id = ( isset( $params[ 'personalId' ] ) && $params[ 'personalId' ] ) ? $params[ 'personalId' ] : null;
       $uniqueId = ( isset( $params[ 'uniqueID' ] ) && $params[ 'uniqueID' ] ) ? $params[ 'uniqueID' ] : null;
       $signature = hash( 'sha256', 
-        $this->password . $this->transaction . $params[ 'ErrorCode' ] . $token . $params[ 'cardExp' ] . $owner_id . $uniqueId
+        $this->password . $this->transaction . ( $params[ 'ErrorCode' ] ? : '000' ) . $token . $params[ 'cardExp' ] . $owner_id . $uniqueId
       );
       $status = $status && $signature == $params[ 'responseMac' ];
       $this->save( [
         'transaction_id' => $this->transaction,
-        'url' => ':post_process',
+        'url' => ':signature_process',
         'status' => $status,
         'description' => isset( $params[ 'statusText' ] ) ? $params[ 'statusText' ] : null,
         'request' => json_encode( $params ),
         'response' => json_encode( $response )
       ] );
-      if ( $status ) $status = $this->verify();
+      if ( $status ) {
+        $status = $this->verify();
+      }
       $expiration = $params[ 'cardExp' ];
     } else {
       $status = isset( $params[ 'status' ] ) && intval( $params[ 'status' ] ) == 0;
+      $token = $params[ 'cardId' ];
+      $expiration = $params[ 'cardExpiration' ];
     }
-
-    $token = $params[ 'cardId' ];
-    $expiration = $params[ 'cardExpiration' ];
-
     $this->confirmation_code = $params[ 'authNumber' ];
-    $response = $_REQUEST;
     $args = [
       'transaction_id' => $this->transaction,
-      'url' => ':verify_process',
+      'url' => 'post_process',
       'status' => isset( $params[ 'status' ] ) ? $params[ 'status' ] : '',
       'description' => isset( $params[ 'statusText' ] ) ? $params[ 'statusText' ] : null,
       'request' => json_encode( $params ),
       'response' => $this->param( 'mode' ) == 'redirect' ? json_encode( $response ) : null,
     ];
-
     // TODO: should we consider the engine confirmation for keeping tokens?
     if ( $status && $token && $this->param( 'tokenize' ) ) $args[ 'token' ] = [
       'token' => $token,
@@ -310,9 +308,10 @@ class CreditGuard extends Engine {
       // paymentsIndexType, offerCode, deferMonths, dueDate, ipayCode
 
       //$this->param('tokenize') ? true : false;
-
+    // TODO: implement 
     // paymentPageData
-
+    // useId, useCvv, customStyle, customText, iframeAnchestor
+    
     $response = $this->post( 'doDeal', $post );
     $this->transaction = $mode == 'redirect' ? ( isset( $response[ 'response' ][ 'doDeal' ][ 'token' ] ) ? $response[ 'response' ][ 'doDeal' ][ 'token' ] : $this->transaction ) : $response[ 'response' ][ 'tranId' ];
     $this->save( [
