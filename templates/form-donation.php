@@ -9,7 +9,7 @@ var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
 <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo $SPWP->payment_page(); ?>" method="post"<?php echo $target; ?>>
   <input type="hidden" name="op" value="purchase" />
   <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
-  <?php if (isset($_REQUEST['message']) && $message = $_REQUEST['message']) { ?><div class="alert alert-warning" role="alert"><?php echo $message; ?></div><?php } ?>
+  <?php if ( isset( $_REQUEST[ 'message' ] ) && $message = $SPWP::get_message( $_REQUEST[ 'message' ] ) ) { ?><div class="alert alert-warning" role="alert"><?php echo esc_html( $message ); ?></div><?php } ?>
 
   <h4 class="mb-3"><?php _e('Donation Information', 'simple-payment'); ?></h4>
   <div class="mb-3">

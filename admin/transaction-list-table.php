@@ -315,7 +315,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
           break;
       }
       
-      wp_redirect( wp_get_referer() );
+      wp_safe_redirect( wp_get_referer() );
       return;
     }
     // If the delete bulk action is triggered
@@ -341,7 +341,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
             break;
         }
       }
-      wp_redirect( wp_get_referer() );
+      wp_safe_redirect( wp_get_referer() );
       return;
     }
   }

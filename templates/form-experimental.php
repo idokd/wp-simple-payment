@@ -11,7 +11,7 @@ var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
   <input type="hidden" name="product" value="<?php echo $product; ?>" />
   <input type="hidden" name="amount" value="<?php echo $amount; ?>" />
   <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
-  <?php if (isset($_REQUEST['message']) && $message = $_REQUEST['message']) { ?><div class="alert alert-warning" role="alert"><?php echo $message; ?></div><?php } ?>
+  <?php if ( isset( $_REQUEST[ 'message' ] ) && $message = $SPWP::get_message( $_REQUEST[ 'message' ] ) ) { ?><div class="alert alert-warning" role="alert"><?php echo esc_html( $message ); ?></div><?php } ?>
 
   <h4 class="mb-3"><?php _e('Billing Information', 'simple-payment'); ?></h4>
     <div class="row">

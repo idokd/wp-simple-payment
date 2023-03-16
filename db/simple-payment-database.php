@@ -4,7 +4,7 @@ if (!defined("ABSPATH")) {
   exit; // Exit if accessed directly
 }
 
-$sp_db_version = '25';
+$sp_db_version = '26';
 
 register_activation_hook( __FILE__, 'sp_install' );
 register_activation_hook( __FILE__, 'sp_install_data' );
@@ -13,7 +13,7 @@ add_action( 'plugins_loaded', 'sp_update_db_check' );
 
 function sp_update_db_check() {
     global $sp_db_version;
-    if ( absint(get_option( 'sp_db_version' )) != absint($sp_db_version) ) {
+    if ( absint( get_option( 'sp_db_version' ) ) != absint( $sp_db_version ) ) {
         sp_install();
     }
 }
@@ -29,7 +29,7 @@ function sp_install() {
     `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
     `engine` VARCHAR(50) DEFAULT NULL,
     `status` VARCHAR(50) DEFAULT NULL,
-    `transaction_id` VARCHAR(50) DEFAULT NULL,
+    `transaction_id` VARCHAR(80) DEFAULT NULL,
     `url` TEXT DEFAULT NULL,
     `payments` VARCHAR(255) DEFAULT NULL,
     `parameters` TEXT DEFAULT NULL,
@@ -64,7 +64,7 @@ function sp_install() {
   $sql[] = "CREATE TABLE $table_name (
     `id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
     `payment_id` MEDIUMINT(9) DEFAULT NULL,
-    `transaction_id` VARCHAR(50) DEFAULT NULL,
+    `transaction_id` VARCHAR(80) DEFAULT NULL,
     `url` TEXT DEFAULT NULL,
     `status` INT DEFAULT NULL,
     `description` TEXT DEFAULT NULL,
@@ -107,7 +107,7 @@ function sp_install() {
   $sql = "DROP TABLE IF EXISTS " . $table_name;
   $wpdb->query($sql);
 
-  update_option( "sp_db_version", $sp_db_version );
+  update_option( 'sp_db_version', $sp_db_version );
 }
 
 function sp_install_data() {
@@ -135,7 +135,7 @@ function sp_uninstall() {
   if ($uninstall == 'all' || $uninstall == 'tables') {
     $tables = ['transactions', 'payments', 'history', 'cardcom'];
     foreach ($tables as $table) $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . "sp_".$table);
-    $options = ['sp_db_version'];
+    $options = [ 'sp_db_version' ];
     foreach ($options as $option) {
       delete_option($option);
       delete_site_option($option);

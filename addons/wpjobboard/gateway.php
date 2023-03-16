@@ -147,7 +147,7 @@ class Wpjb_Payment_SimplePayment extends Wpjb_Payment_Abstract {
                 SimplePayment.submit(".json_encode($params).", '".($params['display'] ? 'sp-'.$params['display'] : '')."');
             </script>";
         } else {
-            $html = SimplePaymentPlugin::redirect($url, null, true);
+            $html = SimplePaymentPlugin::redirect( $url, null, true );
         }
         return($html);
     }

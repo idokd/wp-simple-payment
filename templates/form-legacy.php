@@ -12,7 +12,7 @@ var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
   <input type="hidden" name="amount" value="<?php echo $amount; ?>" />
   <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
 
-  <?php if (isset($_REQUEST['message']) && $message = $_REQUEST['message']) { ?><div class="alert alert-warning" role="alert"><?php echo $message; ?></div><?php } ?>
+  <?php if ( isset( $_REQUEST[ 'message' ] ) && $message = $SPWP::get_message( $_REQUEST[ 'message' ] ) ) { ?><div class="alert alert-warning" role="alert"><?php echo esc_html( $message ); ?></div><?php } ?>
 
     <div class="mb-3">
       <label for="email"><?php _e('Email', 'simple-payment'); ?></label>

@@ -20,6 +20,11 @@ class Meshulam extends Engine {
 
   public static $methods = [ 'cc', 'bit' ];
 
+  public static $domains = [
+    'secure.meshulam.co.il',
+    'sandbox.meshulam.co.il'
+  ];
+
   public $api = [
     'live' => [
       'createPaymentProcess' => 'https://secure.meshulam.co.il/api/light/server/1.0/createPaymentProcess',
@@ -58,8 +63,19 @@ class Meshulam extends Engine {
   public function verify( $transaction = null ) {
     if ( $transaction ) $this->transaction = $transaction[ 'transaction_id' ];
     $ids = explode( '-', $this->transaction );
+    $method = isset( $ids[ 2 ] ) ? $ids[ 2 ] : 2;
+    switch( $method ) {
+      case 1:
+        $password = $this->param( 'subscriptions' );
+        break;
+      case 3:
+        $password = $this->param( 'bit' );
+        break;
+      default:
+        $password = $this->password;
+    }
     $params = [
-      'pageCode' => $this->password, // TODO: check if method = bit to validate bit transactions
+      'pageCode' => $password, // TODO: check if method = bit/direct debit to validate bit transactions
       'processId' => $ids[ 0 ],
       'processToken' => $ids[ 1 ],
     ];
@@ -90,43 +106,59 @@ class Meshulam extends Engine {
 
   public function status( $params ) {
     parent::status( $params );
-    $this->transaction = $this->trans_id( $params );
+    $info = $params[ 'data' ];
+    $this->transaction = $this->trans_id( $info );
+    //if ( $params[ 'status' ] != 1 ) 
+      //throw new Exception( isset( $params[ 'err' ] ) ? $params[ 'err' ][ 'message' ] : $params[ 'status' ], $params[ 'err' ][ 'id' ] );
+      
     $token = null;
-    if ( isset( $params[ 'cardToken' ] ) && $params[ 'cardToken' ] ) {
+    if ( isset( $info[ 'cardToken' ] ) && $info[ 'cardToken' ] ) {
       $token = [
-          'token' => $params[ 'cardToken' ],
-          SimplePayment::CARD_OWNER => $params[ 'fullName' ],
-          SimplePayment::CARD_EXPIRY_YEAR => substr( $params[ 'cardExp' ], 2 ),
-          SimplePayment::CARD_EXPIRY_MONTH => substr( $params[ 'cardExp' ], 0, 2 ),
-          'card_type' => $params[ 'cardType' ],
-          'expiry' => $params[ 'cardExp' ],
-          'brand' => $params[ 'cardBrand' ],
-          'suffix' => $params[ 'cardSuffix' ],
+          'token' => $info[ 'cardToken' ],
+          SimplePayment::CARD_OWNER => $info[ 'fullName' ],
+          SimplePayment::CARD_EXPIRY_YEAR => substr( $info[ 'cardExp' ], 2 ),
+          SimplePayment::CARD_EXPIRY_MONTH => substr( $info[ 'cardExp' ], 0, 2 ),
+          'card_type' => $info[ 'cardType' ],
+          'expiry' => $info[ 'cardExp' ],
+          'brand' => $info[ 'cardBrand' ],
+          'suffix' => $info[ 'cardSuffix' ],
       ];
     }
     $data = [
       'transaction_id' => $this->transaction,
+      'payment_id' => $info[ 'customFields' ][ 'cField1' ],
       'url' => $_SERVER[ 'REQUEST_URI' ],
-      'status' => isset( $status[ 'status' ] ) && $status[ 'status' ] ? $status[ 'status' ] : $status[ 'err' ][ 'id' ],
-      'description' => isset( $status[ 'err' ] ) && isset( $status[ 'err' ][ 'message' ] ) ? $status[ 'err' ][ 'message' ] : null,
+      'status' => isset( $params[ 'status' ] ) && $params[ 'status' ] ? $params[ 'status' ] : $params[ 'err' ][ 'id' ],
+      'description' => isset( $params[ 'err' ] ) && isset( $params[ 'err' ][ 'message' ] ) ? $params[ 'err' ][ 'message' ] : null,
       'request' => json_encode( $_REQUEST ),
       'response' => null
     ];
     if ( $token ) $data[ 'token' ] = $token;
     $this->save( $data );
 
-    $this->confirmation_code = $params[ 'status' ] == 1 ? $params[ 'asmachta' ] : null;
-    $this->password = $params[ 'paymentType' ] == 1 ? $this->param( 'subscriptions' ) : $this->password;
-    $params[ 'pageCode' ] = $params[ 'transactionTypeId' ] == 1 ? $this->password : $this->param( 'bit' );
-    $status = $this->post( $this->api[ 'approveTransaction' ], $params ); 
+    $this->confirmation_code = $params[ 'status' ] == 1 ? $info[ 'asmachta' ] : null;
+
+    switch( $info[ 'transactionTypeId' ] ) {
+      case 1:
+        $password = $this->param( 'subscriptions' );
+        break;
+      case 3:
+        $password = $this->param( 'bit' );
+        break;
+      default:
+        $password = $this->password;
+    }
+    $info[ 'pageCode' ] = $password;
+    $status = $this->post( $this->api[ 'approveTransaction' ], $info ); 
     $status = json_decode( $status, true );
     $response = $status[ 'data' ];
     $this->save([
       'transaction_id' => $this->transaction,
+      'payment_id' => $info[ 'customFields' ][ 'cField1' ],
       'url' => $this->api[ 'approveTransaction' ],
       'status' => isset( $status[ 'status' ] ) && $status[ 'status' ] ? $status[ 'status' ] : $status[ 'err' ][ 'id' ],
       'description' => isset( $status[ 'err' ] ) && isset( $status[ 'err' ][ 'message' ] ) ? $status[ 'err' ][ 'message' ] : null,
-      'request' => json_encode( $params ),
+      'request' => json_encode( $info ),
       'response' => json_encode( $status ),
     ] );
     return( $this->confirmation_code );
@@ -149,10 +181,11 @@ class Meshulam extends Engine {
 
   public function pre_process( $params ) {
     $currency = isset( $params[ SimplePayment::CURRENCY ] ) && $params[ SimplePayment::CURRENCY ] ? $params[ SimplePayment::CURRENCY ] : $this->param( 'currency' );
-    
+    $method = 2;
     if ( isset( $params[ 'payments' ] ) && $params[ 'payments' ] ) {
       if ( $params[ 'payments' ] == 'monthly' ) {
         $this->password = $this->param( 'subscriptions' );
+        $method = 1;
       }
       if ( $params[ 'payments' ] == 'installments' ) {
         $payments = $this->param( 'installments_max' );
@@ -162,7 +195,7 @@ class Meshulam extends Engine {
         $post[ 'paymentNum' ] = isset( $params[ 'installments' ] ) && $params[ 'installments' ] ? $params[ 'installments' ] : $this->param( 'installments_default' );
       }
     }
-
+    if ( isset( $params[ SimplePayment::METHOD ] ) && strtolower( $params[ SimplePayment::METHOD ] ) == 'bit' ) $method = 3;
     $post = [
       'userId' => $this->username,
       'pageCode' => isset( $params[ SimplePayment::METHOD ] ) && strtolower( $params[ SimplePayment::METHOD ] ) == 'bit' ? $this->param( 'bit' ) : $this->password,
@@ -185,19 +218,18 @@ class Meshulam extends Engine {
     }
 
     if ( isset( $params[ 'payment_id' ] ) && $params[ 'payment_id' ] ) $post[ 'cField1' ] = $params[ 'payment_id' ];
-    
-    if ( isset( $params[ SimplePayment::FULL_NAME ]) && $params[SimplePayment::FULL_NAME]) $post[ 'pageField[fullName]' ] = $params[ SimplePayment::FULL_NAME ];
-    if ( isset( $params[ SimplePayment::MOBILE ] ) && $params[ SimplePayment::MOBILE ]) $post[ 'pageField[phone]' ] = $params[ SimplePayment::MOBILE ];
-    if ( isset( $params[ SimplePayment::PHONE ] ) && $params[ SimplePayment::PHONE ]) $post[ 'pageField[phone]' ] = $params[ SimplePayment::PHONE ];
+  
+    if ( isset( $params[ SimplePayment::FULL_NAME ]) && $params[SimplePayment::FULL_NAME]) $post[ 'pageField[fullName]' ] = strpos( ' ', $params[ SimplePayment::FULL_NAME ] ) === false ? $params[ SimplePayment::FULL_NAME ] . ' .' : $params[ SimplePayment::FULL_NAME ];
+    if ( isset( $params[ SimplePayment::MOBILE ] ) && $params[ SimplePayment::MOBILE ]) $post[ 'pageField[phone]' ] = preg_replace( '/\D/', '', $params[ SimplePayment::MOBILE ] );
+    if ( isset( $params[ SimplePayment::PHONE ] ) && $params[ SimplePayment::PHONE ]) $post[ 'pageField[phone]' ] = preg_replace('/\D/', '', $params[ SimplePayment::PHONE ] );
     if ( isset( $params[ SimplePayment::EMAIL ] ) && $params[ SimplePayment::EMAIL ]) $post[ 'pageField[email]' ] = $params[ SimplePayment::EMAIL ];
-
     if ( isset( $params[ SimplePayment::COMPANY ] ) && $params[ SimplePayment::COMPANY ]) $post[ 'pageField[invoiceName]' ] = $params[ SimplePayment::COMPANY ];
 
 
     $status = $this->post( $this->api[ 'createPaymentProcess' ], $post ); 
     $status = json_decode( $status, true );
     $response = $status[ 'data' ];
-    $this->transaction = $this->transaction ? : $this->trans_id( $response );
+    $this->transaction = $this->transaction ? : $this->trans_id( array_merge( [ 'transactionTypeId' => $method ], $response ) );
 
     $this->save([
       'transaction_id' => $this->transaction,
@@ -225,7 +257,7 @@ class Meshulam extends Engine {
     $status = $this->post( $this->api[ 'settleSuspendedTransaction' ], $params );
     $status = json_decode( $status, true );
     $response = $status[ 'data' ];
-    $this->save([
+    $this->save( [
       'transaction_id' => $this->transaction,
       'url' => $this->api[ 'settleSuspendedTransaction' ],
       'status' => isset( $status[ 'status' ] ) && $status[ 'status' ] ? $status[ 'status' ] : $status[ 'err' ][ 'id' ],
@@ -289,9 +321,7 @@ class Meshulam extends Engine {
   }
 
   public function trans_id( $params ) { 
-    // TODO: should we include method here?
-    return( $params[ 'processId' ] . '-' . $params[ 'processToken' ] );
-
+    return( $params[ 'processId' ] . '-' . $params[ 'processToken' ] . ( isset( $params[ 'transactionTypeId' ] ) ?  '-' . $params[ 'transactionTypeId' ] : '' ) );
   }
 /*
   public function subscriptions( $params = [] ) {

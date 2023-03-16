@@ -1,6 +1,6 @@
 <?php
-require('preparation.php');
-wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL.'assets/js/form-checkout.js', [], $SPWP::$version, true );
+require( 'preparation.php' );
+wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL . 'assets/js/form-checkout.js', [], $SPWP::$version, true );
 ?>
 <script>
 var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
@@ -13,7 +13,7 @@ var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
   <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
   <input type="hidden" name="display" value="<?php echo $display; ?>" />
 
-  <?php if (isset($_REQUEST['message']) && $message = $_REQUEST['message']) { ?><div class="alert alert-warning" role="alert"><?php echo $message; ?></div><?php } ?>
+  <?php if ( isset( $_REQUEST[ 'message' ] ) && $message = $SPWP::get_message( $_REQUEST[ 'message' ] ) ) { ?><div class="alert alert-warning" role="alert"><?php echo esc_html( $message ); ?></div><?php } ?>
 
     <div class="mb-3">
       <label for="email"><?php _e('Email', 'simple-payment'); ?></label>

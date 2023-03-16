@@ -52,7 +52,7 @@ class SimplePayment {
       if ( !$this->is_cli() && ( !isset( $_SERVER[ 'HTTPS' ] ) || !$_SERVER[ 'HTTPS' ] ) ) throw new Exception( 'HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500 );
     }
     $class = class_exists( $engine ) ? $engine : __NAMESPACE__ . '\\Engines\\' . $engine;
-    $settings = self::param( strtolower( isset( $class::$name ) ? $class::$name : $engine ) );
+    $settings = static::param( strtolower( isset( $class::$name ) ? $class::$name : $engine ) );
     foreach ( self::$params as $key => $value ) if ( !is_array( $value ) && !isset( $settings[ $key ] ) ) $settings[ $key ] = $value; 
     $this->engine = new $class( $settings, $this, $this->sandbox );
   }
@@ -65,16 +65,16 @@ class SimplePayment {
     return(in_array($feature, $class::$supports) || self::param(strtolower($engine).'.'.$feature));
   }
 
-  public static function param($key = null, $default = false) {
-    if (!$key) return(self::$params);
-    if (!self::$params) return($default);
-    $keys = explode('.', $key);
+  public static function param( $key = null, $default = false ) {
+    if ( !$key ) return( self::$params );
+    if ( !self::$params ) return( $default );
+    $keys = explode( '.', $key );
     $value = self::$params;
-    if (!isset($value[$keys[0]])) return($default);
-    foreach ($keys as $k) {
-      $value = isset($value[$k]) ? $value[$k] : $default;
+    if ( !isset( $value[ $keys[ 0 ] ] ) ) return( $default );
+    foreach ( $keys as $k ) {
+      $value = isset( $value[ $k ] ) ? $value[ $k ] : $default;
     }
-    return($value);
+    return( $value );
   }
 
   function refund( $params = [] ) {

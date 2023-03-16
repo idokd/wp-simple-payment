@@ -199,7 +199,10 @@ class GFSimplePayment extends GFPaymentAddOn {
 	public function can_create_feed() {
         return true; 
 	}
-
+	
+	public function can_duplicate_feed( $feed ) {
+		return( true );
+	}
 	/**
 	 * Configures the settings which should be rendered on the feed edit page.
 	 *
@@ -438,6 +441,11 @@ class GFSimplePayment extends GFPaymentAddOn {
 					'label'    => esc_html__( 'Company', 'simple-payment' ),
 					'required' => false,
 				),
+				array(
+					'name'     => 'product_code',
+					'label'    => esc_html__( 'Product Code', 'simple-payment' ),
+					'required' => false,
+				),
 		);
 		return array_merge( $fields, parent::billing_info_fields() );
 	}
@@ -485,9 +493,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 		}
 	}
 	
-
-
 	public static function maybe_thankyou_page() {
+		global $SPWP;
 		$instance = self::get_instance();
 		if ( ! $instance->is_gravityforms_supported() ) {
 			return;
@@ -504,13 +511,16 @@ class GFSimplePayment extends GFPaymentAddOn {
 				}
 				$confirmation = GFFormDisplay::handle_confirmation( $form, $lead, false );
 				if ( is_array( $confirmation ) && isset( $confirmation['redirect'] ) ) {
-					$url = $confirmation['redirect'];
-					$target = parse_url($url, PHP_URL_QUERY);
-					parse_str($target, $target);
-					$target = isset($target['target']) ? $target['target'] : '';
+					$url = $confirmation[ 'redirect' ];
+					$target = parse_url( $url, PHP_URL_QUERY );
+					parse_str( $target, $target );
+					$target = isset( $target[ 'target' ] ) ? $target[ 'target' ] : '';
+					$SPWP::redirect( $url, $target );
+					/*
+
 					$targets = explode(':', $target);
 					$target = $targets[0];
-					switch ($target) {
+					switch ( $target ) {
 						case '_top':
 						  echo '<html><head><script type="text/javascript"> top.location.replace("'.$url.'"); </script></head><body></body</html>'; 
 						  break;
@@ -526,8 +536,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 						case '_self':
 						default:
 							echo '<html><head><script type="text/javascript"> location.replace("'.$url.'"); </script></head><body></body</html>'; 
-							wp_redirect($url);
-					}
+							wp_redirect( $url );
+					}*/
 					die();
 				}
 				GFFormDisplay::$submission[ $form_id ] = array( 'is_confirmation' => true, 'confirmation_message' => $confirmation, 'form' => $form, 'lead' => $lead );
@@ -661,56 +671,54 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$params = $settings ? $settings : [];
 		if (isset($params['settings']) && $params['settings']) $params = array_merge($params, $params['settings']);
 		$params = array_merge($params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ));
-		
-		$engine = isset($params['engine']) ? $params['engine'] : null; 
-		if (!rgempty( 'gf_simplepayment_retry', $_GET )) {
-			$params['callback'] = $entry['source_url'];
+		$engine = isset( $params[ 'engine' ] ) ? $params[ 'engine' ] : null; 
+		if ( !rgempty( 'gf_simplepayment_retry', $_GET ) ) {
+			$params[ 'callback' ] = $entry[ 'source_url' ];
 		}
-		$params['redirect_url'] = $this->return_url( $form['id'], $entry['id']).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
-		
+		$params[ 'redirect_url' ] = $this->return_url( $form[ 'id' ], $entry[ 'id' ] ).( isset( $params[ 'target' ] ) && $params[ 'target' ] ? '&target=' . $params[ 'target' ] : '' );
+
 		$this->add_sp_pre_process( $feed, $submission_data, $form, $entry );
 		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form['id'], $submission_data, $feed, $entry );
-		GFAPI::update_entry_property( $entry['id'], 'payment_method', 'SimplePayment' );
-		GFAPI::update_entry_property( $entry['id'], 'payment_status', 'Processing' );
-		if (!isset($params['display']) || !in_array($params['display'], ['iframe', 'modal']) || !SimplePaymentPlugin::supports($params['display'], $engine)) {
+		GFAPI::update_entry_property( $entry[ 'id' ], 'payment_method', 'SimplePayment' );
+		GFAPI::update_entry_property( $entry[ 'id' ], 'payment_status', 'Processing' );
+		if ( !isset( $params[ 'display' ] ) || !in_array( $params[ 'display' ], [ 'iframe', 'modal' ] ) || !SimplePaymentPlugin::supports( $params[ 'display' ], $engine ) ) {
 			try {
-				$this->redirect_url = $this->SPWP->payment($params, $engine);
-				GFAPI::update_entry_property( $entry['id'], 'transaction_id', $this->SPWP->engine->transaction );
-			} catch (Exception $e) {
+				$this->redirect_url = $this->SPWP->payment( $params, $engine );
+				GFAPI::update_entry_property( $entry[ 'id' ], 'transaction_id', $this->SPWP->engine->transaction );
+			} catch ( Exception $e ) {
 				$action = array(
 					'transaction_id'   => $this->SPWP->engine->transaction,
-					'amount'         => $params[$this->SPWP::AMOUNT],
+					'amount'         => $params[ $this->SPWP::AMOUNT ],
 					'error_message'  => $e->getMessage(),
 				);
-				$this->fail_payment($entry, $action);
+				$this->fail_payment( $entry, $action );
 			}
 		}
-		if (in_array($params['display'], ['iframe', 'modal'])) {
-			if (isset($params['template']) && $params['template']) {
-				$params['type'] = 'template';
-			} else if (!isset($params['form']) || !$params['form']) {
-				$params['type'] = 'form';
-				$params['form'] = isset($_REQUEST['gform_ajax']) && $_REQUEST[ 'gform_ajax' ] ? 'plugin-addon-ajax' : 'plugin-addon';
+		if ( in_array( $params[ 'display' ], [ 'iframe', 'modal' ] ) ) {
+			if ( isset( $params[ 'template' ] ) && $params[ 'template' ] ) {
+				$params[ 'type' ] = 'template';
+			} else if ( !isset( $params[ 'form' ] ) || !$params[ 'form' ] ) {
+				$params[ 'type' ] = 'form';
+				$params[ 'form' ] = isset( $_REQUEST[ 'gform_ajax' ] ) && $_REQUEST[ 'gform_ajax' ] ? 'plugin-addon-ajax' : 'plugin-addon';
 			}
 			//$params['redirect_url'] = add_query_arg('target', '_parent', $params['redirect_url']);
 			GFSimplePayment::$params = $params;
 			$this->redirect_url = null;
 			add_filter( 'gform_confirmation', function ( $confirmation, $form, $entry, $ajax ) {
-				if (isset($confirmation['redirect'])) {
-					$url = esc_url_raw( $confirmation['redirect'] );
+				if ( isset( $confirmation[ 'redirect' ] ) ) {
+					$url = esc_url_raw( $confirmation[ 'redirect' ] );
 					GFCommon::log_debug( __METHOD__ . '(): Redirect to URL: ' . $url );
 					//$confirmation = "<script type=\"text/javascript\">window.open('$url', '_top');</script>";
 					//return($confirmation);
 				} 
 				// TODO: check if the previous was redirect from javascript to also disable the previous;
 				// otherwise preset html/text from confirmation
-				$confirmation = $this->SPWP->checkout(GFSimplePayment::$params);
+				$confirmation = $this->SPWP->checkout( GFSimplePayment::$params );
 				remove_all_filters( 'gform_confirmation' );
-				return $confirmation;
+				return( $confirmation );
 			}, 10, 4 );
 		}
-
-		return($this->redirect_url);
+		return( SimplePaymentPlugin::sanitize_redirect( $this->redirect_url ) );
 	}
 
 	/**
@@ -741,7 +749,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		
 		$params = $settings ? $settings : [];
 		if ( isset( $params[ 'settings' ] ) && $params[ 'settings' ] ) $params = array_merge( $params, $params[ 'settings' ] );
-		$params = array_merge( $params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ));
+		$params = array_merge( $params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ) );
 		
 		$engine = isset( $params[ 'engine' ] ) ? $params[ 'engine' ] : null; 
 
@@ -760,9 +768,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 		 * @param array $feed            The feed object currently being processed.
 		 * @param array $entry           The entry object currently being processed.
 		 */
-		$params[ 'redirect_url' ] = get_bloginfo( 'url' ) . '/?page=gf_simplepayment_ipn&entry_id=' . $entry[ 'id' ].'&redirect_url=' . urlencode($this->return_url( $form['id'], $entry['id'])).(isset($params['target']) && $params['target'] ? '&target='.$params['target'] : '');
+		$params[ 'redirect_url' ] = get_bloginfo( 'url' ) . '/?page=gf_simplepayment_ipn&entry_id=' . $entry[ 'id' ] . '&redirect_url=' . urlencode($this->return_url( $form[ 'id' ], $entry[ 'id' ] ) ) . ( isset( $params[ 'target' ] ) && $params[ 'target' ] ? '&target=' . $params[ 'target' ] : '' );
 		$this->add_sp_pre_process( $feed, $submission_data, $form, $entry );
-
 		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form[ 'id' ], $submission_data, $feed, $entry );
 		$is_subscription = $feed[ 'meta' ][ 'transactionType' ] == 'subscription';
 		try {
@@ -867,8 +874,9 @@ class GFSimplePayment extends GFPaymentAddOn {
 			$this->log_debug( __METHOD__ . "(): Authorization result for form #{$form['id']} submission => " . print_r( $this->authorization, true ) );
 		}
 		if ( $performed_authorization && !rgar( $this->authorization, 'is_authorized' ) ) {
+			$validation_result = $this->get_validation_result( $validation_result, $this->authorization );
 			//Setting up current page to point to the credit card page since that will be the highlighted field
-			GFFormDisplay::set_current_page( $validation_result[ 'form' ][ 'id' ], $validation_result[ 'credit_card_page' ] );
+			GFFormDisplay::set_current_page( $validation_result[ 'form' ][ 'id' ], isset( $validation_result[ 'credit_card_page' ] ) ? $validation_result[ 'credit_card_page' ] : 1 );
 		}
 		return $validation_result;
 	}
@@ -1257,6 +1265,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 		if (isset($submission_data['company'])) $args[ $this->SPWP::COMPANY ] = $submission_data['company'];
 
 		// Product Information
+		if ( isset( $submission_data[ 'product_code' ] ) ) $args[ $this->SPWP::PRODUCT_CODE ] = $submission_data[ 'product_code' ];
+
 		$i = 0;
 		$args[ $this->SPWP::CURRENCY ] = GFCommon::get_currency();
 		$args[ $this->SPWP::PRODUCT ] = '';

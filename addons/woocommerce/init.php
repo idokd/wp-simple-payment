@@ -23,16 +23,27 @@ add_filter('plugin_action_links_'.plugin_basename( __FILE__ ), 'sp_wc_gateway_pl
 add_action('plugins_loaded', 'sp_wc_gateway_init', 11);
 
 function sp_wc_maybe_failed_order() {
-    if ( $payment_id = $_REQUEST['payment_id'] ) {
-        if ( $url = $_REQUEST['redirect_url'] ) {
-            parse_str( parse_url($url, PHP_URL_QUERY), $params );
-            if ( !isset($params['order-pay'] ) || !$params['order-pay'] ) return;
-            $order = wc_get_order( $params['order-pay'] );
-            $order->add_order_note( __('Important consult payment status before processing.', 'simple-payment') );
-            $url = add_query_arg( 'payment_id', $payment_id, $url );
+    if ( $payment_id = $_REQUEST[ 'payment_id' ] ) {
+        if ( $url = $_REQUEST[ 'redirect_url' ] ) {
+            parse_str( parse_url( $url, PHP_URL_QUERY ), $params );
+            if ( !isset($params[ 'order-pay' ] ) || !$params[ 'order-pay' ] ) return;
+            $order = wc_get_order( $params[ 'order-pay' ] );
+            SimplePaymentPlugin::instance();
+            // TODO: should validate the payment id status instead of the url param
+            if ( $_REQUEST[ 'op' ] == SimplePaymentPlugin::OPERATION_SUCCESS ) {
+                $order->add_order_note( __( 'Important consult payment status before processing.', 'simple-payment' ) );
+                $url = add_query_arg( 'payment_id', $payment_id, $url );
+            } else {
+                $order->add_order_note( __( 'Payment failed, redirecting user to checkout.', 'simple-payment' ) );
+                $url = $order->get_checkout_payment_url( true );
+				$target = '_top';
+                $SPWP::redirect( $url, $target );
+                die;
+            }
+            // TODO: consider using SPWP::redirect()
             wp_redirect( $url );
             die;
-        }
+        } // 
     }
 }
 add_action( 'wc_ajax_checkout', 'sp_wc_maybe_failed_order', 5 );
@@ -301,14 +312,15 @@ function sp_wc_gateway_init() {
             if ( ! empty( $payment_id ) && $order->get_user_id() ) {
 				$this->save_token( $payment_id, $order->get_user_id() );
             }
-            $order->update_meta_data('_sp_transaction_id', $payment_id);
+            $order->update_meta_data( '_sp_transaction_id', $payment_id );
             $order->payment_complete($payment_id);
             WC()->cart->empty_cart();
+            // TODO: consider using SPWP::redirect()
             $target = isset($_REQUEST['target']) ? $_REQUEST['target'] : '';
             $targets = explode(':', $target);
             $target = $targets[0];
-            $url = $this->get_return_url($order);
-            switch ($target) {
+            $url = $this->get_return_url( $order );
+            switch ( $target ) {
                 case '_top':
                   echo '<html><head><script type="text/javascript"> top.location.replace("'.$url.'"); </script></head><body></body</html>'; 
                   break;
@@ -386,7 +398,11 @@ function sp_wc_gateway_init() {
         /**
          * Enqueues our tokenization script to handle some of the new form options.
          */
+
+         // TODO: support tokenization for credit cards inline.
+
         public function tokenization_script() {
+            return;
             wp_enqueue_script(
                 'woocommerce-tokenization-form',
                 SPWP_PLUGIN_URL.'addons/woocommerce/js/tokenization-form' . ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
@@ -542,34 +558,34 @@ function sp_wc_gateway_init() {
                 }
                 $params = apply_filters('sp_wc_payment_args', $params, $order_id );
                 $url = $external = $this->SPWP->payment( $params, $engine );
-                if (!is_bool($url)) {
+                if ( !is_bool( $url ) ) {
                     // && !add_post_meta((int) $order_id, 'sp_provider_url', $url, true) 
-                    update_post_meta((int) $order_id, 'sp_provider_url', $url);
+                    update_post_meta( (int) $order_id, 'sp_provider_url', $url );
                  }
 
-                if (!$this->has_fields && in_array($this->get_option('display'), ['iframe', 'modal'])) {
-                    if (version_compare(WOOCOMMERCE_VERSION, '2.2', '<')) $url = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), get_permalink(woocommerce_get_page_id('pay'))));
+                if ( !$this->has_fields && in_array( $this->get_option( 'display' ), [ 'iframe', 'modal' ] ) ) {
+                    if ( version_compare( WOOCOMMERCE_VERSION, '2.2', '<')) $url = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), get_permalink(woocommerce_get_page_id('pay'))));
                     else $url = add_query_arg(['order-pay' => $order_id], add_query_arg('key', $order->get_order_key(), $order->get_checkout_payment_url(true)));
                 }
                 //    if (version_compare(WOOCOMMERCE_VERSION, '2.2', '<')) $url = add_query_arg('order', $order_id, add_query_arg('key', $order->get_order_key(), get_permalink(woocommerce_get_page_id('pay'))));   
                 //    else $url = add_query_arg(['order-pay' => $order_id], add_query_arg('key', $order->get_order_key(), $order->get_checkout_order_received_url()));
                 //}
-                if ($url && $url !== true) {
+                if ( $url && $url !== true ) {
                     //return(true);
                     //wp_redirect($url);
                     // echo "<script>window.top.location.href = \"$url\";</script>";
                     //die;
                     
-                    return([
+                    return( [
                         'result' => 'success',
                         'redirect' => !$this->has_fields && in_array($this->get_option('display'), ['iframe', 'modal']) && $this->get_option('in_checkout') == 'yes' ? '#'.$external : $url,
                         'external' => $external,
                         'messages' => '<div></div>'
-                    ]);
+                    ] );
                 }
             } catch (Exception $e) {
                 $this->SPWP->error($params, $e->getCode(), $e->getMessage());
-                wc_add_notice( __('Payment error: ', 'simple-payment') . __($e->getMessage(), 'simple-payment'), 'error' );
+                wc_add_notice( __( 'Payment error: ', 'simple-payment' ) . __( $e->getMessage(), 'simple-payment' ), 'error' );
                 return;
             }
             /*try {
@@ -582,8 +598,8 @@ function sp_wc_gateway_init() {
             }*/
 			// Mark as on-hold (we're awaiting the payment)
         
-            $order->update_meta_data('_sp_transaction_id', $this->SPWP->payment_id);
-            $order->payment_complete($this->SPWP->payment_id);
+            $order->update_meta_data( '_sp_transaction_id', $this->SPWP->payment_id );
+            $order->payment_complete( $this->SPWP->payment_id );
 			WC()->cart->empty_cart();
 			return([
                 'result' => 'success',
@@ -591,6 +607,8 @@ function sp_wc_gateway_init() {
             ]);
         }
         
+        // TODO: support tokenization for credit cards inline, like icount
+
         public function field_name( $name ) {
             // $this->supports( 'tokenization' ) ? '' :
             return  ' name="' . esc_attr( $this->id . '-' . $name ) . '" ';

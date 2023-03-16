@@ -5,7 +5,7 @@ namespace SimplePayment\Engines;
 use SimplePayment\SimplePayment;
 use Exception;
 
-if (!defined("ABSPATH")) {
+if ( !defined( "ABSPATH" ) ) {
   exit; // Exit if accessed directly
 }
 
@@ -60,7 +60,7 @@ class iCount extends Engine {
       $post['currency_code'] = isset($params[SimplePayment::CURRENCY]) ? $params[SimplePayment::CURRENCY] : $this->param(SimplePayment::CURRENCY); // currency_code (cuurency_id / currency
       $post['is_credit'] = false;
       $post['sum'] = $params[SimplePayment::AMOUNT];
-      if (isset($params[SimplePayment::PAYMENTS]) && is_numeric($params[SimplePayment::PAYMENTS])) $post['num_of_payments'] = $params[SimplePayment::PAYMENTS];
+      if (isset($params[SimplePayment::PAYMENTS]) && is_numeric($params[SimplePayment::PAYMENTS])) $post['num_of_payments'] = intval( $params[SimplePayment::PAYMENTS] );
 
       $service = 'bill';
       $subscription = self::is_subscription( $params );

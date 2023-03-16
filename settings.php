@@ -81,7 +81,12 @@ $sp_sections = [
     'description' => __('Setup your Simple Payment to accept iCredit Payments', 'simple-payment'),
     'section' => 'icredit'
   ],
-
+  
+  'yaadpay_settings' => [
+    'title' => __( 'YaadPay Gateway Settings', 'simple-payment' ),
+    'description' => __( 'Setup your Simple Payment to accept YaadPay Payments', 'simple-payment' ),
+    'section' => 'yaadpay'
+  ],
   'meshulam_settings' => [
     'title' => __( 'Meshulam Gateway Settings', 'simple-payment' ),
     'description' => __( 'Setup your Simple Payment to accept Meshulam Payments', 'simple-payment' ),
@@ -104,7 +109,7 @@ $sp_settings = [
   'engine' => [
     'title' => __('Engine', 'simple-payment'),
     'type' => 'select',
-    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'CreditGuard' => __( 'CreditGuard', 'simple-payment' ), 'Meshulam' => __( 'Meshulam', 'simple-payment' ), 'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
+    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'CreditGuard' => __( 'CreditGuard', 'simple-payment' ), 'Meshulam' => __( 'Meshulam', 'simple-payment' ), 'YaadPay' => __( 'YaadPay', 'simple-payment' ),'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
   'mode' => [ //Mode
     'title' => __('Mode', 'simple-payment'),
     'type' => 'radio',
@@ -120,6 +125,13 @@ $sp_settings = [
     'title' => __('Callback URL', 'simple-payment')],
   'redirect_url' => [ // Redirect URL
     'title' => __('Redirect URL', 'simple-payment')],
+  'safe_redirect' => [ // Redirect URL
+    'title' => __( 'Safe Redirect', 'simple-payment' ),
+    'type' => 'check'
+  ],
+  'safe_redirect_domains' => [ // Redirect URL
+    'title' => __( 'Safe Redirect Domains', 'simple-payment' ) 
+  ],
   'form_type' => [ //Mode
     'title' => __('Form Template', 'simple-payment'),
     'type' => 'select',
@@ -423,6 +435,29 @@ $sp_settings = [
     'type' => 'check',
     'section' => 'payme_settings'
   ],
+
+  'yaadpay.terminal' => [
+    'title' => __( 'Terminal ID', 'simple-payment' ),
+    'section' => 'yaadpay_settings',
+    'type' => 'text'
+  ],
+  'yaadpay.username' => [
+    'title' => __( 'Username', 'simple-payment' ),
+    'section' => 'yaadpay_settings',
+    'type' => 'text'
+  ],
+  'yaadpay.password' => [
+    'title' => __( 'Password', 'simple-payment' ),
+    'section' => 'yaadpay_settings',
+    'type' => 'password'
+  ],
+
+  'yaadpay.apikey' => [
+    'title' => __( 'API Key', 'simple-payment' ),
+    'section' => 'yaadpay_settings',
+    'type' => 'password'
+  ],
+
 
   'meshulam.username' => [
     'title' => __( 'User ID', 'simple-payment' ),

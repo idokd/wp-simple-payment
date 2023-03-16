@@ -25,6 +25,10 @@ class CreditGuard extends Engine {
 
   const LANGUAGES = [ 'heb' => 'Hebrew', 'eng' => 'English' ];
 
+  public static $domains = [
+    'cgmpiuat.creditguard.co.il',
+  ];
+
   public function __construct( $params = null, $handler = null, $sandbox = true ) {
     parent::__construct( $params, $handler, $sandbox );
     $this->sandbox = false;
@@ -249,11 +253,19 @@ class CreditGuard extends Engine {
     }
     $amount = floatval( $params[ SimplePayment::AMOUNT ] ) * 100;
     $post[ 'total' ] = $amount;
-    $post[ 'transactionType' ] = 'Debit'; // Credit, RecurringDebit
+    $post[ 'transactionType' ] = 'Debit'; // Credit
     $post[ 'currency' ] = isset( $params[ SimplePayment::CURRENCY ] ) ? $params[ SimplePayment::CURRENCY ] : $this->param( SimplePayment::CURRENCY );
     $post[ 'transactionCode' ] = $this->param( 'operation' );
 
-    if ( isset( $params[ SimplePayment::PAYMENTS ] ) && is_numeric( $params[ SimplePayment::PAYMENTS ] ) && $params[ SimplePayment::PAYMENTS ] > 1 ) {
+    $subscription = static::is_subscription( $params );
+    if ( $subscription ) { // && $this->param( 'reurring' ) == 'provider'
+      $post[ 'transactionType' ] = 'RecurringDebit';
+      $post[ 'recurringTotalNo' ] = 'RecurringDebit';
+      $post[ 'recurringTotalSum' ] = 'RecurringDebit';
+      $post[ 'recurringFrequency' ] = $subscription;
+      $post[ 'total' ] = $amount ? : 100; // 1 NIS for creating verification/tokenization
+      $post[ 'creditType' ] = 'RegularCredit';
+    } else if ( isset( $params[ SimplePayment::PAYMENTS ] ) && is_numeric( $params[ SimplePayment::PAYMENTS ] ) && $params[ SimplePayment::PAYMENTS ] > 1 ) {
       $post[ 'creditType' ] = $this->param( 'credit' ) ? 'IsraCredit' : 'Payments';
       $post[ 'numberOfPayments' ] = $post[ 'creditType' ] == 'Payments' ? $params[ SimplePayment::PAYMENTS ] : $params[ SimplePayment::PAYMENTS ];
       if ( !$this->param( 'credit' ) ) {
@@ -279,7 +291,6 @@ class CreditGuard extends Engine {
       $post[ 'errorUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_ERROR, $params ) );
       $post[ 'cancelUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_CANCEL, $params ) );
       $post[ 'uniqueid' ] = self::uuid();
-     // $post[ 'IndicatorUrl' ] = urlencode( $this->url( SimplePayment::OPERATION_STATUS, $params ) );
     } else {
       $post[ 'validation' ] = $this->param( 'validation' ); // TODO: determine the validation via parameter
       
@@ -326,6 +337,26 @@ class CreditGuard extends Engine {
       throw new Exception( isset( $response[ 'response'][ 'message' ] ) && $response[ 'response'][ 'message' ] ? $response[ 'response'][ 'message' ] : 'REDIRECT_URL_NOT_PROVIDED', $response[ 'response'][ 'result' ] );
     }
     return( $response[ 'response'][ 'doDeal' ] );
+  }
+
+
+  public static function is_subscription( $params ) {
+    if ( !isset( $params[ 'payments' ] ) ) return( false );
+    $period = false;
+    switch( $params[ 'payments' ] ) {
+      case 'yearly':
+        $period = 52;
+        break;
+      case 'quarterly':
+        $period = 14;
+        break;
+      case 'semesterly':
+        $period = 26;
+        break;	
+      case 'monthly':
+        $period = 4;
+    }
+    return( $period );
   }
 
 }

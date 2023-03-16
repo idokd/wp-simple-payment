@@ -20,6 +20,10 @@ class Credit2000 extends Engine {
 
   public static $supports = [ 'iframe', 'modal', 'tokenization', 'card_owner_id' ];
 
+  public static $domains = [
+    'www.credit2000.co.il',
+  ];
+
   public $api = [
     'wsdl' => 'https://www.credit2000.co.il/pci_tkn_ver7/wcf/wscredit2000.asmx?WSDL'
     // Old One

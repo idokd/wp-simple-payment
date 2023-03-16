@@ -33,8 +33,16 @@ abstract class Engine {
   }
 
   protected function param( $key ) {
-    if ( isset(self::$params[$key])) return( self::$params[ $key ] );
+    if ( isset( self::$params[ $key ] ) ) return( self::$params[ $key ] );
     return( SimplePayment\SimplePayment::param( $key ) );
+  }
+
+  public function set( $key, $value ) {
+    self::$params[ $key ] = $value;
+  }
+
+  public function payment_id( $params ) {
+    return( isset( $params[ 'payment_id' ] ) && $params[ 'payment_id' ] ? $params[ 'payment_id' ] : false );
   }
 
   public function process( $params ) {
@@ -98,9 +106,9 @@ abstract class Engine {
           }
       }
     }
-    $params['request'] = json_encode($request);
-    $params['response'] = json_encode($response);
-    return($this->save($params));
+    $params[ 'request' ] = json_encode( $request );
+    $params[ 'response' ] = json_encode( $response );
+    return( $this->save( $params ) );
   }
 
   protected function save( $params ) {

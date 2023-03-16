@@ -13,8 +13,8 @@ var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
 <?php if (isset($engine)) { ?><input type="hidden" name="engine" value="<?php echo $engine; ?>" /><?php } ?>
 <?php if (isset($currency)) { ?><input type="hidden" name="currency" value="<?php echo $currency; ?>" /><?php } ?>
 <?php if (isset($redirect_url)) { ?><input type="hidden" name="redirect_url" value="<?php echo $redirect_url; ?>" /><?php } ?>
-<?php if (isset($_REQUEST['message']) && $message = $_REQUEST['message']) { ?><div class="alert alert-warning" role="alert"><?php echo $message; ?></div><?php } ?>
-    
+<?php if ( isset( $_REQUEST[ 'message' ] ) && $message = $SPWP::get_message( $_REQUEST[ 'message' ] ) ) { ?><div class="alert alert-warning" role="alert"><?php echo esc_html( $message ); ?></div><?php } ?>
+
     <h4 class="mb-3"><?php _e('Payment', 'simple-payment'); ?></h4>
     <?php if (SimplePaymentPlugin::supports('method', isset($engine) ? $engine : null)) { ?>
     <div class="d-block my-3">

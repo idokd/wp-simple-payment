@@ -18,6 +18,12 @@ class PayMe extends Engine {
 
   public static $supports = [ 'iframe', 'modal', 'tokenization' ];
 
+  // TODO: validate those domains
+  public static $domains = [
+    'live.payme.io',
+    'sandbox.payme.io'
+  ];
+
   public $api = [
     'live' => [
       'capture-sale' => 'https://live.payme.io/api/capture-sale',

@@ -20,6 +20,10 @@ class Cardcom extends Engine {
 
   public static $supports = [ 'iframe', 'modal', 'tokenization', 'subscriptions' ];
 
+  public static $domains = [
+    'secure.cardcom.solutions'
+  ];
+
   public $api = [
     'version' => 10,
     // POST
@@ -37,7 +41,7 @@ class Cardcom extends Engine {
   ];
 
   protected $terminal = 1000;
-  protected $username = 'barak9611';
+  protected $username = 'test9611';
   public $password = 'c1234567!';
 
   const LANGUAGES = [ 'he' => 'Hebrew', 'en' => 'English' ];
@@ -48,12 +52,12 @@ class Cardcom extends Engine {
   const CREDIT_TYPES = [ 1 => 'Normal', 6 => 'Credit'];
   const DOC_OPERATIONS = [ 0 => 'No Invoice', 1 => 'Invoice', 2 => 'Forward (Do not show)'];
 
-  public function __construct($params = null, $handler = null, $sandbox = true ) {
+  public function __construct( $params = null, $handler = null, $sandbox = true ) {
     parent::__construct( $params, $handler, $sandbox );
-    $this->sandbox = $this->sandbox ? : !($this->param( 'terminal' ) && $this->param( 'username' ) );
+    $this->sandbox = $this->sandbox ? : !( $this->param( 'terminal' ) && $this->param( 'username' ) );
   }
 
-  public function process($params) {
+  public function process( $params ) {
     //header("Location: ".$params['url']);
     //return(true);
     return( $params[ 'url' ] );
