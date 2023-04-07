@@ -16,8 +16,8 @@
             // to the order_review form, or add checkout class to form, but check carefully the impact
         },
 
-        scroll_to: function(o) {
-            $.scroll_to_notices($('[sp-data="container"]'));
+        scroll_to: function( o ) {
+            $.scroll_to_notices( $ ('[sp-data="container"]' ) );
         },
 
         form_unblock: function() {
@@ -26,24 +26,32 @@
         },
 
         place_order: function() {
+            console.log( 'SimplePayment place_order' );
             SimplePaymentWooCommerce.form_unblock();
-            if (!SimplePayment.params['woocommerce_show_checkout']) return;
-            if (!(SimplePayment.params['display'] == 'iframe' ||
-                SimplePayment.params['display'] == 'modal')) return;
-
-            $(document).ajaxSuccess(SimplePaymentWooCommerce.place_order_success);
-            if ( 'place_order' != this.hook_level ) return;
-            // TODO: if wish to hook on place_order, process all information here.
-            return(false);
-        },
-
-        place_order_success: function(event, xhr, options, result) {
             if ( !SimplePayment.params[ 'woocommerce_show_checkout' ] ) return;
             if ( !( SimplePayment.params[ 'display' ] == 'iframe' ||
-                SimplePayment.params['display'] == 'modal' ) ) return;
-            if ( 'checkout_place_order_success' == event.type) return(true); // false for checkout error, true to process redirect
-            if ( !options || !result || options['url'] != wc_checkout_params.checkout_url) return;
-            if ('failure' === result.result) return(true);
+                SimplePayment.params[ 'display' ] == 'modal' ) ) return;
+
+            $( document ).ajaxSuccess( SimplePaymentWooCommerce.place_order_success );
+            if ( 'place_order' != this.hook_level ) return;
+            // TODO: if wish to hook on place_order, process all information here.
+            return( false );
+        },
+ 
+        place_order_success: function( event, xhr, options, result ) {
+            //if ( 'place_order_success' !== this.hook_level ) return;
+            if ( 'checkout_place_order_success' !== event.type
+                || !SimplePayment.params[ 'woocommerce_show_checkout' ] 
+                || !( SimplePayment.params[ 'display' ] == 'iframe' ||
+                    SimplePayment.params[ 'display' ] == 'modal' ) ) return;
+            //if ( 'checkout_place_order_success' == event.type ) return( true ); // false for checkout error, true to process redirect
+            console.log( 'SimplePayment place_order_success - processing' );
+            if ( typeof( result ) == 'undefined' ) { // Adapttion for the WC 7.0 while using AbortContoller and not global ajax
+                result = xhr;
+            } else {
+                if ( !options || !result || options[ 'url' ] != wc_checkout_params.checkout_url ) return;
+            }
+            if ( 'failure' === result.result ) return( true ); // probably should be false
             // We are using error on original checkout process, we might consider using success
             $( document.body ).on( 'checkout_error', this.scroll_to );
 
@@ -53,8 +61,8 @@
         }
 
     };
-    $(document).on('simple_payment_init', function() {
-        return(false); // Do not continue with the rest of simple payment init
-    });
+    $( document ).on('simple_payment_init', function() {
+        return( false ); // Do not continue with the rest of simple payment init
+    } );
     this.SimplePaymentWooCommerce = SimplePaymentWooCommerce.init();
-})(jQuery);
+ })( jQuery );

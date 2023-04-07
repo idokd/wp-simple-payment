@@ -177,7 +177,7 @@ class Cardcom extends Engine {
 
     // TODO: fetch VISA, YEAR, MONTH, ID???
     $token = null;
-    if ($status['Token']) {
+    if ( isset( $status[ 'Token' ] ) && $status[ 'Token' ] ) {
       $token = [
           'token' => $status['Token'],
           SimplePayment::CARD_OWNER => $status['CardOwnerID'],
@@ -188,7 +188,7 @@ class Cardcom extends Engine {
       ];
     }
     $response = $status;
-    $this->confirmation_code = $response['InternalDealNumber'];
+    $this->confirmation_code = isset( $response[ 'InternalDealNumber' ] ) ? $response[ 'InternalDealNumber' ] : null;
     $this->save([
       'transaction_id' => $this->transaction,
       'url' => $this->api['indicator_request'],
