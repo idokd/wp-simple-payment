@@ -5,7 +5,8 @@
         $order_review: $( '#order_review' ),
 		$checkout_form: $( 'form.checkout' ),
         $form: null,
-
+		$processing: false,
+		
         init: function() {            
             this.$form = $( document.body ).hasClass( 'woocommerce-order-pay' ) ? $( '#order_review' ) : $( 'form.checkout' );
             this.$checkout_form.on( 'checkout_place_order_' + this.payment_method, this.place_order );
@@ -31,7 +32,7 @@
             if ( !SimplePayment.params[ 'woocommerce_show_checkout' ] ) return;
             if ( !( SimplePayment.params[ 'display' ] == 'iframe' ||
                 SimplePayment.params[ 'display' ] == 'modal' ) ) return;
-
+			this.processing = true;
             $( document ).ajaxSuccess( SimplePaymentWooCommerce.place_order_success );
             if ( 'place_order' != this.hook_level ) return;
             // TODO: if wish to hook on place_order, process all information here.
@@ -40,10 +41,12 @@
  
         place_order_success: function( event, xhr, options, result ) {
             //if ( 'place_order_success' !== this.hook_level ) return;
-            if ( 'checkout_place_order_success' !== event.type
+            if ( !this.processing 
+				|| 'checkout_place_order_success' !== event.type
                 || !SimplePayment.params[ 'woocommerce_show_checkout' ] 
-                || !( SimplePayment.params[ 'display' ] == 'iframe' ||
-                    SimplePayment.params[ 'display' ] == 'modal' ) ) return;
+                || !( SimplePayment.params[ 'display' ] == 'iframe' 
+				|| SimplePayment.params[ 'display' ] == 'modal' ) ) return;
+			this.processing = false;
             //if ( 'checkout_place_order_success' == event.type ) return( true ); // false for checkout error, true to process redirect
             console.log( 'SimplePayment place_order_success - processing' );
             if ( typeof( result ) == 'undefined' ) { // Adapttion for the WC 7.0 while using AbortContoller and not global ajax

@@ -100,6 +100,13 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$this->_version = $this->SPWP::$version;
     }
 	
+	function get_post_payment_actions_config( $feed_slug ) {
+		return( [
+			'position' => 'before',
+			'setting'  => 'conditionalLogic',
+		] );
+	}
+
 	function load_scripts( $form, $is_ajax ) {
 		if ( $is_ajax ) {
 			$this->SPWP->scripts();
@@ -463,8 +470,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 		if ( $str = rgget( 'gf_simplepayment_return' ) ) {
 			$str = base64_decode( $str );
 			parse_str( $str, $query );
-			if ( wp_hash( 'ids=' . $query['ids'] ) == $query['hash'] ) {
-				list( $form_id, $entry_id ) = explode( '|', $query['ids'] );
+			if ( wp_hash( 'ids=' . $query['ids'] ) == $query[ 'hash' ] ) {
+				list( $form_id, $entry_id ) = explode( '|', $query[ 'ids' ] );
 				$form = GFAPI::get_form( $form_id );
 				$entry = GFAPI::get_entry( $entry_id );
 				$feed = $instance->get_feed( $retry );
@@ -510,7 +517,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 					require_once( GFCommon::get_base_path() . '/form_display.php' );
 				}
 				$confirmation = GFFormDisplay::handle_confirmation( $form, $lead, false );
-				if ( is_array( $confirmation ) && isset( $confirmation['redirect'] ) ) {
+				if ( is_array( $confirmation ) && isset( $confirmation[ 'redirect' ] ) ) {
 					$url = $confirmation[ 'redirect' ];
 					$target = parse_url( $url, PHP_URL_QUERY );
 					parse_str( $target, $target );
@@ -949,6 +956,9 @@ class GFSimplePayment extends GFPaymentAddOn {
 		$action[ 'payment_method' ]	= 'SimplePayment';
 		$action[ 'type' ]	= 'complete_payment';
 		$result = $this->complete_payment( $entry, $action );
+		if ( method_exists( $this, 'trigger_payment_delayed_feeds' ) ) {
+			$this->trigger_payment_delayed_feeds( $transaction_id, $feed, $entry, GFFormsModel::get_form_meta( $entry['form_id'] ) );
+		}
 	}
 
 	public function supported_notification_events( $form ) {
@@ -1018,11 +1028,14 @@ class GFSimplePayment extends GFPaymentAddOn {
 		}
 		$this->log_debug( __METHOD__ . "(): Form {$entry['form_id']} is properly configured." );
 
+		// TODO: should we check if callback is completed, or ok,
+		// and rather determine the correct action to call
+
 		//----- Processing IPN ------------------------------------------------------------//
 		$this->log_debug( __METHOD__ . '(): Processing IPN...' );
 		$action = [];
-		$action[ 'transaction_id' ]   = $entry['transaction_id'];
-		$action[ 'amount']           = $entry['payment_amount'];
+		$action[ 'transaction_id' ]   = $entry[ 'transaction_id' ];
+		$action[ 'amount']           = $entry[ 'payment_amount' ];
 		$action[ 'payment_method' ]	= 'SimplePayment';
 		$action[ 'type' ] = 'complete_payment';
 		$result = $this->complete_payment( $entry, $action );

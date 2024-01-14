@@ -37,10 +37,10 @@ function sp_wc_maybe_failed_order() {
                 $order->add_order_note( __( 'Payment failed, redirecting user to checkout.', 'simple-payment' ) );
                 $url = $order->get_checkout_payment_url( true );
 				$target = '_top';
-                $SPWP::redirect( $url, $target );
+                SimplePaymentPlugin::redirect( $url, $target );
                 die;
             }
-            // TODO: consider using SPWP::redirect()
+            // TODO: consider using SimplePaymentPlugin::redirect()
             wp_redirect( $url );
             die;
         } // 

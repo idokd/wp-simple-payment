@@ -29,6 +29,11 @@ class PayPal extends Engine {
   public $context;
   public $clientId;
 
+  public static $domains = [
+    'paypal.com',
+    'www.paypal.com'
+  ];
+
   public function __construct($params = null, $handler = null, $sandbox = true) {
     parent::__construct($params, $handler, $sandbox);
 
@@ -62,11 +67,10 @@ class PayPal extends Engine {
   }
 
   public function process($params) {
-    if ($this->context) {
-      header("Location: ".$params['url']);
-      return(true);
+    if ( $this->context ) {
+      return( $params[ 'url' ] );
     }
-    $post = $params['post'];
+    $post = $params[ 'post' ];
     // Process the transaction, for example
     // - Call payment gateway API
     // - Redirect to the payment gateway url with params
@@ -90,9 +94,11 @@ class PayPal extends Engine {
     $concept = $params['concept'];
     if ($this->context) {
       $payer = new Payer();
-      $payer->setPaymentMethod("paypal"); // $this->param('paypal_method')
-      $item = new Item();
-      $item->setName($concept)->setCurrency($currency)->setQuantity(1)->setPrice($amount);
+      $payer->setPaymentMethod( 'paypal' ); // $this->param('paypal_method')
+      $item = ( new Item() )->setName( $concept )
+        ->setCurrency( $currency )
+        ->setQuantity( 1 )
+        ->setPrice( $amount );
       $list = new ItemList();
       $list->setItems(array($item));
       $amnt = new Amount();
@@ -145,18 +151,18 @@ class PayPal extends Engine {
       $post['bn'] = 'SimplePayment'; //  we do not have BN (partner account yet)
 
     }
-    $params['post'] = $post;
+    $params[ 'post' ] = $post;
 
-    $post['url'] = $this->sandbox ? $this->api['sandbox']['post'] : $this->api['post'];
+    $post[ 'url' ] = $this->sandbox ? $this->api['sandbox']['post'] : $this->api['post'];
     $this->save([
       'transaction_id' => $this->transaction,
       'url' => $post['url'],
       'status' => null,
       'description' => 'Express Checkout',
-      'request' => json_encode($post),
+      'request' => json_encode( $params ),
       'response' => null
     ]);
-    return($params);
+    return( $params );
   }
 
   public function setCallback($url) {

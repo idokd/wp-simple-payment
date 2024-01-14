@@ -226,7 +226,7 @@ class iCount extends Engine {
           $post['cc_cvv'] = $params[SimplePayment::CARD_CVV];
           $post['cc_validity'] = $params[ SimplePayment::CARD_EXPIRY_YEAR ] . '-' . $params[ SimplePayment::CARD_EXPIRY_MONTH ];
           $post['cc_holder_name'] = $params[SimplePayment::CARD_OWNER];
-          if (isset($params[SimplePayment::CARD_OWNER_ID])) $post['cc_holder_id'] = $params[SimplePayment::CARD_OWNER_ID];
+          if ( isset( $params[ SimplePayment::CARD_OWNER_ID ] ) ) $post[ 'cc_holder_id' ] = $params[ SimplePayment::CARD_OWNER_ID ];
         }
       } else {
         $post[ 'cc' ] = [

@@ -131,13 +131,12 @@ class PayMe extends Engine {
     $language = isset($params['language']) ? $params['language'] : $this->param('language');
     $json = [
       'seller_payme_id' => $this->password,
-      'sale_price' => str_replace('.', '', $params['amount']),
+      'sale_price' =>  intval( $params[ 'amount' ] * 100 ),
       'currency' => $currency,
-      'product_name' => $params['product'],
+      'product_name' => $params[ 'product' ],
       'installments' => 1, // 103 {min}{max}
       'sale_callback_url' => $this->url(SimplePayment::OPERATION_STATUS, $params),
       'sale_return_url' => $this->url(SimplePayment::OPERATION_SUCCESS, $params),
-      'capture_buyer' => 1,
       'language' => $language
     ];
     // sale_type: authorize, token
@@ -148,12 +147,24 @@ class PayMe extends Engine {
     if (isset($params[SimplePayment::EMAIL]) && $params[SimplePayment::EMAIL]) $json['sale_email'] = $params[SimplePayment::EMAIL];
 
     $json['sale_send_notification'] = $this->param('notify') ? 1 : 0;
-    if (isset($params[SimplePayment::METHOD]) && $params[SimplePayment::METHOD]) $json['sale_payment_method'] = $params[SimplePayment::METHOD];
+    $method = isset( $params[ SimplePayment::METHOD ] ) ? $params[ SimplePayment::METHOD ] : 'credit-card';
+    if ( $method ) {
+      $json[ 'sale_payment_method' ] = $method;
+    }
+    
+    switch( $method ) {
+        case 'credit-card':
+          $json[ 'capture_buyer' ] = 1;
+          $operation = 'capture-sale';
+          break;
+        default:
+          $operation = 'generate-sale';
+    }
 
     // market_fee , capture_buyer
     // for tokenization: buyer_key
 
-    $status = $this->post($this->api['capture-sale'], json_encode($json), [ 'Content-Type: application/json' ], false);
+    $status = $this->post($this->api[ $operation ], json_encode($json), [ 'Content-Type: application/json' ], false);
     $status = json_decode($status, true);
     $status['url'] = $status['sale_url'];
     $this->transaction = $this->transaction ? : $status['payme_sale_id'];

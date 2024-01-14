@@ -391,12 +391,12 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
     );
     add_action( "load-$hook", [$this, 'transactions'] );
 
-    $hook = add_submenu_page( null,
-      __('Transaction Details', 'simple-payment'),
-      null,
+    $hook = add_submenu_page( 'simple-payments',
+      __( 'Transaction Details', 'simple-payment' ),
+      __ ('Transaction Details', 'simple-payment' ),
       'manage_options',
       'simple-payments-details',
-      [$this, 'render_transaction_log']
+      [ $this, 'render_transaction_log' ]
     );
     add_action( "load-$hook", [$this, 'info'] );
   }
@@ -854,7 +854,6 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
             try {
               if ( isset( $_REQUEST[ 'payment_id' ] ) && $_REQUEST[ 'payment_id' ] ) $params = array_merge( $this->fetch( $_REQUEST[ 'payment_id' ] ), $_REQUEST );
               else $params = $_REQUEST;
-              print $url;
               $this->post_process( $params, $engine );
               do_action( 'sp_payment_success', $params );
             } catch ( Exception $e ) {
