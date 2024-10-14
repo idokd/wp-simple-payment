@@ -40,7 +40,7 @@
               event.stopPropagation();
               return(false);
             }
-            form.classList.add('was-validated');
+            form.classList.add( 'validated' );
             SimplePayment.pre(target);
           }, false);
         });
@@ -144,13 +144,13 @@
         _modal = $('<div class="modal" tabindex="-1" role="dialog" sp-data="modal" ' + (SimplePayment.params['modal_disable_close'] ? 'data-backdrop="static" data-keyboard="false"' : '') + 'aria-labelledby="" aria-hidden="true"></div>');
         _modal.append('<div class="modal-dialog modal-dialog-centered" role="document">' 
           + '<div class="modal-content"><div class="modal-body"><div class="embed-responsive embed-responsive-1by1">'
-          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="' + _url + '" class="embed-responsive-item h100 w100"></iframe>'
+          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="' + _url + '"  allowpaymentrequest="true" allow="payment" class="embed-responsive-item h100 w100"></iframe>'
           + '</div></div></div></div>');
       } else {
         _modal = $('<div class="sp-legacy-modal" tabindex="-1" role="dialog" sp-data="modal" aria-labelledby="" aria-hidden="true"></div>');
         _modal.append('<div class="sp-modal-dialog" role="document">'
           + (SimplePayment.params['modal_disable_close'] ? '' : '<a href="javascript:SimplePayment.close(' + (target ? "'" + target + "'" : '') + ');" class="sp-close">X</a>')
-          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" src="' + _url + '"></iframe>'
+          + '<iframe name="' + (typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target']) + '" allowpaymentrequest="true" allow="payment" src="' + _url + '"></iframe>'
           + '</div>');
       }
       $('body').append(_modal);
@@ -158,12 +158,13 @@
     },
 
     pre: function(target, _url) {
+      $(document).triggerHandler( 'simple_payment_pre_submit' )
       var target = typeof(target) !== 'undefined' && target ? target : SimplePayment.params['target'];
       var _url = typeof(_url) !== 'undefined' && _url ? _url : 'about:blank';
       if (SimplePayment.params['display'] == 'iframe') {
         target = SimplePayment.params['type'] == 'hidden' || !target ? 'sp-frame' : target;
         var iframe = $('[name="' + target + '"]');
-        if (!iframe.length) $('[sp-data="container"]').append('<iframe name="' + target + '" src="'+ _url + '" sp-data="iframe"></iframe>');
+        if (!iframe.length) $('[sp-data="container"]').append('<iframe name="' + target + '" src="'+ _url + '" allowpaymentrequest="true" allow="payment" sp-data="iframe"></iframe>');
         $('[name="' + target + '"]').closest(':hidden').show();
       }
       if (SimplePayment.params['display'] == 'modal') {
@@ -213,7 +214,7 @@
         this._form.append('<input type="hidden" name="' + key + '" value="' + (this.params[key] ? this.params[key] : '') + '" />');
       });
       $('body').append(this._form);
-      this.pre(target);
+      this.pre( target );
       this._form._submit_function_();
     }
   };

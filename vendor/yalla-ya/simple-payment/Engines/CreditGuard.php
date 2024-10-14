@@ -19,7 +19,7 @@ class CreditGuard extends Engine {
   public $password = null;
   public $merchant = null;
 
-  public static $supports = [ 'iframe', 'modal', 'tokenization', 'card_owner_id', 'cvv' ];
+  public static $supports = [ 'iframe', 'modal', 'tokenization', 'card_owner_id' ];
 
   public $api = null;
 
@@ -36,6 +36,7 @@ class CreditGuard extends Engine {
     $this->password = $this->sandbox ? $this->password : $this->param( 'password' );
     $this->terminal = $this->sandbox ? $this->terminal : $this->param( 'terminal' );
     $this->merchant = $this->sandbox ? $this->merchant : $this->param( 'merchant' );
+    if ( $this->param( 'merchant' ) ) self::$supports[] = 'cvv';
     $this->api = $this->param( 'gateway' );
   }
 
@@ -101,8 +102,7 @@ class CreditGuard extends Engine {
 
     ];
     $response = parent::post( $this->api, $post, $headers, $fail );
-    $response = iconv( 'utf-8', 'iso-8859-8', $response );
-    $data = $this->xml2array( simplexml_load_string( $response  ) );
+    $response = iconv( 'utf-8', 'iso-8859-8//IGNORE', $response );
     $this->save( [
       'transaction_id' => $this->transaction ? $this->transaction : ( isset( $response[ 'response' ][ 'doDeal' ][ 'token' ] ) ? $response[ 'response' ][ 'doDeal' ][ 'token' ] : null ),
       'url' => $this->api,
@@ -111,6 +111,7 @@ class CreditGuard extends Engine {
       'request' => $xml,
       'response' => $response
     ] );
+    $data = $this->xml2array( simplexml_load_string( $response  ) );
     return( $data );
   }
 
@@ -241,7 +242,6 @@ class CreditGuard extends Engine {
     $mode = $this->param( 'mode' );
 
     $post[ 'terminalNumber' ] = $this->terminal;
-    
     // track2 if swiped
     if ( isset( $params[ 'token' ] ) && $params[ 'token' ] ) $post[ 'cardId' ] = $params[ 'token' ];
     else if ( $mode == 'redirect' ) $post[ 'cardNo' ] = 'CGMPI'; 
@@ -283,7 +283,7 @@ class CreditGuard extends Engine {
     // authNumber
     
     if ( $mode == 'redirect' ) {
-      $post[ 'description' ] = $params[ SimplePayment::PRODUCT ];
+      $post[ 'description' ] =  preg_replace( '/[^0-9א-תa-z ]/i', '', $params[ SimplePayment::PRODUCT ] );
       $post[ 'validation' ] = 'TxnSetup';
       $post[ 'mid' ] = $this->merchant;
       $post[ 'mpiValidation' ] = $this->param( 'validation' ); 
@@ -291,6 +291,13 @@ class CreditGuard extends Engine {
       $post[ 'errorUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_ERROR, $params ) );
       $post[ 'cancelUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_CANCEL, $params ) );
       $post[ 'uniqueid' ] = self::uuid();
+
+      $post[ 'ppsJSONConfig' ] = json_encode( [ 
+        'uiCustomData' => [
+          'businessLogoUrl' => 'Erroca-by-super-pharm_Logo-Black.jpg'
+        ] 
+      ] );
+
     } else {
       $post[ 'validation' ] = $this->param( 'validation' ); // TODO: determine the validation via parameter
       
@@ -323,7 +330,22 @@ class CreditGuard extends Engine {
     // paymentPageData
     // useId, useCvv, customStyle, customText, iframeAnchestor
     
+    /* 
+ <ppsJSONConfig>{
+
+          "uiCustomData": {
+
+            "businessLogoUrl": "Erroca-by-super-pharm_Logo-Black.jpg"
+
+          }
+
+        }</ppsJSONConfig>
+
+*/
+
+
     $response = $this->post( 'doDeal', $post );
+
     $this->transaction = $mode == 'redirect' ? ( isset( $response[ 'response' ][ 'doDeal' ][ 'token' ] ) ? $response[ 'response' ][ 'doDeal' ][ 'token' ] : $this->transaction ) : $response[ 'response' ][ 'tranId' ];
     $this->save( [
       'transaction_id' => $this->transaction,

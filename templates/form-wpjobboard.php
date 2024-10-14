@@ -9,4 +9,4 @@ require('preparation.php');
 <p><?php _e('Please wait. You are now being redirected to payment.', 'simple-payment'); ?></p>
 </div>
 </div>
-<iframe name="sp-iframe" src="about:blank" sp-data="iframe" style="display:none"></iframe>
+<iframe name="sp-iframe" src="about:blank" allowpaymentrequest="true" allow="payment" sp-data="iframe" style="display:none"></iframe>

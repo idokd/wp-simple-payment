@@ -42,7 +42,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   public function views() {
-      if (self::$views_rendered) return;
+      if ( self::$views_rendered ) return;
       parent::views();
       self::$views_rendered = true;
   }
@@ -51,8 +51,8 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       if (self::$details) return;
       global $wpdb;
       if ($which == "top"){
-          if (isset($_REQUEST['page'])) echo '<input type="hidden" name="page" value="'.$_REQUEST['page'].'" />';
-          if (isset($_REQUEST['status'])) echo '<input type="hidden" name="status" value="'.$_REQUEST['status'].'" />';
+          if (isset($_REQUEST['page'])) echo '<input type="hidden" name="page" value="'.esc_attr( $_REQUEST['page'] ).'" />';
+          if (isset($_REQUEST['status'])) echo '<input type="hidden" name="status" value="'.esc_attr( $_REQUEST['status'] ).'" />';
 
           ?>
           <div class="alignleft actions">
@@ -250,6 +250,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       'ip_address'    => __( 'IP Address', 'simple-payment' ),
       'user_agent'    => __( 'User Agent', 'simple-payment' ),
       'error_code'    => __( 'Error', 'simple-payment' ),
+      'token'    => __( 'Token', 'simple-payment' ),
       'sandbox'    => __( 'Sandbox', 'simple-payment' ),
       'modified'    => __( 'Modified', 'simple-payment' ),
       'created'    => __( 'Created', 'simple-payment' ),

@@ -4,9 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-// Make sure Elementor is active
-if ( !in_array( 'gravityforms/gravityforms.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) 
-	return;
+if ( !is_plugin_active( 'gravityforms/gravityforms.php' ) ) return;
 
 // If Gravity Forms is loaded, bootstrap the Simple Payment Add-On.
 add_action( 'gform_loaded', [ 'GF_SimplePayment_Bootstrap', 'load' ], 5 );

@@ -149,7 +149,7 @@ abstract class Engine {
       $curl = curl_init();
       curl_setopt( $curl, CURLOPT_URL, $url );
       curl_setopt( $curl, CURLOPT_POST, 1 );
-      curl_setopt( $curl, CURLOPT_POSTFIELDS, is_array( $vars ) ? http_build_query( $vars, null, '&' ) : $vars );
+      curl_setopt( $curl, CURLOPT_POSTFIELDS, is_array( $vars ) ? http_build_query( $vars, '', '&' ) : $vars );
       curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
       curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, 0 ); // TODO: consider enabling it
       curl_setopt( $curl, CURLOPT_FAILONERROR, $fail );
@@ -158,7 +158,9 @@ abstract class Engine {
       $response = curl_exec( $curl );
       $error = curl_error( $curl );
       # some error , send email to developer // TODO: Handle Error
-      if ( !empty( $error ) ) throw new Exception( $error . ' ' . $response. ' - ' . $url . print_r( $vars, true ), 500 );
+      if ( !empty( $error ) ) {
+        throw new Exception( $error . ' ' . $response. ' - ' . $url . print_r( $vars, true ), 500 );
+      }
       curl_close( $curl );
       return( $response );
     }

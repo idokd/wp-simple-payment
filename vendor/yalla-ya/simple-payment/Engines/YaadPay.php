@@ -78,7 +78,7 @@ class YaadPay extends Engine {
   }
 
   public function process( $params ) {
-    return( $this->api . '?' . http_build_query( $params ) );
+    return( is_bool( $params ) ? $params : $this->api . '?' . http_build_query( $params ) );
   }
 
   public function verify( $transaction = null ) {
@@ -192,6 +192,7 @@ class YaadPay extends Engine {
       if ( $currency = self::CURRENCIES[ $currency ] ) $post[ 'Coin' ] = $currency;
       else throw new Exception( 'CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500 );
     }
+    if ( $params[ 'token' ] ) return( $this->charge( $params ) ); 
     // Coin
     /*if ( isset( $params[ 'payments' ] ) && $params[ 'payments' ] ) {
       if ( $params[ 'payments' ] == 'monthly' ) {
@@ -211,8 +212,7 @@ class YaadPay extends Engine {
       'action' => 'APISign',
       'What' => 'SIGN',
       'Info' => $params[ SimplePayment::PRODUCT ],
-      'Amount' => $params[ SimplePayment::AMOUNT ],
-
+      'Amount' => $params[ SimplePayment::AMOUNT ]
     ];
 
     // TODO: check payments && tokenize
@@ -285,34 +285,128 @@ class YaadPay extends Engine {
     return( $status[ 'status' ] == 1 );
   }
 
+  
   // TODO: using soft
-/*
-  function charge( $params, $transaction_id = null, $operation = 2 ) {
+
+  public function recharge( $params ) {
+    $this->transaction = self::uuid();
+    return( $this->charge( $params ) ? $this->confirmation_code : false );
+  }
+
+  public function charge( $params, $refund = false ) {
+
+    //https://yaadpay.docs.apiary.io/#introduction/soft-protocol-transaction-in-web-server/parameters-soft
+
+    //https://icom.yaad.net/p/?
+  /*
+      action=soft&
+      Masof=0010131918&
+      PassP=yaad&
+
+      CC=1315872608557940000&
+
+      Coin=1&
+      Info=test-api&
+      Order=12345678910&
+      city=netanya&
+      street=levanon+3&
+      zip=42361&
+      J5=False&
+      MoreData=True&
+      Postpone=False&
+      Pritim=True&
+      SendHesh=True&
+      heshDesc=%5B0~Item+1~1~8%5D%5B0~Item+2~2~1%5D&
+      sendemail=True&
+      UTF8=True&
+      UTF8out=True&
+      Fild1=freepram&
+      Fild2=freepram&
+      Fild3=freepram&
+      Token=True
     // TODO: finish the params values
     $this->transaction = $transaction_id;
-    $params = [
-      'userId' => $this->username,
-      'pageCode' => $this->password,
-      'cardToken' => '',
-      'sum' => '',
-      'description' => 0,
-      'paymentType' => $operation,
-      'paymentNum' => 1,
+*/
+    $this->transaction = $this->transaction ? : self::uuid();
+
+    $post = [
+      'action' => 'soft',
+      'Info' => $params[ SimplePayment::PRODUCT ],
+      'Amount' => $params[ SimplePayment::AMOUNT ],
+      'sendemail' => 'False',
+      'UTF8' => 'True',
+      'UTF8out' => 'True',
+      'MoreData' => 'True',
+      'J5' => 'False', // J2
+      'Postpone' => 'False'
+      // CC2
+      // cvv
+      // tOwner
     ];
-    // pageField
-    $status = $this->post( $this->api[ 'createTransactionWithToken' ], $params );
-    $status = json_decode( $status, true );
-    $response = $status[ 'data' ];
-    $this->save([
+
+    if ( isset( $params[ SimplePayment::INSTALLMENTS ] ) && $params[ SimplePayment::INSTALLMENTS ] ) {
+      $post[ 'Tash' ] = $params[ SimplePayment::INSTALLMENTS ];
+      //$post[ 'tashType' ] = 1; // 1 - Regular, 6 -  Credit
+      //$post[ 'TashFirstPayment' ] = '';
+    }
+
+    $currency = isset( $params[ SimplePayment::CURRENCY ] ) && $params[ SimplePayment::CURRENCY ] ? $params[ SimplePayment::CURRENCY ] : $this->param( 'currency' );
+    if ( $currency ) {
+      if ( $currency = self::CURRENCIES[ $currency ] ) $post[ 'Coin' ] = $currency;
+      else throw new Exception( 'CURRENCY_NOT_SUPPORTED_BY_ENGINE', 500 );
+    }
+
+    if ( isset( $params[ SimplePayment::FULL_NAME ] ) && $params[ SimplePayment::FULL_NAME ] ) $post[ 'ClientName' ] = strpos( ' ', $params[ SimplePayment::FULL_NAME ] ) === false ? $params[ SimplePayment::FULL_NAME ] . ' .' : $params[ SimplePayment::FULL_NAME ];
+    if ( isset( $params[ SimplePayment::FIRST_NAME ] ) && $params[ SimplePayment::FIRST_NAME ] ) $post[ 'ClientName' ] = $params[ SimplePayment::FIRST_NAME ];
+    if ( isset( $params[ SimplePayment::LAST_NAME ] ) && $params[ SimplePayment::LAST_NAME ] ) $post[ 'ClientLName' ] = $params[ SimplePayment::LAST_NAME ];
+
+    if ( isset( $params[ SimplePayment::CARD_OWNER_ID ] ) && $params[ SimplePayment::CARD_OWNER_ID ] ) $post[ 'UserId' ] = $params[ SimplePayment::CARD_OWNER_ID ]; // 000000000
+    if ( isset( $params[ SimplePayment::MOBILE ] ) && $params[ SimplePayment::MOBILE ]) $post[ 'cell' ] = preg_replace( '/\D/', '', $params[ SimplePayment::MOBILE ] );
+    if ( isset( $params[ SimplePayment::PHONE ] ) && $params[ SimplePayment::PHONE ]) $post[ 'phone' ] = preg_replace('/\D/', '', $params[ SimplePayment::PHONE ] );
+    if ( isset( $params[ SimplePayment::EMAIL ] ) && $params[ SimplePayment::EMAIL ]) $post[ 'email' ] = $params[ SimplePayment::EMAIL ];
+
+    if ( isset( $params[ SimplePayment::CARD_NUMBER ] ) ) $post[ 'CC' ] = $params[ SimplePayment::CARD_NUMBER ];
+    if ( isset( $params[ SimplePayment::CARD_EXPIRY_YEAR ] ) ) $post[ 'Tyear' ] = $params[ SimplePayment::CARD_EXPIRY_YEAR ];
+    if ( isset( $params[ SimplePayment::CARD_EXPIRY_MONTH ] ) ) $post[ 'Tmonth' ] = $params[ SimplePayment::CARD_EXPIRY_MONTH ];
+    if ( isset( $params[ SimplePayment::CARD_OWNER_ID ] ) ) $post[ 'UserId' ] = $params[ SimplePayment::CARD_OWNER_ID ];
+    if ( isset( $params[ 'reference' ] ) && $params[ 'reference' ]) $post[ 'AuthNum' ] = $params[ 'reference' ];
+
+    // TODO: check payments && tokenize
+    //    if ( isset( $params[ 'tokenize' ] ) && $params[ 'tokenize' ] ) {
+    //      $post[ 'saveCardToken' ] = $params[ 'tokenize' ];
+    //    }
+
+    //Order
+    if ( $payment_id = $this->payment_id( $params ) ) $post[ self::PAYMENT_ID ] = $payment_id;
+
+    $token = $params[ 'token' ] ? ( is_array( $params[ 'token' ] )  ? $params[ 'token' ] : json_decode( $params[ 'token' ], true ) ) : null;
+    if ( $token ) {
+      $post[ 'Token' ] = 'True';
+      if ( isset( $token[ SimplePayment::CARD_NUMBER ] ) ) $post[ 'CC' ] = isset( $token[ 'token' ] ) && $token[ 'token' ] ? $token[ 'token' ] :$token[ SimplePayment::CARD_NUMBER ];
+      if ( isset( $token[ SimplePayment::CARD_EXPIRY_YEAR ] ) ) $post[ 'Tyear' ] = $token[ SimplePayment::CARD_EXPIRY_YEAR ];
+      if ( isset( $token[ SimplePayment::CARD_EXPIRY_MONTH ] ) ) $post[ 'Tmonth' ] = $token[ SimplePayment::CARD_EXPIRY_MONTH ];
+      if ( isset( $token[ SimplePayment::CARD_OWNER_ID ] ) ) $post[ 'UserId' ] = $token[ SimplePayment::CARD_OWNER_ID ];
+      if ( isset( $token[ 'reference' ] ) ) $post[ 'AuthNum' ] = $token[ 'reference' ]; // SimplePayment::REFERENCE
+    }
+
+    $status = $this->post( $this->api, $post );   
+    parse_str( $status, $status );
+    $response = $status;
+
+    if ( isset( $status[ 'CCode' ] ) && $status[ 'CCode' ] == 0 && isset( $status[ 'ACode' ] ) && $status[ 'ACode' ] ) {
+      $this->confirmation_code = $status[ 'ACode' ];
+    }
+    $this->save( [
       'transaction_id' => $this->transaction,
-      'url' => $this->api[ 'createTransactionWithToken' ],
-      'status' => isset( $status[ 'status' ] ) && $status[ 'status' ] ? $status[ 'status' ] : $status[ 'err' ][ 'id' ],
-      'description' => isset( $status[ 'err' ] ) && isset( $status[ 'err' ][ 'message' ] ) ? $status[ 'err' ][ 'message' ] : null,
+      'url' => $this->api . '#soft',
+      'status' => isset( $status[ 'CCode' ] ) && $status[ 'CCode' ] ? $status[ 'CCode' ] : 0,
+      'description' => isset( $status[ 'CCode' ] ) && $status[ 'CCode' ] ? ( isset( self::MESSAGES[ $status[ 'CCode' ] ] ) ? self::MESSAGES[ $status[ 'CCode' ] ] : $status[ 'errMsg' ] ) : null,
       'request' => json_encode( $post ),
       'response' => json_encode( $status )
     ] );
-    return( $status[ 'status' ] == 1 );
-    
+
+    // Id=12852058&CCode=0&Amount=10&ACode=0012345&Fild1=freepram&Fild2=freepram&Fild3=freepram&Hesh=49&Bank=6&tashType=&Payments=2&noKPayments=1&nFirstPayment=5&firstPayment=5&TashFirstPayment=&UserId=203269535&Brand=2&Issuer=2&L4digit=0000&firstname=Israel&lastname=Israeli&info=test-api&street=levanon%203&city=netanya&zip=42361&cell=050555555555&email=testsoft%40yaad.net&Coin=1&Tmonth=04&Tyear=2020&CardName=%28%3F%3F%3F%3F%29%20Cal&errMsg= (0)
+    return( $status[ 'CCode' ] == 0 ); // ? $this->confirmation_code : false 
   }
-*/
+
 }

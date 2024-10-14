@@ -445,7 +445,7 @@ class Cardcom extends Engine {
     $date->add(new DateInterval('P28D')); // P1D means a period of 28 day
     $post['RecurringPayments.NextDateToBill'] = $date->format('d/m/Y');
 
-    $limit = $this->param('recurring_total');
+    $limit = $this->param( 'recurring_total' );
     $post['RecurringPayments.TotalNumOfBills'] = $limit ? : 999999;
 
     $interval = $this->param('recurring_interval');
@@ -476,19 +476,19 @@ class Cardcom extends Engine {
       'request' => json_encode($post),
       'response' => json_encode($response)
     ]);
-    return($status); // OperationResponseText, OperationResponse
+    return( $status ); // OperationResponseText, OperationResponse
   }
 
-  public function refund($params) {
+  public function refund( $params ) {
     $this->transaction = self::uuid();
     $this->confirmation_code = $this->charge($params, true);
-    return($this->confirmation_code);
+    return( $this->confirmation_code );
   }
 
   public function recharge( $params ) {
     $this->transaction = self::uuid();
     $this->confirmation_code = $this->charge( $params );
-    return($this->confirmation_code);
+    return( $this->confirmation_code );
   }
 
   public function recur( $params ) {
@@ -498,15 +498,15 @@ class Cardcom extends Engine {
     return( $this->confirmation_code );
   }
 
-  public function charge($params, $refund = false) {
+  public function charge( $params, $refund = false ) {
     $post = [];
-    if (!$this->sandbox) {
-      $post['terminalnumber'] = $this->param_part($params);
-      $post['username'] = $this->param_part($params, 'username');
+    if ( !$this->sandbox ) {
+      $post[ 'terminalnumber' ] = $this->param_part( $params );
+      $post[ 'username' ] = $this->param_part( $params, 'username' );
      // $post['TokenToCharge.UserPassword'] = $this->param_part($params, 'password');
     } else {
-      $post['terminalnumber'] = $this->terminal;
-      $post['username'] = $this->username;
+      $post[ 'terminalnumber' ] = $this->terminal;
+      $post[ 'username' ] = $this->username;
     }
 
     if ($refund) $post['TokenToCharge.UserPassword'] = $this->password;

@@ -84,7 +84,7 @@ class PayMe extends Engine {
     if ($response['items_count'] && $response['items']) {
       $code = $response['items'][0]['sale_auth_number'];
       $this->confirmation_code = $code;
-      return($code);
+      return( $code );
     }
     throw new Exception(isset($response['status_error_details']) ? $response['status_error_details'] : $response['status_code'], $response['status_code']);
   }
@@ -118,12 +118,12 @@ class PayMe extends Engine {
       'request' => json_encode($params),
       'response' => json_encode($response)
     ]);
-    $this->confirmation_code = $_REQUEST['payme_transaction_auth_number'];
+    $this->confirmation_code = $_REQUEST[ 'payme_transaction_auth_number' ];
     // TODO: if subscription do subscription
     //if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
     //  if ($this->param('recurr_at') == 'post' && $this->param('reurring') == 'provider') return($this->recur_by_provider($params));
     //}
-    return($_REQUEST['status_code'] == 0);
+    return( ( isset( $_REQUEST[ 'status_code' ] ) && $_REQUEST[ 'status_code' ] === 0 ) || ( isset( $_REQUEST[ 'status' ] ) && $_REQUEST[ 'status' ] === 'success' ) );
   }
 
   public function pre_process($params) {
@@ -159,6 +159,8 @@ class PayMe extends Engine {
           break;
         default:
           $operation = 'generate-sale';
+
+          if ( $method == 'bit' ) $json[ 'layout' ] = 'qr-sms'; //dynamic, qr-sms or dynamic-loose 
     }
 
     // market_fee , capture_buyer

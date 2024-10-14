@@ -55,14 +55,15 @@ class SimplePayment {
     $settings = static::param( strtolower( isset( $class::$name ) ? $class::$name : $engine ) );
     foreach ( self::$params as $key => $value ) if ( !is_array( $value ) && !isset( $settings[ $key ] ) ) $settings[ $key ] = $value; 
     $this->engine = new $class( $settings, $this, $this->sandbox );
+    return( $this->engine );
   }
 
   public static function supports( $feature, $engine = null ) {
-    if (!$engine) {
+    if ( !$engine ) {
       $engine = $this->engine;
-      $class = get_class($this->engine);
+      $class = get_class( $this->engine );
     } else $class = class_exists( $engine ) ? $engine : __NAMESPACE__ . '\\Engines\\' . $engine;
-    return(in_array($feature, $class::$supports) || self::param(strtolower($engine).'.'.$feature));
+    return( in_array( $feature, $class::$supports ) || self::param( strtolower( $engine ) . '.' . $feature ) );
   }
 
   public static function param( $key = null, $default = false ) {
@@ -81,8 +82,12 @@ class SimplePayment {
     return($this->engine->refund($params));
   }
 
-  function recharge($params = []) {
-    return($this->engine->recharge($params));
+  function recharge( $params = [] ) {
+    return( $this->engine->recharge( $params ) );
+  }
+
+  function store( $params = [] ) {
+    return( $this->engine->store( $params ) );
   }
 
   function process($params = []) {
@@ -144,7 +149,7 @@ class SimplePayment {
         if (isset($error->source)) {
           $msg = "{$error->title}: {$error->source->pointer} {$error->detail}";
         }
-        throw new Exception($msg, 401);
+        throw new Exception( $msg, 401 );
       }
       return($this->validate_license($license, $domain));
   }
@@ -216,18 +221,19 @@ class SimplePayment {
     return($response);
   }
 
-  public static function tofloat($num) {
-    $dotPos = strrpos($num, '.');
-    $commaPos = strrpos($num, ',');
+  public static function tofloat( $num ) {
+    if ( !$num ) return( 0 );
+    $dotPos = strrpos( $num, '.' );
+    $commaPos = strrpos( $num, ',' );
     $sep = (($dotPos > $commaPos) && $dotPos) ? $dotPos :
         ((($commaPos > $dotPos) && $commaPos) ? $commaPos : false);
     if (!$sep) {
         return floatval(preg_replace("/[^0-9]/", "", $num));
     }
-    return floatval(
+    return( floatval(
         preg_replace("/[^0-9]/", "", substr($num, 0, $sep)) . '.' .
         preg_replace("/[^0-9]/", "", substr($num, $sep+1, strlen($num)))
-    );
+    ) );
   }
 
   public static function validate($params, $type = null) {
