@@ -51,8 +51,8 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       if (self::$details) return;
       global $wpdb;
       if ($which == "top"){
-          if (isset($_REQUEST['page'])) echo '<input type="hidden" name="page" value="'.esc_attr( $_REQUEST['page'] ).'" />';
-          if (isset($_REQUEST['status'])) echo '<input type="hidden" name="status" value="'.esc_attr( $_REQUEST['status'] ).'" />';
+          if (isset($_REQUEST['page'])) echo '<input type="hidden" name="page" value="'.esc_attr( sanitize_text_field( $_REQUEST['page'] ) ).'" />';
+          if (isset($_REQUEST['status'])) echo '<input type="hidden" name="status" value="'.esc_attr( sanitize_text_field( $_REQUEST['status'] ) ).'" />';
 
           ?>
           <div class="alignleft actions">
