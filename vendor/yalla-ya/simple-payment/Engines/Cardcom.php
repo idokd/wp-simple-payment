@@ -45,7 +45,7 @@ class Cardcom extends Engine {
   public $password = 'c1234567!';
 
   const LANGUAGES = [ 'he' => 'Hebrew', 'en' => 'English' ];
-  const CURRENCIES = [ 'ILS' => 1, 'USD' => 2, 'AUD' => 36,	'CAD' => 124, 'DKK' => 208, 'JPY' => 392, 'NZD' => 554, 'RUB' => 643, 'CHF' => 756, 'GBP' => 826 ];
+  const CURRENCIES = [ 'ILS' => 1, 'USD' => 2, 'AUD' => 36,	'CAD' => 124, 'DKK' => 208, 'JPY' => 392, 'NZD' => 554, 'RUB' => 643, 'CHF' => 756, 'GBP' => 826, 'EUR' => 978, 'ZAR' => 710, 'EGP' => 818, 'SEK' => '752', 'NOK' => 578, 'LBP' => 422, 'JOD' => 400 ];
   const OPERATIONS = [ 1 => 'Charge', 2 => 'Charge & Token', 3 => 'Token (Charge Pending)', 4 => 'Suspended Deal' ];
   const DOC_TYPES = [ 1 => 'Invoice', 3 => 'Formal Receipt', 101 => 'Order Confirmation', 400 => 'Receipt' , 405 => 'Donation' ];
   const FIELD_STATUS = [ 'require' => 'Shown & Required', 'show' => 'Shown', 'hide' => 'Hidden'];
