@@ -10,13 +10,13 @@ jobs:
     name: New tag
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout
+    - uses: actions/checkout@v4
     - name: Build
       run: |
         npm install
         npm run build
     - name: WordPress Plugin Deploy
-      uses: 10up/action-wordpress-plugin-deploy@stable
+      uses: 10up/action-wordpress-plugin-deploy@latest
       env:
         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
