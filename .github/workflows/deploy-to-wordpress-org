@@ -3,6 +3,8 @@ on:
   push:
     tags:
     - "*"
+    branches:
+    - master
 jobs:
   tag:
     name: New tag
