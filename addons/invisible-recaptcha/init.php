@@ -3,7 +3,10 @@
 defined( 'ABSPATH' ) or exit;
 
 // Make sure Invisibile Recaptcha is active
-if (!in_array('invisible-recaptcha/invisible-recaptcha.php', apply_filters('active_plugins', get_option('active_plugins')))) 
+
+$_active_plugins = array_merge( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', [] ) ) : [], get_option( 'active_plugins', [] ) );
+
+if ( !in_array('invisible-recaptcha/invisible-recaptcha.php', $_active_plugins ) ) 
     return;
     
 add_action('sp_form_render', 'sp_recaptcha_form_render');

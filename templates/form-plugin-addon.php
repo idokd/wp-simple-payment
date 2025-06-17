@@ -12,7 +12,7 @@ require('preparation.php');
       SimplePayment.init(sp_settings);
       SimplePayment.show(SimplePayment.params['url']);
     <?php } else { ?> 
-      SimplePayment.submit(<?php echo json_encode($SPWP->settings()); ?>, 'sp-frame');
+      SimplePayment.submit (<?php echo json_encode($SPWP->settings()); ?>, 'sp-frame' );
     <?php } ?>
   });
 }());

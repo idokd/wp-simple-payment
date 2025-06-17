@@ -3,7 +3,10 @@
 defined( 'ABSPATH' ) or exit;
 
 // Make sure WooCommerce is active
-if ( !in_array('woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) 
+
+$_active_plugins = array_merge( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', [] ) ) : [], get_option( 'active_plugins', [] ) );
+
+if ( !in_array( 'woocommerce/woocommerce.php', $_active_plugins ) ) 
 	return;
 
 function sp_wc_add_to_gateways( $gateways) {
@@ -37,7 +40,10 @@ function sp_wc_save_token( $transaction, $transaction_id = null, $params = [], $
     $sp_token->set_token( isset( $token[ 'token' ] ) ? $token[ 'token' ] : $transaction[ 'transaction_id' ] );
     $sp_token->set_gateway_id( 'simple-payment' );
     $sp_token->set_user_id( 0 < $user_id ? $user_id : get_current_user_id() );
-    if ( $default ) $sp_token->set_default( $default );
+    //if ( $default ) $sp_token->set_default( $default );
+    if ( $default || !( $sp_token->get_user_id() && !WC_Payment_Tokens::get_customer_default_token( $sp_token->get_user_id() ) ) ) $sp_token->set_default( true );
+
+    // TODO: determin
     // TODO: add support for card type
     // $sp_token->set_card_type( 'visa' ); // $transaction[ SimplePayment::CARD_TYPE] );
     if ( !empty( $engine ) ) $sp_token->set_engine( $engine );
@@ -57,7 +63,7 @@ add_action( 'sp_creditcard_token', 'sp_wc_save_token' );
 add_action( 'plugins_loaded', 'sp_wc_gateway_init', 11 );
 
 function sp_wc_maybe_failed_order() {
-    if ( $payment_id = ( isset( $_REQUEST[ 'payment_id' ] ) ? $_REQUEST[ 'payment_id' ] : null ) ) {
+    if ( $payment_id = ( isset( $_REQUEST[ SimplePaymentPlugin::PAYMENT_ID ] ) ? $_REQUEST[ SimplePaymentPlugin::PAYMENT_ID ] : null ) ) {
         if ( $url = $_REQUEST[ 'redirect_url' ] ) {
             parse_str( parse_url( $url, PHP_URL_QUERY ), $params );
             if ( !isset( $params[ 'order-pay' ] ) || !$params[ 'order-pay' ] ) return;
@@ -365,7 +371,7 @@ function sp_wc_gateway_init() {
             if ( !$order = wc_get_order( $order_id ) ) {
                 return;
             }
-            $payment_id = $_REQUEST[ 'payment_id' ]; // get payment id
+            $payment_id = $_REQUEST[ SimplePaymentPlugin::PAYMENT_ID ]; // get payment id
 
             if ( !empty( $payment_id ) && $order->get_customer_id() ) {
 				sp_wc_save_token( $payment_id, null, null, $order->get_customer_id() );
@@ -666,7 +672,8 @@ function sp_wc_gateway_init() {
             if ( isset( $_REQUEST[ 'wc-simple-payment-payment-token' ] ) && $_REQUEST[ 'wc-simple-payment-payment-token' ] ) {
 				$tokens = [ $_REQUEST[ 'wc-simple-payment-payment-token' ] ];
 			} else {
-            	$tokens = array_merge( WC_Payment_Tokens::get_order_tokens( $order_id ), ( $order->get_customer_id() ? [ WC_Payment_Tokens::get_customer_default_token( $order->get_customer_id() ) ] : [] ) );
+                // TODO: verify if token payment or cc is sent.
+                $tokens = array_merge( WC_Payment_Tokens::get_order_tokens( $order_id ), ( $order->get_customer_id() ? [ WC_Payment_Tokens::get_customer_default_token( $order->get_customer_id() ) ] : [] ) );
 			}
             if ( $transaction_id = $order->get_meta_data( '_sp_transaction_id' ) ) $params[ 'transaction_id' ] = $transaction_id; 
             if ( isset( $tokens ) && count( $tokens ) ) {
@@ -727,7 +734,8 @@ function sp_wc_gateway_init() {
                 }
             } catch ( Exception $e ) {
                 $this->SPWP->error( $params, $e->getCode(), $e->getMessage() );
-                $order->add_order_note( sprintf( __( 'Payment error: %s', 'simple-payment' ), __( $e->getMessage(), 'simple-payment' ) ) );
+                $transaction_link = '<a href="' . esc_url( sprintf( $this->view_transaction_url, $this->SPWP->payment_id ) ) . '" target="_blank">' . esc_html( $this->SPWP->payment_id ) . '</a>';
+                $order->add_order_note( sprintf( __( 'Payment error [ SP ID: %s ]: %s', 'simple-payment' ), $transaction_link, __( $e->getMessage(), 'simple-payment' ) ) );
                 return( [
                     'result' => 'failure',
                     'messages' => '<div>' . $e->getMessage() . '</div>'
@@ -754,7 +762,7 @@ function sp_wc_gateway_init() {
                 }
             } else {
                // $order->payment_failed();
-                $order->add_order_note( __( 'Payment error: unkown.', 'simple-payment' ) );
+                $order->add_order_note( sprintf( __( 'Payment error[ SP ID: %s ]: unkown.', 'simple-payment' ), $this->SPWP->payment_id ) );
             }
             if ( is_callable( [ $order, 'save' ] ) ) {
                 $order->save();
@@ -842,8 +850,8 @@ function sp_wc_gateway_init() {
         <div class="col-md-4 mb-3">
         <?php if (isset( $installments) && $installments && isset( $installments_min) && $installments_min && isset( $installments_max) && $installments_max && $installments_max > 1) { ?>
         <label for="payments"><?php _e('Installments', 'simple-payment' ); ?></label>
-        <select class="custom-select d-block w-100 form-control" id="payments" name="<?php echo $SPWP::PAYMENTS; ?>" required="">
-          <?php for ( $installment = $installments_min; $installment <= $installments_max; $installment++) echo '<option'.selected( $installments, $installment, true).'>'.$installment.'</option>'; ?>
+        <select class="custom-select d-block w-100 form-control" id="payments" name="<?php echo esc_attr( $SPWP::PAYMENTS ); ?>" required="">
+          <?php for ( $installment = $installments_min; $installment <= $installments_max; $installment++ ) echo '<option' . selected( $installments, $installment, true ) . '>' . $installment . '</option>'; ?>
         </select>
         <div class="invalid-feedback">
           <?php _e('Number of Installments is required.', 'simple-payment' ); ?>
@@ -855,7 +863,7 @@ function sp_wc_gateway_init() {
     <div class="row form-row">
       <div class="col-md-6 mb-3">
         <label for="cc-card-owner-id"><?php _e('Card Owner ID', 'simple-payment' ); ?></label>
-        <input type="text" class="form-control" id="cc-card-owner-id" name="<?php echo $SPWP::CARD_OWNER_ID; ?>" placeholder="">
+        <input type="text" class="form-control" id="cc-card-owner-id" name="<?php echo esc_attr( $SPWP::CARD_OWNER_ID ); ?>" placeholder="">
         <small class="text-muted"><?php _e('Document ID as registered with card company', 'simple-payment' ); ?></small>
         <div class="invalid-feedback">
           <?php _e('Card owner Id is required or invalid.', 'simple-payment' ); ?>

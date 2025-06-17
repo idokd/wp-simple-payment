@@ -48,28 +48,26 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   function extra_tablenav( $which ) {
-      if (self::$details) return;
+      if ( self::$details ) return;
       global $wpdb;
-      if ($which == "top"){
-          if (isset($_REQUEST['page'])) echo '<input type="hidden" name="page" value="'.esc_attr( sanitize_text_field( $_REQUEST['page'] ) ).'" />';
-          if (isset($_REQUEST['status'])) echo '<input type="hidden" name="status" value="'.esc_attr( sanitize_text_field( $_REQUEST['status'] ) ).'" />';
-
+      if ( $which == "top" ) {
+          if ( isset( $_REQUEST[ 'page' ] ) ) echo '<input type="hidden" name="page" value="' . esc_attr( sanitize_text_field( $_REQUEST[ 'page' ] ) ) . '" />';
+          if ( isset( $_REQUEST[ 'status' ] ) ) echo '<input type="hidden" name="status" value="' . esc_attr( sanitize_text_field( $_REQUEST[ 'status' ] ) ) . '" />';
           ?>
           <div class="alignleft actions">
           <?php
-          $engine = isset($_REQUEST['engine']) && $_REQUEST['engine'] ? sanitize_text_field( $_REQUEST['engine'] ) : null;
-          $options = $wpdb->get_results('SELECT `engine` AS `title` FROM '.self::$table_name.' GROUP BY `engine` ORDER BY `engine` ASC ', ARRAY_A);
+          $engine = isset( $_REQUEST[ 'engine' ] ) && $_REQUEST[ 'engine' ] ? sanitize_text_field( $_REQUEST[ 'engine' ] ) : null;
+          $options = $wpdb->get_results( 'SELECT `engine` AS `title` FROM ' . self::$table_name . ' GROUP BY `engine` ORDER BY `engine` ASC ', ARRAY_A );
           if (count($options) > 1) {
-              echo '<select id="engine" class="sp-filter-engine" name="engine"><option value="">'.__('All Engines', 'simple-payment').'</option>';
+              echo '<select id="engine" class="sp-filter-engine" name="engine"><option value="">' . __( 'All Engines', 'simple-payment' ) . '</option>';
               foreach ($options as $option) {
-                  if ($option['title']) echo '<option value="'.$option['title'].'"'.( $engine == $option['title'] ? ' selected' : '').'>'.$option['title'].'</option>';
+                  if ( $option[ 'title' ] ) echo '<option value="' . esc_attr( $option[ 'title' ] ) . '"' . ( $engine == $option[ 'title' ] ? ' selected' : '' ) . '>' . esc_html( $option[ 'title' ] ) . '</option>';
               }
               echo "</select>";
           }
-          echo '<label for="from-date">Date Range:</label><input type="date" name="created_from" id="from-date" value="'.(isset($_REQUEST['created_from']) ? $_REQUEST['created_from'] : '').'" /><input type="date" name="created_to" id="to-date" value="'.(isset($_REQUEST['created_to']) ? $_REQUEST['created_to'] : '').'" />';
-          echo '<input type="submit" name="filter_action" id="transaction-query-submit" class="button" value="'.__('Filter', 'simple-payment').'">';
+          echo '<label for="from-date">Date Range:</label><input type="date" name="created_from" id="from-date" value="' . ( isset( $_REQUEST[ 'created_from' ] ) ? $_REQUEST[ 'created_from' ] : '' ) . '" /><input type="date" name="created_to" id="to-date" value="' . ( isset( $_REQUEST[ 'created_to' ] ) ? $_REQUEST[ 'created_to' ] : '' ) . '" />';
+          echo '<input type="submit" name="filter_action" id="transaction-query-submit" class="button" value="' . __( 'Filter', 'simple-payment' ) . '">';
           echo '</div>';
-
         }
       if ( $which == "bottom" ){
       }
@@ -79,58 +77,57 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     global $wpdb;
     $orderby = 'id';
     $order = 'DESC';
-    if ($instance && !self::$details) {
-      $orderby = $instance->get_pagination_arg('orderby');
-      $order = $instance->get_pagination_arg('order');
+    if ( $instance && !self::$details ) {
+      $orderby = $instance->get_pagination_arg( 'orderby' );
+      $order = $instance->get_pagination_arg( 'order' );
     }
     if ( !$orderby ) $orderby = 'id';
     if ( !$order ) $order = 'DESC';
     if ($count) $sql = "SELECT COUNT(*) FROM ".self::$table_name;
-    else $sql = "SELECT * FROM ".self::$table_name;
+    else $sql = "SELECT * FROM " . self::$table_name;
     $where = [];
-    if ( ! empty( $_REQUEST['id'] ) && empty( $_REQUEST['action'] ) ) $where[] = "`payment_id` = " .esc_sql(absint($_REQUEST['id']));
-    if ( ! empty( $_REQUEST['transaction_id'] ) && isset($_REQUEST['engine']) && $_REQUEST['engine'] ) $where[] = "`transaction_id` =  '" .esc_sql($_REQUEST['transaction_id'])."'";
+    if ( ! empty( $_REQUEST[ 'id' ] ) && empty( $_REQUEST[ 'action' ] ) ) $where[] = "`payment_id` = " . esc_sql( absint( $_REQUEST[ 'id' ] ) );
+    if ( ! empty( $_REQUEST[ 'transaction_id' ] ) && isset( $_REQUEST[ 'engine' ] ) && $_REQUEST[ 'engine' ] ) $where[] = "`transaction_id` =  '" . esc_sql( $_REQUEST[ 'transaction_id' ] ) . "'";
     
-    if ( ! empty( $_REQUEST['status'] ) ) $where[] = "`status` =  '" .esc_sql($_REQUEST['status'])."'";
-    if ( ! empty( $_REQUEST['user_id'] ) ) $where[] = "`user_id` =  '" .esc_sql($_REQUEST['user_id'])."'";
+    if ( ! empty( $_REQUEST[ 'status' ] ) ) $where[] = "`status` =  '" . esc_sql( $_REQUEST[ 'status' ] ) . "'";
+    if ( ! empty( $_REQUEST[ 'user_id' ] ) ) $where[] = "`user_id` =  '" . esc_sql( $_REQUEST[ 'user_id' ] ) . "'";
 
-    if (!self::$details) {
-      $where[] = "`archived` = ".(!empty($_REQUEST['archive']) ? '1' : 0);
-      if ( ! empty( $_REQUEST['engine'] ) ) $where[] = "`engine` =  '" .esc_sql($_REQUEST['engine'])."'";
-    }
-
-    if ( ! empty( $_REQUEST['s'] ) ) {
-      $where[] = "`transaction_id` LIKE '%" .esc_sql($_REQUEST['s'])."%' OR `concept` LIKE '%" .esc_sql($_REQUEST['s'])."%'";
+    if ( !self::$details ) {
+      $where[] = "`archived` = " . ( !empty( $_REQUEST[ 'archive' ] ) ? '1' : 0 );
+      if ( ! empty( $_REQUEST[ 'engine' ] ) ) $where[] = "`engine` =  '" . esc_sql( $_REQUEST[ 'engine' ] ) . "'";
     }
 
-    if ( ! empty( $_REQUEST['created_from'] ) ) {
-      $where[] = "`created` >= '".esc_sql($_REQUEST['created_from'])."'";
-    }
-    if ( ! empty( $_REQUEST['created_to'] ) ) {
-      $where[] = "`created` <= '".esc_sql($_REQUEST['created_to'])."'";
+    if ( ! empty( $_REQUEST[ 's' ] ) ) {
+      $where[] = "`transaction_id` LIKE '%" .esc_sql( $_REQUEST[ 's' ] ) . "%' OR `concept` LIKE '%" . esc_sql( $_REQUEST[ 's' ] ) . "%'";
     }
 
-    if (count($where) > 0) $sql .=  ' WHERE '.implode(' AND ', $where);
-    if ($count) {
-      return($wpdb->get_var($sql));
+    if ( ! empty( $_REQUEST[ 'created_from' ] ) ) {
+      $where[] = "`created` >= '" . esc_sql( $_REQUEST[ 'created_from' ] ) . " 00:00:00'";
     }
-    if ( ! empty( $_REQUEST['orderby'] ) || isset($orderby) ) {
-      $sql .= ' ORDER BY ' . (isset($_REQUEST['orderby']) && ! empty($_REQUEST['orderby']) ? esc_sql ($_REQUEST['orderby']) : $orderby) ;
-      $sql .= isset($_REQUEST['order']) && !empty($_REQUEST['order']) ? ' '.esc_sql($_REQUEST['order']) : ' '.$order;
+    if ( ! empty( $_REQUEST['created_to' ] ) ) {
+      $where[] = "`created` <= '".esc_sql( $_REQUEST[ 'created_to' ] ) . " 23:59:59'";
+    }
+    if ( count( $where ) > 0 ) $sql .=  ' WHERE ' . implode( ' AND ', $where );
+    if ( $count ) {
+      return( $wpdb->get_var( $sql ) );
+    }
+    if ( ! empty( $_REQUEST[ 'orderby' ] ) || isset( $orderby ) ) {
+      $sql .= ' ORDER BY ' . ( isset( $_REQUEST[ 'orderby' ] ) && ! empty( $_REQUEST[ 'orderby' ] ) ? esc_sql ( $_REQUEST[ 'orderby' ] ) : $orderby ) ;
+      $sql .= isset( $_REQUEST[ 'order' ] ) && !empty( $_REQUEST[ 'order' ] ) ? ' ' . esc_sql( $_REQUEST[ 'order' ] ) : ' '. $order;
     }
     if ( $per_page > 0 ) {
       $sql .= " LIMIT $per_page";
       $sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
     }
     $result = $wpdb->get_results( $sql , 'ARRAY_A' );
-    if ($result) self::$columns = array_keys($result[0]);
-    return($result);
+    if ( $result ) self::$columns = array_keys( $result[ 0 ] );
+    return( $result );
   }
 
   public static function record_count() {
     global $wpdb;
     $sql = "SELECT COUNT(*) FROM ".self::$table_name;
-    return($wpdb->get_var($sql));
+    return( $wpdb->get_var( $sql ) );
   }
 
   public function no_items() {
@@ -138,34 +135,34 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   function column_id( $item ) {
-    if (self::$details || $this->is_export()) return($item['id']);
-    $title = '<strong>' . $item['id'] . '</strong>';
-    if (isset($item['archived']) && $item['archived']) {
-      $unarchive_nonce = wp_create_nonce( 'unarchive_'.$this->_args['singular'] );
+    if ( self::$details || $this->is_export() ) return( $item[ 'id' ] );
+    $title = '<strong>' . $item[ 'id' ] . '</strong>';
+    if ( isset( $item[ 'archived' ] ) && $item[ 'archived' ]) {
+      $unarchive_nonce = wp_create_nonce( 'unarchive_' . $this->_args[ 'singular' ] );
       $actions = [
-        'unarchive' => sprintf( '<a href="%s">%s</a>', add_query_arg([
+        'unarchive' => sprintf( '<a href="%s">%s</a>', add_query_arg( [
             'action' => 'unarchive',
-            'id' => absint($item['id']),
+            'id' => absint( $item[ 'id' ] ),
             '_wpnonce' => $unarchive_nonce
-        ]), __('Unarchive', 'simple-payment') )
+        ], menu_page_url( 'simple-payments', false ) ), __( 'Unarchive', 'simple-payment' ) )
       ];
     } else {
-      $archive_nonce = wp_create_nonce( 'archive_'.$this->_args[ 'singular' ] );
-      $verify_nonce = wp_create_nonce( 'verify_'.$this->_args[ 'singular' ] );
+      $archive_nonce = wp_create_nonce( 'archive_' . $this->_args[ 'singular' ] );
+      $verify_nonce = wp_create_nonce( 'verify_' . $this->_args[ 'singular' ] );
       $actions = [
         'archive' => sprintf( '<a href="%s">%s</a>', add_query_arg( [
             'action' => 'archive',
             'id' => absint( $item[ 'id' ] ),
             '_wpnonce' => $archive_nonce
-        ] ), __( 'Archive', 'simple-payment' ) ),
+        ], menu_page_url( 'simple-payments', false ) ), __( 'Archive', 'simple-payment' ) ),
         'verify' => sprintf( '<a href="%s">%s</a>', add_query_arg( [
           'action' => 'verify',
           'id' => absint( $item[ 'id' ] ),
           '_wpnonce' => $verify_nonce
-      ] ), __( 'Verify', 'simple-payment' ) ),
+        ], menu_page_url( 'simple-payments', false ) ), __( 'Verify', 'simple-payment' ) ),
       ];
     }
-    $actions['details'] = sprintf( '<a href="?page=simple-payments-details&id=%s&engine=%s">%s</a>', $item['id'], $item['engine'], __('Details', 'simple-payment') );
+    $actions[ 'details' ] = sprintf( '<a href="?page=simple-payments-details&id=%s&engine=%s">%s</a>', $item[ 'id' ], $item[ 'engine' ], __( 'Details', 'simple-payment' ) );
     return( $title . $this->row_actions( $actions ) );
   }
 
@@ -276,14 +273,13 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       'modified' => array( 'modified', false ),
       'created' => array( 'created', false ),
     );
-    return($sortable_columns);
+    return( $sortable_columns );
   }
 
   public function verify_transaction( $id ) {
-    add_action( 'sp_payment_verify', function( $id ) {
-      $payment = SimplePaymentPlugin::instance()->fetch( $id );
-      set_transient( 'sp_message', __( 'Verification result for $id:  %s', 'simple-payment' ),  $id, print_r( $payment, true ) );
-    } );;
+    add_action( 'sp_payment_verify', function( $params ) {
+      set_transient( 'sp_message', sprintf( __( "Verification result for %s:<br />%s", 'simple-payment' ),  $params[ 'id' ], json_encode( $params ) ) );
+    } );
     $result = SimplePaymentPlugin::verify( $id );
   }
 
@@ -299,20 +295,20 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
     global $sp_bulk_processed;
     if ( isset( $sp_bulk_processed ) && $sp_bulk_processed ) return;
     $sp_bulk_processed = true;
-    if ( in_array($this->current_action(), [ 'archive', 'unarchive', 'verify' ] ) ) {
+    if ( in_array( $this->current_action(), [ 'archive', 'unarchive', 'verify' ] ) ) {
       $nonce = esc_attr( $_REQUEST['_wpnonce'] );
-      if ( ! wp_verify_nonce( $nonce, $this->current_action().'_'.$this->_args['singular'] ) ) {
+      if ( !wp_verify_nonce( $nonce, $this->current_action() . '_' . $this->_args[ 'singular' ] ) ) {
         die( 'Go get a life script kiddies' );
       } 
       switch ( $this->current_action() ) {
         case 'verify':
-          self::verify_transaction( absint( $_GET['id'] ) );
+          self::verify_transaction( absint( $_GET[ 'id' ] ) );
           break;
         case 'archive':
-          self::archive_transaction( absint( $_GET['id'] ) );
+          self::archive_transaction( absint( $_GET[ 'id' ] ) );
           break;
         case 'unarchive':
-          self::unarchive_transaction( absint( $_GET['id'] ) );
+          self::unarchive_transaction( absint( $_GET[ 'id' ] ) );
           break;
       }
       
@@ -320,15 +316,15 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       return;
     }
     // If the delete bulk action is triggered
-    if ( ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] && $_REQUEST['action'] != '-1')
-         || ( isset( $_REQUEST['action2'] ) && $_REQUEST['action2']  && $_REQUEST['action2'] != '-1')
+    if ( ( isset( $_REQUEST[ 'action' ] ) && $_REQUEST[ 'action' ] && $_REQUEST[ 'action' ] != '-1' )
+         || ( isset( $_REQUEST[ 'action2' ] ) && $_REQUEST[ 'action2' ]  && $_REQUEST[ 'action2' ] != '-1' )
     ) {
-      $nonce = esc_attr( $_REQUEST['_wpnonce'] );
-      if ( ! wp_verify_nonce( $nonce, 'bulk-'.$this->_args['plural'] ) ) {
+      $nonce = esc_attr( $_REQUEST[ '_wpnonce' ] );
+      if ( ! wp_verify_nonce( $nonce, 'bulk-'.$this->_args[ 'plural' ] ) ) {
         die( 'Go get a life script kiddies' );
       }
-      $ids = isset($_REQUEST['id']) ? esc_sql( $_REQUEST['id'] ) : [];
-      $action = isset($_REQUEST['action']) && $_REQUEST['action'] != -1 ? $_REQUEST['action'] : $_REQUEST['action2'];
+      $ids = isset( $_REQUEST[ 'id' ] ) ? esc_sql( $_REQUEST[ 'id' ] ) : [];
+      $action = isset( $_REQUEST[ 'action' ] ) && $_REQUEST[ 'action' ] != -1 ? $_REQUEST[ 'action' ] : $_REQUEST[ 'action2' ];
       foreach ( $ids as $id ) {
         switch ($action) {
           case 'bulk-verify':

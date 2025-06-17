@@ -239,7 +239,7 @@ class SimplePayment_Plugin_Updater {
 			// build a plugin list row, with update notification
 			$wp_list_table = _get_list_table( 'WP_Plugins_List_Table' );
 			# <tr class="plugin-update-tr"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange">
-			echo '<tr class="plugin-update-tr" id="' . $this->slug . '-update" data-slug="' . $this->slug . '" data-plugin="' . $this->slug . '/' . $file . '">';
+			echo '<tr class="plugin-update-tr" id="' . esc_attr( $this->slug ) . '-update" data-slug="' . esc_attr( $this->slug ) . '" data-plugin="' . esc_attr( $this->slug ) . '/' . $file . '">';
 			echo '<td colspan="3" class="plugin-update colspanchange">';
 			echo '<div class="update-message notice inline notice-warning notice-alt">';
 
@@ -539,13 +539,13 @@ class SimplePayment_Plugin_Updater {
 			$this->set_version_info_cache( $version_info );
 
 			// Delete the unneeded option
-			delete_option( md5( 'edd_plugin_' . sanitize_key( $_REQUEST['plugin'] ) . '_' . $this->beta . '_version_info' ) );
+			delete_option( md5( 'edd_plugin_' . sanitize_key( $_REQUEST[ 'plugin' ] ) . '_' . $this->beta . '_version_info' ) );
 		}
 
 		if ( isset( $version_info->sections ) ) {
 			$sections = $this->convert_object_to_array( $version_info->sections );
 			if ( ! empty( $sections['changelog'] ) ) {
-				echo '<div style="background:#fff;padding:10px;">' . wp_kses_post( $sections['changelog'] ) . '</div>';
+				echo '<div style="background:#fff;padding:10px;">' . wp_kses_post( $sections[ 'changelog' ] ) . '</div>';
 			}
 		}
 

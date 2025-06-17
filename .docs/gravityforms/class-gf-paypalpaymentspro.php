@@ -130,20 +130,14 @@ class GFPayPalPaymentsPro extends GFPaymentAddOn {
 	 * @return string|void
 	 */
 	public function settings_password( $field, $echo = true ) {
-
-		$field['type'] = 'text';
-
+		$field[ 'type' ] = 'text';
 		$password_field = $this->settings_text( $field, false );
-
 		//switch type="text" to type="password" so the password is not visible
 		$password_field = str_replace( 'type="text"','type="password"', $password_field );
-
 		if ( $echo ) {
 			echo $password_field;
 		}
-
-		return $password_field;
-
+		return( $password_field );
 	}
 
 	/**
@@ -155,19 +149,13 @@ class GFPayPalPaymentsPro extends GFPaymentAddOn {
 	 * @return string|void
 	 */
 	public function settings_vendor( $field, $echo = true ) {
-
-		$field['type'] = 'text';
-
+		$field[ 'type' ] = 'text';
 		$vendor_field = $this->settings_text( $field, false );
-
 		$caption = '<small>' . sprintf( esc_html__( 'Your merchant login ID if different from Username above.', 'gravityformspaypalpaymentspro' ) ) . '</small>';
-
 		if ( $echo ) {
 			echo $vendor_field . '</br>' . $caption;
 		}
-
-		return $vendor_field . '</br>' . $caption;
-
+		return( $vendor_field . '</br>' . $caption );
 	}
 
 	/**
@@ -179,19 +167,13 @@ class GFPayPalPaymentsPro extends GFPaymentAddOn {
 	 * @return string|void
 	 */
 	public function settings_partner( $field, $echo = true ) {
-
-		$field['type'] = 'text';
-
+		$field[ 'type' ] = 'text';
 		$partner_field = $this->settings_text( $field, false );
-
 		$caption = '<small>' . sprintf( esc_html__( 'If you have registered with a PayPal Reseller, enter their ID above.', 'gravityformspaypalpaymentspro' ) ) . '</small>';
-
 		if ( $echo ) {
 			echo $partner_field . '</br>' . $caption;
 		}
-
-		return $partner_field . '</br>' . $caption;
-
+		return( $partner_field . '</br>' . $caption );
 	}
 
 	//-------- Form Settings ---------
@@ -202,7 +184,7 @@ class GFPayPalPaymentsPro extends GFPaymentAddOn {
 	 * @return bool
 	 */
 	public function can_create_feed() {
-		return $this->is_valid_api_credentials();
+		return( $this->is_valid_api_credentials() );
 	}
 
 	/**

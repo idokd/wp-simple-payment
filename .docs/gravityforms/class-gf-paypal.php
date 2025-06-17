@@ -409,8 +409,8 @@ class GFPayPal extends GFPaymentAddOn {
 				foreach ( $notifications as $notification ) {
 					?>
 					<li class="gf_paypal_notification">
-						<input type="checkbox" class="notification_checkbox" value="<?php echo $notification['id'] ?>" onclick="SaveNotifications();" <?php checked( true, in_array( $notification['id'], $selected_notifications ) ) ?> />
-						<label class="inline" for="gf_paypal_selected_notifications"><?php echo $notification['name']; ?></label>
+						<input type="checkbox" class="notification_checkbox" value="<?php echo esc_attr( $notification[ 'id' ] ) ?>" onclick="SaveNotifications();" <?php checked( true, in_array( $notification[ 'id' ], $selected_notifications ) ) ?> />
+						<label class="inline" for="gf_paypal_selected_notifications"><?php echo esc_html( $notification[ 'name' ] ); ?></label>
 					</li>
 				<?php
 				}
@@ -581,7 +581,7 @@ class GFPayPal extends GFPaymentAddOn {
 		//Customer fields
 		$customer_fields = $this->customer_query_string( $feed, $entry );
 
-		//Image URL 
+		//Image URL
 		$image_url = ! empty( $feed['meta']['imageURL'] ) ? '&image_url=' . urlencode( $feed['meta']['imageURL'] ) : '';
 
 		//Set return mode to 2 (PayPal will post info back to page). rm=1 seems to create lots of problems with the redirect back to the site. Defaulting it to 2.

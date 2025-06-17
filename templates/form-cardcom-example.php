@@ -3,21 +3,21 @@ require('preparation.php');
 wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL.'assets/js/form-checkout.js', [], $SPWP::$version, true );
 ?>
 <script>
-var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
+var sp_settings = <?php echo json_encode( $SPWP->settings() ); ?>;
 </script>
 <div class="col-md-8 order-md-1">
-  <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo $SPWP->payment_page(); ?>" method="post"<?php echo $target; ?>>
+  <form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo esc_url( $SPWP->payment_page() ); ?>" method="post"<?php echo $target; ?>>
   <input type="hidden" name="op" value="purchase" />
-  <input type="hidden" name="product" value="<?php echo $product; ?>" />
-  <input type="hidden" name="amount" value="<?php echo $amount; ?>" />
-  <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
+  <input type="hidden" name="product" value="<?php echo esc_attr( $product ); ?>" />
+  <input type="hidden" name="amount" value="<?php echo esc_attr( $amount ); ?>" />
+  <input type="hidden" name="engine" value="<?php echo esc_attr( $engine ); ?>" />
   <?php if ( isset( $_REQUEST[ 'message' ] ) && $message = $SPWP::get_message( $_REQUEST[ 'message' ] ) ) { ?><div class="alert alert-warning" role="alert"><?php echo esc_html( $message ); ?></div><?php } ?>
 
   <h4 class="mb-3"><?php _e('Billing Information', 'simple-payment'); ?></h4>
     <div class="row">
       <div class="col-md-6 mb-3">
         <label for="firstName"><?php _e('First name', 'simple-payment'); ?></label>
-        <input type="text" class="form-control" id="firstName" name="<?php echo $SPWP::FIRST_NAME; ?>" placeholder="" value="">
+        <input type="text" class="form-control" id="firstName" name="<?php echo esc_attr( $SPWP::FIRST_NAME ); ?>" placeholder="" value="">
         <div class="invalid-feedback">
           <?php _e('Valid first name is required.', 'simple-payment'); ?>
         </div>
@@ -82,7 +82,7 @@ var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
         <label for="country"><?php _e('Country', 'simple-payment'); ?></label>
         <select class="custom-select d-block w-100" id="country" name="country" >
           <option value=""><?php _e('Choose', 'simple-payment'); ?></option>
-          <?php foreach ($SPWP_COUNTRIES as $key => $value) echo '<option value="'.$key.'">'.__($value, 'simple-payment').'</option>'; ?>
+          <?php foreach ($SPWP_COUNTRIES as $key => $value) echo '<option value="' . esc_attr( $key ) . '">'.__($value, 'simple-payment').'</option>'; ?>
         </select>
         <div class="invalid-feedback">
           <?php _e('Please select a valid country.', 'simple-payment'); ?>

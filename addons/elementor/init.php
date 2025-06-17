@@ -14,7 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Make sure Elementor is active
-if (!in_array('elementor/elementor.php', apply_filters('active_plugins', get_option('active_plugins')))) 
+
+$_active_plugins = array_merge( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', [] ) ) : [], get_option( 'active_plugins', [] ) );
+
+if ( !in_array( 'elementor/elementor.php', $_active_plugins ) ) 
 	return;
 	
 /**

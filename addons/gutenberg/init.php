@@ -3,7 +3,7 @@
 defined( 'ABSPATH' ) or exit;
 
 // Make sure Gutenberg is present
-if (!function_exists('register_block_type')) return;
+if ( !function_exists( 'register_block_type' ) ) return;
 
 register_block_type(
     'simple-payment/simple-payment', array(
@@ -13,7 +13,7 @@ register_block_type(
     )
 );
 
-add_action('init', 'sp_gutenberg_assets');
+add_action( 'init', 'sp_gutenberg_assets' );
 
 function sp_gutenberg_assets() { // phpcs:ignore
     include(SPWP_PLUGIN_DIR.'/settings.php');

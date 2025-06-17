@@ -238,7 +238,7 @@ class iCount extends Engine {
             }
             if ( !isset( $post[ 'client_name' ] ) || !$post[ 'client_name' ] ) $post[ 'client_name' ] =  $params[ 'token' ][ SimplePayment::CARD_OWNER ];
             $post[ 'cc_token_id' ] = intval( $params[ 'token' ][ 'token' ] );
-            $post[ 'cc_holder_id' ] = $params[ 'token' ][ SimplePayment::CARD_OWNER_ID ];
+            if ( isset( $params[ 'token' ][ SimplePayment::CARD_OWNER_ID ] ) && $params[ 'token' ][ SimplePayment::CARD_OWNER_ID ] ) $post[ 'cc_holder_id' ] = $params[ 'token' ][ SimplePayment::CARD_OWNER_ID ];
             $post[ 'cc_cvv' ] = $params[ 'token' ][ SimplePayment::CARD_CVV ];
             //if ( isset( $params[ 'token' ][ SimplePayment::CARD_EXPIRY_YEAR ] ) && $params[ 'token' ][ SimplePayment::CARD_EXPIRY_YEAR ] && isset( $params[ 'token' ][ SimplePayment::CARD_EXPIRY_MONTH ] ) && $params[ 'token' ][ SimplePayment::CARD_EXPIRY_MONTH ] ) $post[ 'cc_validity' ] = $params[ 'token' ][ SimplePayment::CARD_EXPIRY_YEAR ] . '-' . str_pad( $params[ 'token' ][ SimplePayment::CARD_EXPIRY_MONTH ], 2, '0', STR_PAD_LEFT );
         } else {

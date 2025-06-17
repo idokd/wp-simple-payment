@@ -1,7 +1,9 @@
 <?php
 
 // Make sure WPJobBoard is active
-if (!in_array('wpjobboard/index.php', apply_filters('active_plugins', get_option('active_plugins')))) 
+$_active_plugins = array_merge( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', [] ) ) : [], get_option( 'active_plugins', [] ) );
+
+if ( !in_array( 'wpjobboard/index.php', $_active_plugins ) ) 
 	return;
 
 //add_action('init', 'sp_wpjb_init');

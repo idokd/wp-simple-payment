@@ -3,7 +3,10 @@
 defined( 'ABSPATH' ) or exit;
 
 // Make sure WooCommerce is active
-if ( !in_array( 'woocommerce-subscriptions/woocommerce-subscriptions.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) 
+
+$_active_plugins = array_merge( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', [] ) ) : [], get_option( 'active_plugins', [] ) );
+
+if ( !in_array( 'woocommerce-subscriptions/woocommerce-subscriptions.php', $_active_plugins ) ) 
 	return;
 
 add_action( 'woocommerce_scheduled_subscription_payment_simple-payment', function( $amount_to_charge, $order ) {

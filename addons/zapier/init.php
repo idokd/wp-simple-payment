@@ -1,6 +1,6 @@
 <?php
 
-add_action('sp_extension_zapier', 'sp_zapier');
+add_action( 'sp_extension_zapier', 'sp_zapier' );
 
 function sp_zapier($params = []) {
     global $wpdb, $SPWP;

@@ -39,7 +39,7 @@ class ComposerStaticInitbe03bdd49f4637afb5fbdac3bee97a61
     public static $prefixDirsPsr4 = array (
         'leewillis77\\WpListTableExportable\\' => 
         array (
-            0 => __DIR__ . '/..' . '/leewillis77/WpListTableExportable/src',
+            0 => __DIR__ . '/..' . '/leewillis77/wplisttableexportable/src',
         ),
         'SimplePayment\\' => 
         array (

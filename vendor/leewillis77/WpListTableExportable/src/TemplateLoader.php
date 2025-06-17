@@ -44,7 +44,7 @@ class TemplateLoader extends GamajoTemplateLoader {
 	 *
 	 * @return string             The rendered output.
 	 */
-	public function output( $slug, $name = null, $variables = null ) {
+	public function output( $slug, $name = null, $variables = array() ) {
 		echo $this->get( $slug, $name, $variables );
 	}
 }

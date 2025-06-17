@@ -76,8 +76,9 @@ in differnet parts of the payment process.
 You can also extend any of the existing Payment Gateways (Engines) or write your own Custom Engine, and finally
 you can integrate Simple Payment with [Zapier](https://zapier.com/developer/public-invite/66167/f63e9e617b9e5e534c26c308f15087ee/)
 
+= How can I report security bugs?
 
-
+You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team helps validate, triage and handle any security vulnerabilities. [Report a security vulnerability.]( https://patchstack.com/database/vdp/21aaae52-b279-4f4e-bd4a-94c3c88c3188 )
 
 == Feedback and Support ==
 

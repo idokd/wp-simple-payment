@@ -4,7 +4,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-if ( !is_plugin_active( 'gravityforms/gravityforms.php' ) ) return;
+$_active_plugins = array_merge( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', [] ) ) : [], get_option( 'active_plugins', [] ) );
+
+if ( !in_array( 'gravityforms/gravityforms.php', $_active_plugins ) ) return; 
+
 
 // If Gravity Forms is loaded, bootstrap the Simple Payment Add-On.
 add_action( 'gform_loaded', [ 'GF_SimplePayment_Bootstrap', 'load' ], 5 );
@@ -43,7 +46,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 	protected $_slug = 'simple-payment';
 	protected $_path = 'simple-payment/addons/gravityforms/init.php';
 	protected $_full_path = __FILE__;
-	protected $_url = 'http://simple-payment.yalla-ya.com.com';
+	protected $_url = 'http://simple-payment.yalla-ya.com';
 	protected $_title = 'Gravity Forms Simple Payment Add-On';
 	protected $_short_title = 'Simple Payment';
 	protected $_supports_callbacks = true;
@@ -91,6 +94,14 @@ class GFSimplePayment extends GFPaymentAddOn {
     function pre_init() {
 		parent::pre_init();
 		add_action( 'sp_payment_success', [ $this, 'payment_success' ] );
+		add_action( 'sp_payment_status', function( $params, $engine ) {
+			if ( $params[ 'confirmation_code' ] ) $this->payment_success( $params );
+		}, 50, 2 );
+
+		add_action( 'sp_payment_verify', function( $params, $engine ) {
+			if ( $params[ 'confirmation_code' ] ) $this->payment_success( $params );
+		}, 50, 2 );
+
 		//add_action( 'sp_payment_post_process', [ $this, 'payment_success' ] );
 		add_action( 'gform_enqueue_scripts', [ $this, 'load_scripts'], 10, 2 );
 		add_filter( 'sp_payment_pre_process_filter', [ $this, 'sp_payment_pre_process_filter' ] );
@@ -263,8 +274,8 @@ class GFSimplePayment extends GFPaymentAddOn {
 			}
 		}
 		$engines = [];
-		$engines[] = ['label' => 'Default', 'value' => ''];
-		foreach (SimplePaymentPlugin::$engines as $engine) $engines[] = ['label' => $engine, 'value' => $engine];
+		$engines[] = [ 'label' => 'Default', 'value' => '' ];
+		foreach ( SimplePaymentPlugin::$engines as $engine ) $engines[] = [ 'label' => $engine, 'value' => $engine ];
 		$fields = array(
 			array(
 				'name'      => 'customSettingsEnabled',
@@ -607,17 +618,14 @@ class GFSimplePayment extends GFPaymentAddOn {
 	 */
 	public function is_payment_gateway( $entry_id ) {
 		if ( $this->is_payment_gateway ) {
-			return true;
+			return( true );
 		}
 		$gateway = gform_get_meta( $entry_id, 'payment_gateway' );
-		return in_array( $gateway, array( 'simplepayment', $this->_slug ) );
+		return( in_array( $gateway, array( 'simplepayment', $this->_slug ) ) );
 	}
 
 	public function is_callback_valid() {
-		if ( rgget( 'page' ) != 'gf_simplepayment_ipn' ) {
-			return false;
-		}
-		return true;
+		return( rgget( 'page' ) == 'gf_simplepayment_ipn' );
 	}
 
 	public function sp_payment_pre_process_filter( $params ) {
@@ -652,6 +660,9 @@ class GFSimplePayment extends GFPaymentAddOn {
 				if ( !isset( $params[ 'products' ] ) ) $params[ 'products' ] = [];
 				$params[ 'products' ][] = $product;
 			}
+		}
+		if ( $feed[ 'meta' ][ 'installments' ] ) {
+			$params[ 'payments' ] = true;
 		}
 		return( $params );
 	}

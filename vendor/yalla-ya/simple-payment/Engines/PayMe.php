@@ -30,6 +30,7 @@ class PayMe extends Engine {
       'generate-sale' => 'https://live.payme.io/api/generate-sale',
       'refund-sale' => 'https://live.payme.io/api/refund-sale',
       'get-sales' => 'https://live.payme.io/api/get-sales',
+      'get-transactions' => 'https://live.payme.io/api/get-transactions',
       'generate-subscription' => 'https://live.payme.io/api/generate-subscription',
       'cancel-subscription' => 'https://live.payme.io/api/cancel-subscription',
       'get-subscriptions' => 'https://live.payme.io/api/get-subscriptions',
@@ -39,6 +40,7 @@ class PayMe extends Engine {
       'generate-sale' => 'https://sandbox.payme.io/api/generate-sale',
       'refund-sale' => 'https://sandbox.payme.io/api/refund-sale',
       'get-sales' => 'https://sandbox.payme.io/api/get-sales',
+      'get-transactions' => 'https://sandbox.payme.io/api/get-transactions',
       'generate-subscription' => 'https://sandbox.payme.io/api/generate-subscription',
       'cancel-subscription' => 'https://sandbox.payme.io/api/cancel-subscription',
       'get-subscriptions' => 'https://sandbox.payme.io/api/get-subscriptions',
@@ -54,76 +56,81 @@ class PayMe extends Engine {
     $this->api = $this->api[ $this->sandbox ? 'sandbox' : 'live' ];
   }
 
-  public function process($params) {
-    $url = $params['url'];
+  public function process( $params ) {
+    $url = $params[ 'url' ];
     $qry = [];
-    if (isset($params[SimplePayment::FIRST_NAME]) && strpos($url, 'first_name') === false) $qry['first_name'] = $params[SimplePayment::FIRST_NAME];
-    if (isset($params[SimplePayment::LAST_NAME]) && strpos($url, 'last_name') === false) $qry['last_name'] = $params[SimplePayment::LAST_NAME];
-    if (isset($params[SimplePayment::PHONE]) && strpos($url, 'phone') === false) $qry['phone'] = $params[SimplePayment::PHONE];
-    if (isset($params[SimplePayment::EMAIL]) && strpos($url, 'email') === false) $qry['email'] = $params[SimplePayment::EMAIL];
-    if (isset($params[SimplePayment::CARD_OWNER_ID]) && strpos($url, 'social_id') === false) $qry['social_id'] = $params[SimplePayment::CARD_OWNER_ID];
-    return($url.(strpos($url, '?') ? '&' : '?').($qry ? '&'.http_build_query($qry) : ''));
+    if ( isset( $params[ SimplePayment::FIRST_NAME ] ) && strpos( $url, 'first_name' ) === false ) $qry[ 'first_name' ] = $params[ SimplePayment::FIRST_NAME ];
+    if ( isset( $params[ SimplePayment::LAST_NAME ] ) && strpos( $url, 'last_name' ) === false ) $qry[ 'last_name' ] = $params[ SimplePayment::LAST_NAME ];
+    if ( isset( $params[ SimplePayment::PHONE ] ) && strpos( $url, 'phone' ) === false ) $qry[ 'phone' ] = $params[ SimplePayment::PHONE ];
+    if ( isset( $params[ SimplePayment::EMAIL ] ) && strpos( $url, 'email' ) === false ) $qry[ 'email' ] = $params[ SimplePayment::EMAIL ];
+    if ( isset( $params[ SimplePayment::CARD_OWNER_ID ] ) && strpos( $url, 'social_id' ) === false ) $qry[ 'social_id' ] = $params[ SimplePayment::CARD_OWNER_ID ];
+    return( $url . ( strpos( $url, '?') ? '&' : '?' ) . ( $qry ? '&' . http_build_query( $qry ) : '' ) );
   }
 
-  public function verify($id) {
-    $this->transaction = $id;
+  public function verify( $transaction ) {
+    $this->transaction = $transaction[ 'transaction_id' ];
     $json = [
       'seller_payme_id' => $this->password,
-      'sale_payme_id' => $this->transaction
+      'sale_payme_id' => $this->transaction,
+      'page_size' => 1
     ];
-    $response = $this->post($this->api['get-sales'], json_encode($post), [ 'Content-Type: application/json' ]);
-    $response = json_decode($response, true);
-    $this->save([
-      'transaction_id' => $this->transaction,
-      'url' => $this->api['get-sales'],
-      'status' => isset($response['status_code']) ? $response['status_code'] :  $response['status_code'],
-      'description' => isset($response['status_error_details']) ? $response['status_error_details'] : $response['status_error_details'],
-      'request' => json_encode($json),
-      'response' => json_encode($response)
-    ]);
-    if ($response['items_count'] && $response['items']) {
-      $code = $response['items'][0]['sale_auth_number'];
-      $this->confirmation_code = $code;
-      return( $code );
+    $response = json_decode( 
+        $this->post( $this->api[ 'get-transactions' ], 
+          json_encode( $json ), 
+          [ 'Content-Type: application/json' ], 
+          false ),
+        true );
+    if ( $response[ 'items_count' ] && $response[ 'items' ]  ) {
+      $response = $response[ 'items' ][ 0 ];
     }
-    throw new Exception(isset($response['status_error_details']) ? $response['status_error_details'] : $response['status_code'], $response['status_code']);
+    $this->save( [
+      'transaction_id' => $this->transaction,
+      'url' => $this->api[ 'get-transactions' ],
+      'status' => isset( $response[ 'transaction_error_code' ] ) ? ( $response[ 'transaction_error_code' ] == '20000' ? 0 : $response[ 'transaction_error_code' ] ) : $response[ 'transaction_error_code' ],
+      'description' => isset( $response[ 'transaction_error_text' ] ) ? $response[ 'transaction_error_text' ] : $response[ 'transaction_error_text' ],
+      'request' => json_encode( $json ),
+      'response' => json_encode( $response )
+    ]);
+    $this->confirmation_code = isset( $response[ 'transaction_error_code' ] ) && $response[ 'transaction_error_code' ] == '20000' ? $response[ 'sale_auth_number' ] : false;
+    return( $this->confirmation_code ? true : false );
+    //throw new Exception( isset( $response[ 'transaction_error_text' ] ) ? $response[ 'transaction_error_text' ] : $response[ 'transaction_error_code' ], $response[ 'transaction_error_code' ] );
   }
 
-  public function status($params) {
-    parent::status($params);
-    $this->transaction = $params['payme_sale_id'];
-    $this->save([
+  public function status( $params ) {
+    parent::status( $params );
+    $this->transaction = $params[ 'payme_sale_id' ];
+    $this->confirmation_code = isset( $params[ 'payme_transaction_auth_number' ] ) ? $params[ 'payme_transaction_auth_number' ] : $params[ 'payme_transaction_auth_number' ];
+    $this->save( [
       'transaction_id' => $this->transaction,
-      'url' => $_SERVER["REQUEST_URI"],
-      'status' => isset($params['payme_status']) ? $params['payme_status'] : $params['status_code'],
-      'description' => isset($params['status_error_code']) ? $params['status_error_code'] : $params['status_error_code'],
-      'request' => json_encode($_REQUEST),
+      'url' => $_SERVER[ 'REQUEST_URI' ],
+      'status' => isset( $params[ 'status_error_code' ] ) ? $params[ 'status_error_code' ] : $params[ 'status_error_code' ],
+      'description' => isset( $params[ 'status_error_details' ] ) ? $params[ 'status_error_details' ] : $params[ 'status_error_code' ],
+      'request' => json_encode( $_REQUEST ),
       'response' => null
-    ]);
+    ] );
     // payme_signature
     //$signature = md5($payme_client_key . $payme_merchant_secret . $payme_transaction_id . $params['payme_sale_id']);
-    $this->confirmation_code = $params['sale_auth_number'];
-    return($this->confirmation_code);
+    return( $this->confirmation_code );
   }
 
-  public function post_process($params) {
-    $this->transaction = $_REQUEST['payme_transaction_id'];
+  public function post_process( $params ) {
+    $this->transaction = $_REQUEST[ 'payme_sale_id' ];
     $response = $_REQUEST;
 
-    $this->save([
+    $this->save( [
       'transaction_id' => $this->transaction,
       'url' => ':post_process',
-      'status' => isset($response['status_code']) && $response['status_code'] != 0 ? $response['status_error_code'] : $response['status_code'],
-      'description' => isset($response['status_error_details']) ? $response['status_error_details'] : null,
-      'request' => json_encode($params),
-      'response' => json_encode($response)
-    ]);
-    $this->confirmation_code = $_REQUEST[ 'payme_transaction_auth_number' ];
+      'status' => isset( $response[ 'status_code' ] ) && $response[ 'status_code' ] != 0 ? $response[ 'status_error_code' ] : $response[ 'status_code' ],
+      'description' => isset( $response[ 'status_error_details' ] ) ? $response[ 'status_error_details' ] : null,
+      'request' => json_encode( $params ),
+      'response' => json_encode( $response )
+    ] );
+    $this->confirmation_code = $params[ 'payme_transaction_auth_number' ];
     // TODO: if subscription do subscription
     //if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
     //  if ($this->param('recurr_at') == 'post' && $this->param('reurring') == 'provider') return($this->recur_by_provider($params));
     //}
-    return( ( isset( $_REQUEST[ 'status_code' ] ) && $_REQUEST[ 'status_code' ] === 0 ) || ( isset( $_REQUEST[ 'status' ] ) && $_REQUEST[ 'status' ] === 'success' ) );
+    return( ( isset( $params[ 'status_code' ] ) && $params[ 'status_code' ] === 0 ) || ( isset( $params[ 'status' ] ) && $params[ 'status' ] === 'success' ) );
   }
 
   public function pre_process($params) {
@@ -159,7 +166,6 @@ class PayMe extends Engine {
           break;
         default:
           $operation = 'generate-sale';
-
           if ( $method == 'bit' ) $json[ 'layout' ] = 'qr-sms'; //dynamic, qr-sms or dynamic-loose 
     }
 
@@ -167,9 +173,9 @@ class PayMe extends Engine {
     // for tokenization: buyer_key
 
     $status = $this->post($this->api[ $operation ], json_encode($json), [ 'Content-Type: application/json' ], false);
-    $status = json_decode($status, true);
-    $status['url'] = $status['sale_url'];
-    $this->transaction = $this->transaction ? : $status['payme_sale_id'];
+    $status = json_decode( $status, true );
+    $status['url'] = $status[ 'sale_url' ];
+    $this->transaction = $this->transaction ? : $status[ 'payme_sale_id' ];
     $response = $status;
     $this->save([
       'transaction_id' => $this->transaction,

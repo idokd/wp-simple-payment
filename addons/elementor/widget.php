@@ -267,10 +267,9 @@ class Elementor_SimplePayment_Widget extends \Elementor\Widget_Base {
 	protected function render() {
 		$SP = SimplePaymentPlugin::instance();
 		$params = [];
-		foreach ($this->get_controls() as $control) {
-			if (isset($control['name']) && $this->get_settings( $control['name'])) $params[$control['name']] = $this->get_settings( $control['name'] );
+		foreach ( $this->get_controls() as $control ) {
+			if ( isset( $control[ 'name' ] ) && $this->get_settings( $control[ 'name' ] ) ) $params[ $control[ 'name' ] ] = $this->get_settings( $control[ 'name' ] );
 		}
-		
 		echo $SP->checkout($params);
 	}
 
@@ -284,12 +283,12 @@ class Elementor_SimplePayment_Widget extends \Elementor\Widget_Base {
 	 */
 	public function render_plain_content() {
 		$params = [];
-		foreach ($this->get_controls() as $control) {
-			if (isset($control['name']) && $this->get_settings( $control['name'])) $params[$control['name']] = $this->get_settings( $control['name'] );
+		foreach ( $this->get_controls() as $control ) {
+			if ( isset( $control[ 'name' ] ) && $this->get_settings( $control[ 'name' ] ) ) $params[ $control[ 'name' ] ] = $this->get_settings( $control[ 'name' ] );
 		}
 		$shortcode = '[simple_payment';
-		foreach ($params as $param => $value) {
-			$shortcode .= ' '.$param.'="'.$value.'"';
+		foreach ( $params as $param => $value ) {
+			$shortcode .= ' ' . $param . '="' . $value . '"';
 		}
 		$shortcode .= ']';
 		echo $shortcode;
@@ -304,4 +303,5 @@ class Elementor_SimplePayment_Widget extends \Elementor\Widget_Base {
 	 * @access protected
 	 */
 	protected function _content_template() {}
+	
 }

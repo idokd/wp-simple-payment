@@ -75,13 +75,13 @@ class PayPal extends Engine {
     // - Call payment gateway API
     // - Redirect to the payment gateway url with params
     // Return FALSE if transaction failed
-    echo '<form id="frm" action="'.($this->sandbox ? $this->api['sandbox']['post'] : $this->api['post']).'" target="_top" method="post">';
-    foreach ($post as $key => $value) {
-        echo '<input type="hidden" name="'.htmlentities($key).'" value="'.htmlentities($value).'">';
+    echo '<form id="frm" action="' . esc_url( $this->sandbox ? $this->api[ 'sandbox'][ 'post' ] : $this->api[ 'post' ] ) . '" target="_top" method="post">';
+    foreach ( $post as $key => $value ) {
+        echo '<input type="hidden" name="' . esc_attr( $key ).'" value="' . esc_attr( $value ) . '">';
     }
     echo '</form><script>document.getElementById("frm").submit();</script>';
     die;
-    return(true);
+    return( true );
   }
 
   public function pre_process($params) {

@@ -6,11 +6,11 @@ wp_enqueue_script( 'simple-payment-checkout-js', SPWP_PLUGIN_URL.'assets/js/form
 var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
 </script>
 <div class="col-md-8 order-md-1">
-<form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo $SPWP->payment_page(); ?>" method="post"<?php echo $target; ?>>
+<form class="needs-validation" novalidate="" id="simple-payment" name="simple-payment" action="<?php echo esc_url( $SPWP->payment_page() ); ?>" method="post"<?php echo $target; ?>>
   <input type="hidden" name="op" value="purchase" />
   <input type="hidden" name="product" value="<?php echo isset($product) ? $product : ''; ?>" />
-  <input type="hidden" name="amount" value="<?php echo $amount; ?>" />
-  <input type="hidden" name="engine" value="<?php echo $engine; ?>" />
+  <input type="hidden" name="amount" value="<?php echo esc_attr( $amount ); ?>" />
+  <input type="hidden" name="engine" value="<?php echo esc_attr( $engine ); ?>" />
 
   <?php if ( isset( $_REQUEST[ 'message' ] ) && $message = $SPWP::get_message( $_REQUEST[ 'message' ] ) ) { ?><div class="alert alert-warning" role="alert"><?php echo esc_html( $message ); ?></div><?php } ?>
 
@@ -72,7 +72,7 @@ var sp_settings = <?php echo json_encode($SPWP->settings()); ?>;
       </div>
     </div>
     <hr class="mb-4">
-    <button class="btn btn-primary btn-lg btn-block" type="submit"><?php echo sprintf(__('Process Payment [%s]', 'simple-payment'), $amount); ?></button>
+    <button class="btn btn-primary btn-lg btn-block" type="submit"><?php echo sprintf( __( 'Process Payment [%s]', 'simple-payment' ), $amount ); ?></button>
   </form>
 </div>
 <script>

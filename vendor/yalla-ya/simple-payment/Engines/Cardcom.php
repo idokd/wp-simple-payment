@@ -41,8 +41,8 @@ class Cardcom extends Engine {
   ];
 
   protected $terminal = 1000;
-  protected $username = 'test9611';
-  public $password = 'c1234567!';
+  protected $username = 'test2025';
+  public $password = 'test5000$';
 
   const LANGUAGES = [ 'he' => 'Hebrew', 'en' => 'English' ];
   const CURRENCIES = [ 'ILS' => 1, 'USD' => 2, 'AUD' => 36,	'CAD' => 124, 'DKK' => 208, 'JPY' => 392, 'NZD' => 554, 'RUB' => 643, 'CHF' => 756, 'GBP' => 826, 'EUR' => 978, 'ZAR' => 710, 'EGP' => 818, 'SEK' => '752', 'NOK' => 578, 'LBP' => 422, 'JOD' => 400 ];
@@ -67,22 +67,22 @@ class Cardcom extends Engine {
     $this->transaction = $transaction[ 'transaction_id' ];
     $post = [];
     if ( !$this->sandbox ) {
-      $post['terminalnumber'] = $this->param_part($params);
-      $post['username'] = $this->param_part($params, 'username');
+      $post[ 'terminalnumber' ] = $this->param_part( $params );
+      $post[ 'username' ] = $this->param_part( $params, 'username' );
     } else {
-      $post['terminalnumber'] = $this->terminal;
-      $post['username'] = $this->username;
+      $post[ 'terminalnumber' ] = $this->terminal;
+      $post[ 'username' ] = $this->username;
     }
     //$post['terminalnumber'] = $this->terminal;
     //$post['username'] = $this->username;
-    $post['lowprofilecode'] = $this->transaction;
-    $post['codepage'] = 65001;
+    $post[ 'lowprofilecode' ] = $this->transaction;
+    $post[ 'codepage' ] = 65001;
 
-    $response = $this->post( $this->api['indicator_request' ], $post );
+    $response = $this->post( $this->api[ 'indicator_request' ], $post );
     parse_str( $response, $response );
 
     $token = null;
-    if ( $response[ 'Token' ] ) {
+    if ( isset( $response[ 'Token' ] ) && $response[ 'Token' ] ) {
       $token = [
           'token' => $response[ 'Token' ],
           SimplePayment::CARD_OWNER => $response[ 'CardOwnerID' ],
@@ -92,12 +92,12 @@ class Cardcom extends Engine {
           'expiry' => $response[ 'TokenExDate' ],
       ];
     }
-    $this->confirmation_code = $response[ 'InternalDealNumber' ];
+    $this->confirmation_code = isset( $response[ 'InternalDealNumber' ] ) ? $response[ 'InternalDealNumber' ] : null;
     $this->save( [
       'transaction_id' => $this->transaction,
       'url' => $this->api[ 'indicator_request' ],
-      'status' => isset($response['OperationResponse']) ? $response['OperationResponse'] : (isset($response['DealResponse']) ? $response['DealResponse'] : ''),
-      'description' => isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'],
+      'status' => isset( $response[ 'OperationResponse' ] ) ? $response[ 'OperationResponse' ] : ( isset( $response[ 'DealResponse' ] ) ? $response[ 'DealResponse' ] : '' ),
+      'description' => isset( $response[ 'OperationResponseText' ] ) ? $response[ 'OperationResponseText' ] : $response[ 'Description' ],
       'request' => json_encode( $post ),
       'response' => json_encode( $response )
     ] );
@@ -105,36 +105,40 @@ class Cardcom extends Engine {
       $this->save( [
         'transaction_id' => $this->transaction,
         'url' => $this->api[ 'indicator_request' ],
-        'status' => isset($response['OperationResponse']) ? $response['OperationResponse'] : (isset($response['DealResponse']) ? $response['DealResponse'] : ''),
-        'description' => isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'],
+        'status' => isset( $response[ 'OperationResponse' ] ) ? $response[ 'OperationResponse' ] : ( isset( $response[ 'DealResponse' ] ) ? $response[ 'DealResponse' ] : ''),
+        'description' => isset( $response[ 'OperationResponseText' ] ) ? $response[ 'OperationResponseText' ] : $response[ 'Description' ],
         'request' => json_encode( $post ),
         'response' => json_encode( $response ),
         'token' => $token
       ] );
     }
-    $operation = isset($response['Operation']) ? $response['Operation'] : null;
-    $code = isset($response['OperationResponse']) ? $response['OperationResponse'] : 999;
-    switch($operation) {
+    $operation = isset( $response[ 'Operation' ] ) ? $response[ 'Operation' ] : null;
+    $code = isset( $response[ 'OperationResponse' ] ) ? $response[ 'OperationResponse' ] : 999;
+    switch( intval( $operation ) ) {
       case 1:
-      case "1":
-        $code = $response['DealResponse'];
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == '0' && isset($response['DealResponse']) && $response['DealResponse'] == '0' ) return($this->confirmation_code);
+        $code = $response[ 'DealResponse' ];
+        if ( isset( $response[ 'OperationResponse' ] ) && $response[ 'OperationResponse' ] == '0' && isset( $response[ 'DealResponse' ] ) && $response['DealResponse'] == '0' ) {
+          $this->confirmation_code = $code;
+        }
+        return( $this->confirmation_code ? true : false );
         break;
       case 2:
-      case "2":
-        $code = $response['TokenResponse'];
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == '0' && isset($response['DealResponse']) && $response['DealResponse'] == '0' && isset($response['TokenResponse']) && $response['TokenResponse'] == '0') return($this->confirmation_code);
+        $code = $response[ 'TokenResponse' ];
+        if ( isset( $response[ 'OperationResponse' ] ) && $response[ 'OperationResponse' ] == '0' && isset( $response[ 'DealResponse' ] ) && $response[ 'DealResponse' ] == '0' && isset( $response[ 'TokenResponse' ] ) && $response[ 'TokenResponse' ] == '0') {
+          $this->confirmation_code = $code;
+        }
+        return( $this->confirmation_code ? true : false );
         break;
       case 3:
-      case "3":
-        $code = $response['SuspendedDealResponseCode'];
-        if (isset($response['OperationResponse']) && $response['OperationResponse'] == '0' &&  isset($response['SuspendedDealResponseCode']) && $response['SuspendedDealResponseCode'] == '0') return($this->confirmation_code);
+        $code = $response[ 'SuspendedDealResponseCode' ];
+        if ( isset( $response[ 'OperationResponse' ] ) && $response[ 'OperationResponse' ] == '0' &&  isset( $response[ 'SuspendedDealResponseCode' ] ) && $response[ 'SuspendedDealResponseCode' ] == '0' ) {
+        }
+        return( $this->confirmation_code ? true : false  );
         break;
       case 4:
-      case "4":
         break;
     }
-    throw new Exception(isset($response['OperationResponseText']) ? $response['OperationResponseText'] : $response['Description'], $code);
+    throw new Exception( isset( $response[ 'OperationResponseText' ] ) ? $response[ 'OperationResponseText' ] : $response[ 'Description' ], $code );
   }
 
   public function feedback( $params ) {
@@ -204,7 +208,7 @@ class Cardcom extends Engine {
     if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
       if ($this->param('recurr_at') == 'status' && $this->param('reurring') == 'provider') $this->recur_by_provider($params);
     }
-    return($this->confirmation_code);
+    return( $this->confirmation_code );
   }
 
   public function post_process($params) {
@@ -223,46 +227,47 @@ class Cardcom extends Engine {
     }
     // TODO: update confirmation code con status
     //$this->confirmation_code = $response['confirmation_code'];
-    return($_REQUEST['ResponeCode'] == 0);
+    return( $_REQUEST[ 'ResponeCode' ] == 0 );
   }
 
-  protected function param_part($params, $name = 'terminal') {
-    $terminal = isset($params['terminal']) ? $params['terminal'] : null;
-    if (!$terminal) $terminal = isset($params['terminalnumber']) ? $params['terminalnumber'] : null;
-    $index = array_search($terminal, explode(';', $this->param('terminal')));
-    if ($index !== FALSE && $name == 'terminal') return($terminal);
+  protected function param_part( $params, $name = 'terminal' ) {
+    $terminal = isset( $params[ 'terminal' ] ) ? $params[ 'terminal' ] : null;
+    if ( !$terminal ) $terminal = isset( $params[ 'terminalnumber' ] ) ? $params[ 'terminalnumber' ] : null;
+    $index = $terminal ? array_search( $terminal, explode( ';', $this->param( 'terminal' ) ) ) : false;
+    // TODO: use default if no $params found, so index is false
+    if ( $index !== FALSE && $name == 'terminal' ) return( $terminal );
 
-    $parts = explode(';', $this->param($name));
-    $part = $parts[0];
+    $parts = explode( ';', $this->param( $name ) );
+    $part = $parts[ 0 ];
 
-    if ($index !== FALSE) return(count($parts) > $index ? $parts[$index] : $parts[count($parts) - 1]);
+    if ( $index !== FALSE ) return( count( $parts ) > $index ? $parts[ $index ] : $parts[ count( $parts ) - 1 ] );
 
-    if (isset($params['payments']) && isset($parts[1]) && $params['payments'] && ($params['payments'] != 'single' || $params['payments'] != 1)) {
-      if (isset($parts[1])) $part = $parts[1];
-      if ($params['payments'] != 'installments' && issset($parts[2])) $part = isset($parts[2]) ? : $part;
+    if ( isset( $params[ 'payments' ] ) && isset( $parts[ 1 ] ) && $params[ 'payments' ] && ( $params[ 'payments' ] != 'single' || $params[ 'payments' ] != 1 ) ) {
+      if ( isset( $parts[ 1 ] ) ) $part = $parts[ 1 ];
+      if ( $params[ 'payments' ] != 'installments' && isset( $parts[ 2 ] ) ) $part = $parts[ 2 ] ? : $part;
     }
-    return($part);
+    return( $part );
   }
 
   public function pre_process($params) {
     $post = [];
-    $post['APILevel'] = $this->api['version'];
-    if (!$this->sandbox) {
-      $post['TerminalNumber'] = $this->param_part($params);
-      $post['UserName'] = $this->param_part($params, 'username');
+    $post[ 'APILevel' ] = $this->api[ 'version' ];
+    if ( !$this->sandbox ) {
+      $post[ 'TerminalNumber'] = $this->param_part( $params );
+      $post[ 'UserName'] = $this->param_part( $params, 'username' );
       // $this->password = $this->param_part($params, 'password');
       // $post['Password'] = $this->password;
     } else {
-      $post['TerminalNumber'] = $this->terminal;
-      $post['UserName'] = $this->username;
-      $post['Password'] = $this->password;
+      $post[ 'TerminalNumber' ] = $this->terminal;
+      $post[ 'UserName' ] = $this->username;
+      $post[ 'Password' ] = $this->password;
     }
 
-    $operation = $this->param('operation');
+    $operation = $this->param( 'operation' );
 
     // TODO: maybe add flag to determine this feature?
-    if ($operation == 2 && !$params['amount']) $operation = 3;
-    $post['Operation'] = $operation;
+    if ( $operation == 2 && !$params[ 'amount' ] ) $operation = 3;
+    $post[ 'Operation' ] = $operation;
 
 
     $post['ProductName'] = $params['product'];
@@ -286,13 +291,13 @@ class Cardcom extends Engine {
     $language = isset($params['language']) ? $params['language'] : $this->param('language');
     if ($language != '') $post['Language'] = $language;
 
-    if (isset($params['payments']) && $params['payments']) {
-      if ($params['payments'] == 'installments') {
-        $payments = $this->param('installments_max');
-        $post['MaxNumOfPayments'] = $payments ? $payments : (isset($params['installments']) ? $params['installments'] : 12);
-        $payments = $this->param('installments_min');
-        if ($payments != '') $post['MinNumOfPayments'] = $payments;
-        $post['DefaultNumOfPayments'] = isset($params['installments']) && $params['installments'] ? $params['installments'] : $this->param('installments_default');
+    if ( !isset( $params[ 'payments' ] ) || ( isset( $params[ 'payments' ] ) && $params[ 'payments' ] ) ) {
+      if ( !isset( $params[ 'payments' ] ) || $params[ 'payments' ] == 'installments' ) {
+        $payments = $this->param( 'installments_max' );
+        $post[ 'MaxNumOfPayments' ] = $payments ? $payments : ( isset( $params[ 'installments' ] ) ? $params[ 'installments' ] : 12 );
+        $payments = $this->param( 'installments_min' );
+        if ( $payments != '' ) $post[ 'MinNumOfPayments' ] = $payments;
+        $post[ 'DefaultNumOfPayments' ] = isset( $params[ 'installments' ] ) && $params[ 'installments' ] ? $params[ 'installments' ] : $this->param( 'installments_default' );
       }
     }
 
@@ -300,7 +305,7 @@ class Cardcom extends Engine {
     $post['ErrorRedirectUrl'] = $this->url(SimplePayment::OPERATION_ERROR, $params);
     $post['IndicatorUrl'] = $this->url(SimplePayment::OPERATION_STATUS, $params);
     $post['CancelUrl'] = $this->url(SimplePayment::OPERATION_CANCEL, $params);
-    if ($this->param('css') != '') $post['CSSUrl'] = $this->callback.(strpos($this->callback, '?') !== false ? '&' : '?').'op=css';
+    if ($this->param('css') != '') $post[ 'CSSUrl' ] = $this->callback.(strpos($this->callback, '?') !== false ? '&' : '?').'op=css';
 
     $post['CancelType'] = $this->cancelType;
 
