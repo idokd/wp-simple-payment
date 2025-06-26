@@ -9,9 +9,8 @@
  * Text Domain: simple-payment
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly.
+
 
 // Make sure Elementor is active
 
@@ -79,12 +78,10 @@ final class Elementor_SimplePayment_Extension {
 	 * @return Elementor_SimplePayment_Extension An instance of the class.
 	 */
 	public static function instance() {
-
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self();
 		}
-		return self::$_instance;
-
+		return( self::$_instance );
 	}
 
 	/**
@@ -95,10 +92,8 @@ final class Elementor_SimplePayment_Extension {
 	 * @access public
 	 */
 	public function __construct() {
-
 		add_action( 'init', [ $this, 'i18n' ] );
 		add_action( 'plugins_loaded', [ $this, 'init' ] );
-
 	}
 
 	/**
@@ -113,9 +108,7 @@ final class Elementor_SimplePayment_Extension {
 	 * @access public
 	 */
 	public function i18n() {
-
 		load_plugin_textdomain( 'simple-payment' );
-
 	}
 
 	/**
@@ -132,14 +125,13 @@ final class Elementor_SimplePayment_Extension {
 	 * @access public
 	 */
 	public function init() {
-
 		// Check if Elementor installed and activated
-		if ( ! did_action( 'elementor/loaded' ) ) {
+		if ( !did_action( 'elementor/loaded' ) ) {
 			return;
 		}
 
 		// Check for required Elementor version
-		if ( ! version_compare( ELEMENTOR_VERSION, self::MINIMUM_ELEMENTOR_VERSION, '>=' ) ) {
+		if ( !version_compare( ELEMENTOR_VERSION, self::MINIMUM_ELEMENTOR_VERSION, '>=' ) ) {
 			add_action( 'admin_notices', [ $this, 'admin_notice_minimum_elementor_version' ] );
 			return;
 		}
@@ -165,18 +157,14 @@ final class Elementor_SimplePayment_Extension {
 	 * @access public
 	 */
 	public function admin_notice_missing_main_plugin() {
-
-		if ( isset( $_GET['activate'] ) ) unset( $_GET['activate'] );
-
+		if ( isset( $_GET[ 'activate' ] ) ) unset( $_GET[ 'activate' ] );
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: Elementor */
 			esc_html__( '"%1$s" requires "%2$s" to be installed and activated.', 'simple-payment' ),
 			'<strong>' . esc_html__( 'Simple Payment Extension', 'simple-payment' ) . '</strong>',
 			'<strong>' . esc_html__( 'Elementor', 'simple-payment' ) . '</strong>'
 		);
-
 		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', $message );
-
 	}
 
 	/**
@@ -189,9 +177,7 @@ final class Elementor_SimplePayment_Extension {
 	 * @access public
 	 */
 	public function admin_notice_minimum_elementor_version() {
-
-		if ( isset( $_GET['activate'] ) ) unset( $_GET['activate'] );
-
+		if ( isset( $_GET[ 'activate' ] ) ) unset( $_GET[ 'activate' ] );
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: Elementor 3: Required Elementor version */
 			esc_html__( '"%1$s" requires "%2$s" version %3$s or greater.', 'simple-payment' ),
@@ -199,9 +185,7 @@ final class Elementor_SimplePayment_Extension {
 			'<strong>' . esc_html__( 'Elementor', 'simple-payment' ) . '</strong>',
 			 self::MINIMUM_ELEMENTOR_VERSION
 		);
-
 		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', $message );
-
 	}
 
 	/**
@@ -214,9 +198,7 @@ final class Elementor_SimplePayment_Extension {
 	 * @access public
 	 */
 	public function admin_notice_minimum_php_version() {
-
-		if ( isset( $_GET['activate'] ) ) unset( $_GET['activate'] );
-
+		if ( isset( $_GET[ 'activate' ] ) ) unset( $_GET[ 'activate' ] );
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: PHP 3: Required PHP version */
 			esc_html__( '"%1$s" requires "%2$s" version %3$s or greater.', 'simple-payment' ),
@@ -224,9 +206,7 @@ final class Elementor_SimplePayment_Extension {
 			'<strong>' . esc_html__( 'PHP', 'simple-payment' ) . '</strong>',
 			 self::MINIMUM_PHP_VERSION
 		);
-
 		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', $message );
-
 	}
 
 	/**
@@ -241,10 +221,8 @@ final class Elementor_SimplePayment_Extension {
 	public function init_widgets() {
 		// Include Widget files
 		require_once( __DIR__ . '/widget.php' );
-
 		// Register widget
 		\Elementor\Plugin::instance()->widgets_manager->register_widget_type( new \Elementor_SimplePayment_Widget() );
-
 	}
 
 	/**
@@ -257,15 +235,12 @@ final class Elementor_SimplePayment_Extension {
 	 * @access public
 	 */
 	public function init_controls() {
-
 		// Include Control files
 		//require_once( __DIR__ . '/controls/test-control.php' );
-
 		// Register control
 		//\Elementor\Plugin::$instance->controls_manager->register_control( 'control-type-', new \Test_Control() );
-
 	}
-
+	
 }
 
 Elementor_SimplePayment_Extension::instance();

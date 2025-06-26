@@ -1,8 +1,6 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly.
 
 $_active_plugins = array_merge( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', [] ) ) : [], get_option( 'active_plugins', [] ) );
 
@@ -97,11 +95,9 @@ class GFSimplePayment extends GFPaymentAddOn {
 		add_action( 'sp_payment_status', function( $params, $engine ) {
 			if ( $params[ 'confirmation_code' ] ) $this->payment_success( $params );
 		}, 50, 2 );
-
 		add_action( 'sp_payment_verify', function( $params, $engine ) {
 			if ( $params[ 'confirmation_code' ] ) $this->payment_success( $params );
 		}, 50, 2 );
-
 		//add_action( 'sp_payment_post_process', [ $this, 'payment_success' ] );
 		add_action( 'gform_enqueue_scripts', [ $this, 'load_scripts'], 10, 2 );
 		add_filter( 'sp_payment_pre_process_filter', [ $this, 'sp_payment_pre_process_filter' ] );
@@ -193,6 +189,18 @@ class GFSimplePayment extends GFPaymentAddOn {
 				'class'    => 'medium',
 				'tooltip' 		=> '<h6>' . esc_html__( 'Custom checkout template form', 'simple-payment' ) . '</h6>' . esc_html__( 'If you wish to use a custom form template.', 'simple-payment' ),
 			),
+			[			
+				'name'     => 'shorten',
+				'label'    => esc_html__( 'Shorten URLs', 'simple-payment' ),
+				'type'     => 'checkbox',
+				'tooltip' 		=> '<h6>' . esc_html__( 'Enable Short URLs', 'simple-payment' ) . '</h6>' . esc_html__( 'Enable short urls to handle occasional issues.', 'simple-payment' ),
+				'choices' 	=> [
+					[
+						'label' => 'Enable',
+						'name'	=> 'shorten',
+					],
+				]
+			],
 			array(
 				'name'     => 'settings',
 				'label'    => esc_html__( 'Settings', 'simple-payment' ),
@@ -681,20 +689,20 @@ class GFSimplePayment extends GFPaymentAddOn {
 	public function redirect_url( $feed, $submission_data, $form, $entry ) {
 		//Don't process redirect url if request is a SimplePayment return
 		if ( !rgempty( 'gf_simplepayment_return', $_GET ) && rgempty( 'gf_simplepayment_retry', $_GET ) ) {
-			return false;
+			return( false );
 		}
 		$settings = $this->get_settings( $feed );
 		$params = $settings ? $settings : [];
-		if (isset($params['settings']) && $params['settings']) $params = array_merge($params, $params['settings']);
-		$params = array_merge($params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ));
+		if ( isset( $params[ 'settings' ] ) && $params[ 'settings' ] ) $params = array_merge( $params, $params[ 'settings' ] );
+		$params = array_merge( $params, $this->prepare_credit_card_transaction( $feed, $submission_data, $form, $entry ) );
 		$engine = isset( $params[ 'engine' ] ) ? $params[ 'engine' ] : null; 
 		if ( !rgempty( 'gf_simplepayment_retry', $_GET ) ) {
 			$params[ 'callback' ] = $entry[ 'source_url' ];
 		}
-		$params[ 'redirect_url' ] = $this->return_url( $form[ 'id' ], $entry[ 'id' ] ).( isset( $params[ 'target' ] ) && $params[ 'target' ] ? '&target=' . $params[ 'target' ] : '' );
+		$params[ 'redirect_url' ] = $this->return_url( $form[ 'id' ], $entry[ 'id' ] ) . ( isset( $params[ 'target' ] ) && $params[ 'target' ] ? '&target=' . $params[ 'target' ] : '' );
 
 		$this->add_sp_pre_process( $feed, $submission_data, $form, $entry );
-		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form['id'], $submission_data, $feed, $entry );
+		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form[ 'id' ], $submission_data, $feed, $entry );
 		GFAPI::update_entry_property( $entry[ 'id' ], 'payment_method', 'SimplePayment' );
 		GFAPI::update_entry_property( $entry[ 'id' ], 'payment_status', 'Processing' );
 		if ( !isset( $params[ 'display' ] ) || !in_array( $params[ 'display' ], [ 'iframe', 'modal' ] ) || !SimplePaymentPlugin::supports( $params[ 'display' ], $engine ) ) {
@@ -702,15 +710,15 @@ class GFSimplePayment extends GFPaymentAddOn {
 				$this->redirect_url = $this->SPWP->payment( $params, $engine );
 				GFAPI::update_entry_property( $entry[ 'id' ], 'transaction_id', $this->SPWP->engine->transaction );
 			} catch ( Exception $e ) {
-				$action = array(
-					'transaction_id'   => $this->SPWP->engine->transaction,
-					'amount'         => $params[ $this->SPWP::AMOUNT ],
+				$action = [
+					'transaction_id'   => $this->SPWP->engine->transaction ?? null,
+					'amount'         => $params[ $this->SPWP::AMOUNT ] ?? null,
 					'error_message'  => $e->getMessage(),
-				);
+				];
 				$this->fail_payment( $entry, $action );
 			}
 		}
-		if ( in_array( $params[ 'display' ], [ 'iframe', 'modal' ] ) ) {
+		if ( isset( $params[ 'display' ] ) && in_array( $params[ 'display' ], [ 'iframe', 'modal' ] ) ) {
 			if ( isset( $params[ 'template' ] ) && $params[ 'template' ] ) {
 				$params[ 'type' ] = 'template';
 			} else if ( !isset( $params[ 'form' ] ) || !$params[ 'form' ] ) {

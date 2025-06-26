@@ -1,23 +1,18 @@
 <?php
 
-if (!defined("ABSPATH")) {
-  exit; // Exit if accessed directly
-}
+if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 $sp_db_version = '26';
 
-register_activation_hook( __FILE__, 'sp_install' );
-register_activation_hook( __FILE__, 'sp_install_data' );
-
 add_action( 'plugins_loaded', 'sp_update_db_check' );
-
 function sp_update_db_check() {
     global $sp_db_version;
-    if ( absint( get_option( 'sp_db_version' ) ) != absint( $sp_db_version ) ) {
+    if ( version_compare( $sp_db_version, get_option( 'sp_db_version' ) ) ) { // absint(  ) != absint( $sp_db_version ) ) {
         sp_install();
     }
 }
 
+register_activation_hook( __FILE__, 'sp_install' );
 function sp_install() {
   require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
@@ -109,15 +104,13 @@ function sp_install() {
 
   update_option( 'sp_db_version', $sp_db_version );
 }
-
+/*
+register_activation_hook( __FILE__, 'sp_install_data' );
 function sp_install_data() {
 	global $wpdb;
-
-/*	$welcome_name = 'Mr. WordPress';
+	$welcome_name = 'Mr. WordPress';
 	$welcome_text = 'Congratulations, you just completed the installation!';
-
 	$table_name = $wpdb->prefix . 'liveshoutbox';
-
 	$wpdb->insert(
 		$table_name,
 		array(
@@ -125,27 +118,28 @@ function sp_install_data() {
 			'name' => $welcome_name,
 			'text' => $welcome_text,
 		)
-	);*/
+	);
 }
+*/
 
 function sp_uninstall() {
   global $wpdb, $wp_rewrite;
-  if (!defined('WP_UNINSTALL_PLUGIN')) exit();
-  $uninstall = get_option('sp_uninstall', 'all');
-  if ($uninstall == 'all' || $uninstall == 'tables') {
-    $tables = ['transactions', 'payments', 'history', 'cardcom'];
-    foreach ($tables as $table) $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . "sp_".$table);
+  if ( !defined( 'WP_UNINSTALL_PLUGIN' ) ) exit();
+  $uninstall = get_option( 'sp_uninstall', 'all' );
+  if ( $uninstall == 'all' || $uninstall == 'tables' ) {
+    $tables = [ 'transactions', 'payments', 'history', 'cardcom' ];
+    foreach ( $tables as $table ) $wpdb->query( "DROP TABLE IF EXISTS " . $wpdb->prefix . "sp_" . $table );
     $options = [ 'sp_db_version' ];
-    foreach ($options as $option) {
-      delete_option($option);
-      delete_site_option($option);
+    foreach ( $options as $option ) {
+      delete_option( $option );
+      delete_site_option( $option );
     }
   }
-  if ($uninstall == 'all' || $uninstall == 'settings') {
-    $options = ['sp_uninstall_drop_table', 'sp_db_version', 'sp', 'sp_uninstall'];
-    foreach ($options as $option) {
-      delete_option($option);
-      delete_site_option($option);
+  if ( $uninstall == 'all' || $uninstall == 'settings' ) {
+    $options = [ 'sp_uninstall_drop_table', 'sp_db_version', 'sp', 'sp_uninstall' ];
+    foreach ( $options as $option ) {
+      delete_option( $option );
+      delete_site_option( $option );
     }
   }
   $wp_rewrite->flush_rules();

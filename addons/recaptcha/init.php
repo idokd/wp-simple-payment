@@ -1,11 +1,11 @@
 <?php
-define("RECAPTCHA_V3_SECRET_KEY", 'YOUR_SECRET_HERE');
+define( 'RECAPTCHA_V3_SECRET_KEY', 'YOUR_SECRET_HERE' );
  
-if (isset($_POST['email']) && $_POST['email']) {
-    $email = filter_var($_POST['email'], FILTER_SANITIZE_STRING);
+if ( isset( $_POST[ 'email' ] ) && $_POST[ 'email' ] ) {
+    $email = filter_var( $_POST[ 'email' ], FILTER_SANITIZE_STRING );
 } else {
     // set error message and redirect back to form...
-    header('location: subscribe_newsletter_form.php');
+    header( 'location: subscribe_newsletter_form.php' );
     exit;
 }
  

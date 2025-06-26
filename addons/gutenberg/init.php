@@ -16,7 +16,7 @@ register_block_type(
 add_action( 'init', 'sp_gutenberg_assets' );
 
 function sp_gutenberg_assets() { // phpcs:ignore
-    include(SPWP_PLUGIN_DIR.'/settings.php');
+    include( SPWP_PLUGIN_DIR . '/admin/settings.php');
     global $SPWP_CURRENCIES;
 
     wp_register_style(

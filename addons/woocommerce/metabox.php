@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit; // Exit if accessed directly
 /** @class WC_SimplePayment_Metabox */
 class WC_SimplePayment_Metabox {
 	
-	protected static $transactions = array();
+	protected static $transactions = [];
 	
 	/** The single instance of the class. */
 	protected static $_instance = null;
@@ -54,11 +54,11 @@ class WC_SimplePayment_Metabox {
 	 */
 	public function add_meta_boxes() {
 		global $post;
-		$screen    = get_current_screen();
+		$screen = get_current_screen();
 		$screen_id = $screen ? $screen->id : '';
 		
 		if ( 'shop_order' === $screen_id && ( self::$transactions = get_post_meta( $post->ID, '_transaction_data' ) ) ) {
-			add_meta_box( 'simple-payment-transaction-data', __( 'Simple Payment Transaction Data', 'simple-payment' ), array( $this, 'transaction_data' ), 'shop_order', 'advanced', 'default' );
+			add_meta_box( 'simple-payment-transaction-data', __( 'Simple Payment Transaction Data', 'simple-payment' ), [ $this, 'transaction_data' ], 'shop_order', 'advanced', 'default' );
 		}
 	}
 	

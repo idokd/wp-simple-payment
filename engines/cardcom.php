@@ -15,9 +15,20 @@ add_filter( 'sp_payment_pre_process_filter', function( $params, $engine ) {
     return( $params );
 }, 1000, 2 );
 
+add_filter( 'sp_payment_callback', function( $url ) {
+	global $SPWP;
+	if ( !$SPWP::param( 'cardcom.short_urls' ) ) return;
+	$uid = wp_generate_uuid4();
+	set_transient( 'sp_' . $uid, $url ); // TODO: should we define expiration/ 5 days?
+	$url = add_query_arg( [ 
+		$SPWP::OP => $SPWP::OPERATION_REDIRECT,
+		'_spr' => $uid
+	], site_url() );
+	return( $url );
+}, 5000  );
 
-add_filter( 'sp_payment_callback', function( $callback, $params = null ) {
+add_filter( 'sp_payment_callback', function( $callback ) {
     foreach( sp_callback_params_cardcom() as $key ) 
         $callback = remove_query_arg( $key, $callback );
     return( $callback );
-}, 1000, 2 );
+}, 1000 );

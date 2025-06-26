@@ -14,7 +14,7 @@ add_action( 'woocommerce_scheduled_subscription_payment_simple-payment', functio
         $order->payment_complete();
         return;
     }
-    $status = ( new WC_SimplePayment_Gateway() )->process_payment( $order->get_id(), $amount_to_charge );
+    $status = ( new WC_SimplePayment_Gateway() )->process_payment( $order->get_id(), $amount_to_charge, true );
 
     if ( $status[ 'result' ] == 'success' ) {
 
@@ -42,9 +42,8 @@ add_action( 'woocommerce_scheduled_subscription_payment_simple-payment', functio
         WC_Subscriptions_Manager::process_subscription_payment_failure_on_order( $order );
         // calls: do_action( 'processed_subscription_payment_failure_for_order', $order );
     }
-
 	return;
-
+/*
 
     $SPWP = SimplePaymentPlugin::instance();
     $params = WC_SimplePayment_Gateway::params( [], $order->get_data() );
@@ -83,7 +82,7 @@ add_action( 'woocommerce_scheduled_subscription_payment_simple-payment', functio
 		$transaction[ SimplePaymentPlugin::CARD_EXPIRY_YEAR ] = $meta[ '_yaad_cardYear' ][ 'value' ];
 		$transaction[ SimplePaymentPlugin::CARD_OWNER_ID ] = $meta[ '_yaad_UserId' ][ 'value' ];
     }
-    
+    */
 }, 100, 2 );
 
 add_action( 'woocommerce_subscription_failing_payment_method_updated_simple-payment', function ( $subscription, $renewal_order ) {
