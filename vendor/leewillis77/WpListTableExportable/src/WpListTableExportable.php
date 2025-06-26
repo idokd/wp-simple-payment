@@ -66,7 +66,7 @@ class WpListTableExportable extends \WP_List_Table {
 				'html',
 				'export-link',
 				array(
-					'export_link' => $this->get_export_link(),
+					'export_link' => esc_url( $this->get_export_link() ),
 					'export_text' => apply_filters(
 						'wlte_export_text',
 						$this->export_button_text

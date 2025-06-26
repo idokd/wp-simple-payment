@@ -23,7 +23,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
   }
 
   protected function is_export() {
-    return(!empty($_GET['wlte_export']) ? $_GET['wlte_export'] : false);
+    return( !empty( $_GET[ 'wlte_export' ] ) ? sanitize_text_field( $_GET[ 'wlte_export' ] ) : false);
   }
 
   protected function get_views() {
