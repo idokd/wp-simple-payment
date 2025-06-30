@@ -572,14 +572,6 @@ class GFSimplePayment extends GFPaymentAddOn {
 	// -------- Entry Detail ---------
 
 	public function return_url( $form_id, $lead_id ) {
-		// Lets use wordpress built-in function site_url
-		/*$pageURL = GFCommon::is_ssl() ? 'https://' : 'http://';
-		$server_port = apply_filters( 'gform_simplepayment_return_url_port', $_SERVER['SERVER_PORT'] );
-		if ( $server_port != '80' && $server_port != 443) {
-			$pageURL .= $_SERVER['SERVER_NAME'] . ':' . $server_port . $_SERVER['REQUEST_URI'];
-		} else {
-			$pageURL .= $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-		}*/
 		$pageURL = site_url( $_SERVER[ 'REQUEST_URI' ] );
 		$ids_query = "ids={$form_id}|{$lead_id}";
 		$ids_query .= '&hash=' . wp_hash( $ids_query );
@@ -792,7 +784,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		 * @param array $feed            The feed object currently being processed.
 		 * @param array $entry           The entry object currently being processed.
 		 */
-		$params[ 'redirect_url' ] = get_bloginfo( 'url' ) . '/?page=gf_simplepayment_ipn&entry_id=' . $entry[ 'id' ] . '&redirect_url=' . urlencode($this->return_url( $form[ 'id' ], $entry[ 'id' ] ) ) . ( isset( $params[ 'target' ] ) && $params[ 'target' ] ? '&target=' . $params[ 'target' ] : '' );
+		$params[ 'redirect_url' ] = get_bloginfo( 'url' ) . '/?page=gf_simplepayment_ipn&entry_id=' . $entry[ 'id' ] . '&redirect_url=' . urlencode( $this->return_url( $form[ 'id' ], $entry[ 'id' ] ) ) . ( isset( $params[ 'target' ] ) && $params[ 'target' ] ? '&target=' . $params[ 'target' ] : '' );
 		$this->add_sp_pre_process( $feed, $submission_data, $form, $entry );
 		$params = apply_filters( 'gform_simplepayment_args_before_payment', $params, $form[ 'id' ], $submission_data, $feed, $entry );
 		$is_subscription = $feed[ 'meta' ][ 'transactionType' ] == 'subscription';

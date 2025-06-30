@@ -136,13 +136,16 @@ abstract class Engine {
 
     public function url( $type, $params = null ) {
       $url = $this->callback;
-      $qry = [];
+      $qry = [
+        'op' => $type,
+        'engine' => static::$name
+      ];
       if ( strpos( $url, 'transaction_id' ) === false ) $qry[ 'transaction_id' ] = $this->transaction;
       if ( isset( $params[ 'payments' ] ) && strpos( $url, 'payments' ) === false ) $qry[ 'payments' ] = $params[ 'payments' ];
       if ( isset( $params[ 'payment_id' ] ) && strpos( $url, 'payment_id' ) === false ) $qry[ 'payment_id'] = $params[ 'payment_id' ];
       if ( isset( $params[ 'target' ] ) && strpos( $url, 'target' ) === false ) $qry[ 'target' ] = $params[ 'target' ];
       if ( isset( $params[ 'redirect_url' ] ) && strpos( $url, 'redirect_url' ) === false ) $qry[ 'redirect_url' ] = $params[ 'redirect_url' ];
-      return( $url . ( strpos( $url, '?' ) ? '&' : '?' ) . 'op=' . $type . '&engine=' . static::$name . ( $qry ? '&' . http_build_query( $qry ) : '' ) );
+      return( $url . ( strpos( $url, '?' ) ? '&' : '?' ) . ( $qry ? '&' . http_build_query( $qry ) : '' ) );
     }
 
     protected function post( $url, $vars, $headers = null, $fail = true ) {

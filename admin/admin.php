@@ -55,7 +55,7 @@ class SimplePaymentAdmin {
 					break;
 			}
 		}
-		add_action( 'admin_menu', [ $this, 'add_plugin_options_page' ] );
+		//add_action( 'admin_menu', [ $this, 'add_plugin_options_page' ] );
 		if ( !empty( $GLOBALS[ 'pagenow' ] ) ) {
 			switch ( $GLOBALS[ 'pagenow' ] ) {
 				case 'options-general.php':
@@ -67,6 +67,22 @@ class SimplePaymentAdmin {
 					break;
 			}
 		}
+
+		$_active_plugins = array_merge( is_multisite() ? array_keys( get_site_option( 'active_sitewide_plugins', [] ) ) : [], get_option( 'active_plugins', [] ) );
+		//if ( in_array( 'admin-columns-pro/admin-columns-pro.php', $_active_plugins ) ) {
+		//	add_action( 'after_setup_theme', function () {
+		//		require_once( SPWP_PLUGIN_DIR . '/addons/admin-columns-pro/init.php' );
+		//	} );
+		//}
+
+		add_action( 'admin_enqueue_scripts', function () {
+			wp_enqueue_script( 'simple-payment-admin-js', plugin_dir_url( __FILE__ ) . 'script.js', [], false, true );
+			wp_enqueue_style( 'simple-payment-admin-css', plugin_dir_url( __FILE__ ) . 'style.css', [], false );
+		} );
+
+		add_action( 'admin_init', [ $this, 'register_license_settings' ] );
+		//add_action( 'sp_admin_tabs', [ $this, 'add_plugin_settings' ] );
+		//add_filter( 'sp_admin_sections', [ $this, 'add_plugin_settings' ] );
 	}
 
 	public static function param( $key = null, $default = false ) {
@@ -176,7 +192,7 @@ class SimplePaymentAdmin {
 		  'manage_options',
 		  'simple-payments',
 		  [ $this, 'render_transactions' ],
-		  plugin_dir_url( __FILE__ ) . 'assets/simple-payment-icon.png',
+		  SPWP_PLUGIN_URL . 'assets/simple-payment-icon.png',
 		  30
 	  );
 	  add_action( "load-$hook", [ $this, 'transactions' ] );
@@ -462,7 +478,7 @@ class SimplePaymentAdmin {
 			'option' => 'sp_per_page'
 		] );
 		require( SPWP_PLUGIN_DIR.'/admin/transaction-list-table.php' );
-		$list = new Transaction_List();
+		$list =  new Transaction_List(); // Consider using different List when using ACP - did_action( 'acp/ready' );
 	}
 
 

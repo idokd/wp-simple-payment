@@ -3,7 +3,7 @@
         'name' => 'yalla-ya/wp-simple-payment',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '8d70fa9f086df134f54cc8e70526cb888ea9b265',
+        'reference' => '59fc00a8805a5e2566813aaee5fd97f5dada586c',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -69,7 +69,7 @@
         'yalla-ya/wp-simple-payment' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '8d70fa9f086df134f54cc8e70526cb888ea9b265',
+            'reference' => '59fc00a8805a5e2566813aaee5fd97f5dada586c',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -351,6 +351,7 @@ class Transaction_List extends WpListTableExportable\WpListTableExportable {
       $current_page = 0;
     } else {
       $screen = get_current_screen();
+      //print_r(  $screen );
       $per_page = get_user_meta(get_current_user_id(), $screen->get_option('per_page', 'option'), true);
       $per_page = $per_page ? $per_page : $this->get_items_per_page( 'per_page', $screen->get_option('per_page', 'default'));
       // $per_page = $per_page ? $per_page : 20;

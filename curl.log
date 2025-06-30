@@ -1,0 +1,517 @@
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-pdaCfLUETaFA92mGIVn3R4Fxwcc"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 38887de5389beef236f209ccbd0c1543;o=1
+< date: Fri, 27 Jun 2025 23:05:03 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-7KPNnh8MLd8GyqEJtZFk/dsVLiQ"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 6d7628e67f047eff0dd612c339ae97eb;o=1
+< date: Fri, 27 Jun 2025 23:05:13 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-H7f1/OZM668cRVoe130NO7eSMEg"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 9c81bd68d6039758642ddc6d994198c3;o=1
+< date: Fri, 27 Jun 2025 23:32:24 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-9wFhlByvyvqdZ80TDpofTgIfF0U"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 6de5e729bf5c6dacda28847a2d85b289;o=1
+< date: Fri, 27 Jun 2025 23:32:36 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-8ShAlPQ5U/UJ4spep+x4Of5j/j4"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 166bdfd89d3ee19babc27a1489c94c85
+< date: Fri, 27 Jun 2025 23:32:40 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.52.243
+*   Trying 192.178.52.243:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.52.243) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-NbbkLdKyej6oi/hETnHVumQvdLQ"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 95c27b4b6b1383ff312009e35ea7a1e0;o=1
+< date: Sat, 28 Jun 2025 05:58:48 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-rp75vT9ajRKysKmiy5WsXUg4ZKg"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 4aea5c5d70867cd68dd5cd04fafcfb77;o=1
+< date: Sat, 28 Jun 2025 06:10:48 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-xHNjYN90zZZJMyKRaxGxgZil27U"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 9e0b10de74ce44612897f44fd5d599a4;o=1
+< date: Sat, 28 Jun 2025 06:11:13 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-qd8NIsqPuaJXwn6BMoOYT+O1udg"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 4921c01dd95769ec8d87694a9ad0430d;o=1
+< date: Sat, 28 Jun 2025 06:12:43 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-ANDghJOn8MPRuE97mBq/4xJo7sk"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 74b6413e2e065225ca8fba5975022fd4;o=1
+< date: Sat, 28 Jun 2025 06:13:00 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 192.178.56.147
+*   Trying 192.178.56.147:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Jun 13 17:28:16 2025 GMT
+*  expire date: Sep 11 18:20:09 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (192.178.56.147) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 27]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 27
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 27 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-bVxCBhA8IbWu8X2xJgfC1Lgrrs0"
+< vary: Accept-Encoding
+< x-cloud-trace-context: c40a0744d260c6743c9450d879b3978c;o=1
+< date: Sat, 28 Jun 2025 06:18:12 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact

@@ -1,8 +1,32 @@
 .ttablenav .alignleft:nth-of-type(2n) { clear: both; }
-pre.json {}
 pre.json .string { color: green; }
 pre.json .number { color: darkorange; }
 pre.json .boolean { color: blue; }
 pre.json .null { color: magenta; }
 pre.json .key { color: red; }
 pre.url { word-break: break-all; white-space: pre-wrap; }
+.transaction-overview {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 5px;
+    column-gap: 5px;
+    justify-content: space-between;
+}
+.transaction-item {
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    flex-grow: 1;
+    order: 0;
+    row-gap: 5px;
+    column-gap: 5px;
+}
+
+.transaction-item.item-parameters {
+    order: 100;
+}
+
+.transaction-item.item-redirect_url, .transaction-item.item-parameters, .transaction-item.item-user_agent {
+    flex-basis: 100%;
+    flex-direction: column;
+}

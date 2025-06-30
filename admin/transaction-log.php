@@ -12,6 +12,16 @@ $list->prepare_items();
 	}
 	?>
 	<hr class="wp-header-end">
+	<div class="transaction-overview">
+	<?php
+	$payment = SimplePaymentPlugin::instance()->fetch( $_REQUEST[ 'id' ] );
+	foreach( $payment as $key => $value ) {
+		if ( ! empty( $value ) ) {
+			echo '<div class="transaction-item item-' . $key . '"><strong>' . esc_html( ucfirst( $key ) ) . ':</strong> ' . ( !is_array( $value ) ? esc_html( $value ) : '<pre class="json">' . json_encode( $value ) . '</pre>' ) . '</div>';
+		}
+	}
+	?>
+	</div>
 	<?php $list->views(); ?>
 	<form id="transaction-logs-filter" method="get">
 		<?php

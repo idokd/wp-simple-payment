@@ -2,26 +2,28 @@
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 2.3.9\n"
+"Project-Id-Version: Simple Payment 2.4.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-06-26T17:29:54+00:00\n"
+"POT-Creation-Date: 2025-06-30T00:08:12+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: simple-payment\n"
 
 #. Plugin Name of the plugin
 #: simple-payment-plugin.php
+#: addons/admin-columns-pro/classes/Service/ColumnGroup.php:20
+#: addons/admin-columns-pro/classes/Service/ListScreens.php:19
 #: addons/elementor/widget.php:31
 #: addons/woocommerce/init.php:127
 #: addons/woocommerce/init.php:248
 #: addons/wpjobboard/config.php:8
-#: admin/admin.php:166
-#: admin/admin.php:167
+#: admin/admin.php:182
+#: admin/admin.php:183
 msgid "Simple Payment"
 msgstr ""
 
@@ -444,19 +446,19 @@ msgstr ""
 msgid "Product Code"
 msgstr ""
 
-#: addons/gravityforms/init.php:987
+#: addons/gravityforms/init.php:979
 msgid "Payment Completed"
 msgstr ""
 
-#: addons/gravityforms/init.php:988
+#: addons/gravityforms/init.php:980
 msgid "Payment Failed"
 msgstr ""
 
-#: addons/gravityforms/init.php:989
+#: addons/gravityforms/init.php:981
 msgid "Subscription Created"
 msgstr ""
 
-#: addons/gravityforms/init.php:1389
+#: addons/gravityforms/init.php:1381
 #: addons/woocommerce/init.php:206
 #: templates/form-woocommerce.php:65
 msgid "Card Owner ID"
@@ -681,77 +683,77 @@ msgstr ""
 msgid "API KEY Invalid"
 msgstr ""
 
-#: admin/admin.php:86
+#: admin/admin.php:102
 msgid "Thanks for updating Simple Payment, you can checkout for new features and updates <a href=\"https://simple-payment.yalla-ya.com\" target=\"_blank\">here</a>."
 msgstr ""
 
-#: admin/admin.php:90
+#: admin/admin.php:106
 msgid "Thanks for installing Simple Payment, after your test our plugin, dont forget to get your license to process real transactions, you can do it <a href=\"https://simple-payment.yalla-ya.com\" target=\"_blank\">here</a>."
 msgstr ""
 
-#: admin/admin.php:116
+#: admin/admin.php:132
 msgid "View Simple Payment documentation"
 msgstr ""
 
-#: admin/admin.php:116
+#: admin/admin.php:132
 msgid "Docs"
 msgstr ""
 
-#: admin/admin.php:117
+#: admin/admin.php:133
 msgid "Visit premium customer support"
 msgstr ""
 
-#: admin/admin.php:117
+#: admin/admin.php:133
 msgid "Premium support"
 msgstr ""
 
-#: admin/admin.php:159
-#: admin/admin.php:356
+#: admin/admin.php:175
+#: admin/admin.php:372
 #: admin/settings.php:123
 #: settings.php:122
 msgid "Payment Page"
 msgstr ""
 
-#: admin/admin.php:174
-#: admin/admin.php:175
+#: admin/admin.php:190
+#: admin/admin.php:191
 #: admin/transaction-list-table.php:241
 msgid "Payments"
 msgstr ""
 
-#: admin/admin.php:185
-#: admin/admin.php:186
+#: admin/admin.php:201
+#: admin/admin.php:202
 msgid "Transaction Details"
 msgstr ""
 
-#: admin/admin.php:207
+#: admin/admin.php:223
 msgid "Simple Payment Settings"
 msgstr ""
 
-#: admin/admin.php:243
+#: admin/admin.php:259
 msgid "License Key"
 msgstr ""
 
-#: admin/admin.php:406
+#: admin/admin.php:422
 msgid "Auto"
 msgstr ""
 
-#: admin/admin.php:541
+#: admin/admin.php:557
 msgid "License key is required"
 msgstr ""
 
-#: admin/admin.php:566
+#: admin/admin.php:582
 msgid "License is not valid on the current domain"
 msgstr ""
 
-#: admin/admin.php:574
+#: admin/admin.php:590
 msgid "License has not been activated"
 msgstr ""
 
-#: admin/admin.php:579
+#: admin/admin.php:595
 msgid "License key was not found"
 msgstr ""
 
-#: admin/admin.php:583
+#: admin/admin.php:599
 msgid "Unhandled error:"
 msgstr ""
 
@@ -1962,23 +1964,23 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: simple-payment-plugin.php:142
+#: simple-payment-plugin.php:144
 msgid "Simple Payment License Error: %s"
 msgstr ""
 
-#: simple-payment-plugin.php:142
+#: simple-payment-plugin.php:144
 msgid "License error, or no license."
 msgstr ""
 
-#: simple-payment-plugin.php:188
+#: simple-payment-plugin.php:190
 msgid "Every %s Minutes"
 msgstr ""
 
-#: simple-payment-plugin.php:584
+#: simple-payment-plugin.php:587
 msgid "Error payment recharge"
 msgstr ""
 
-#: simple-payment-plugin.php:833
+#: simple-payment-plugin.php:836
 msgid "Couldn't update transaction: %s"
 msgstr ""
 
