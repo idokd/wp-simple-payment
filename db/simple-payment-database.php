@@ -2,7 +2,7 @@
 
 if ( !defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-$sp_db_version = '26';
+$sp_db_version = '27';
 
 add_action( 'plugins_loaded', 'sp_update_db_check' );
 function sp_update_db_check() {
@@ -66,6 +66,7 @@ function sp_install() {
     `request` TEXT DEFAULT NULL,
     `response` TEXT DEFAULT NULL,
     `ip_address` VARCHAR(250) DEFAULT NULL,
+    `token` TEXT DEFAULT NULL,
     `user_agent` VARCHAR(250) DEFAULT NULL,
     `modified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `created` TIMESTAMP,

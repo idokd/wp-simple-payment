@@ -70,7 +70,7 @@ function sp_wc_maybe_failed_order() {
             $order = wc_get_order( $params[ 'order-pay' ] );
             SimplePaymentPlugin::instance();
             // TODO: should validate the payment id status instead of the url param
-            $ops = $_REQUEST[ $SPWP::$OP ] ?? ( $_REQUEST[ $SPWP::SPOP ] ?? false );
+            $ops = $_REQUEST[ $SPWP::SPOP ] ?? ( $_REQUEST[ $SPWP::SPOP ] ?? false );
             if ( $ops == SimplePaymentPlugin::OPERATION_SUCCESS ) {
                 $order->add_order_note( __( 'Important consult payment status before processing.', 'simple-payment' ) );
                 $url = add_query_arg( 'payment_id', $payment_id, $url );

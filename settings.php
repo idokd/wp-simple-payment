@@ -109,7 +109,7 @@ $sp_settings = [
   'engine' => [
     'title' => __('Engine', 'simple-payment'),
     'type' => 'select',
-    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'CreditGuard' => __( 'CreditGuard', 'simple-payment' ), 'Meshulam' => __( 'Meshulam', 'simple-payment' ), 'YaadPay' => __( 'YaadPay', 'simple-payment' ),'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment')]],
+    'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'CreditGuard' => __( 'CreditGuard', 'simple-payment' ), 'Meshulam' => __( 'Meshulam', 'simple-payment' ), 'YaadPay' => __( 'YaadPay', 'simple-payment' ),'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment'), 'Test' => __( 'Test', 'simple-payment' ) ] ],
   'mode' => [ //Mode
     'title' => __('Mode', 'simple-payment'),
     'type' => 'radio',
