@@ -2,7 +2,7 @@
 
 use leewillis77\WpListTableExportable;
 
-class Transaction_List extends WpListTableExportable\WpListTableExportable {
+class Transaction_List extends WpListTableExportable {
 
   public static $table_name = 'sp_transactions';
   public static $views_rendered = false;
