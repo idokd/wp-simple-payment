@@ -1,0 +1,8 @@
+{
+  "name": "wp-list-table-exportable",
+  "devDependencies": {
+    "grunt": "^1.5.2",
+    "grunt-contrib-watch": "^1.1.0",
+    "grunt-contrib-less": "^3.0.0"
+  }
+}

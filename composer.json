@@ -15,9 +15,9 @@
         }
     ],
     "require": {
-        "leewillis77/wplisttableexportable": "dev-master",
         "paypal/rest-api-sdk-php": "*",
-        "nahid/jsonq": "^6.0"
+        "nahid/jsonq": "^6.0",
+        "leewillis77/wplisttableexportable": "^2.0"
     },
     "autoload": {
        "psr-4": {
