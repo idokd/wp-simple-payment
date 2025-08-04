@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 2.4.4\n"
+"Project-Id-Version: Simple Payment 2.4.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-04T04:50:04+00:00\n"
+"POT-Creation-Date: 2025-08-04T04:57:57+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: simple-payment\n"
@@ -85,7 +85,7 @@ msgid "Product"
 msgstr ""
 
 #: addons/elementor/widget.php:103
-#: admin/transaction-list-table.php:238
+#: admin/transaction-list-table.php:236
 msgid "Amount"
 msgstr ""
 
@@ -201,7 +201,7 @@ msgstr ""
 #: addons/woocommerce/init.php:266
 #: addons/wpjobboard/config.php:12
 #: admin/settings.php:111
-#: admin/transaction-list-table.php:239
+#: admin/transaction-list-table.php:237
 #: settings.php:110
 msgid "Engine"
 msgstr ""
@@ -716,7 +716,7 @@ msgstr ""
 
 #: admin/admin.php:190
 #: admin/admin.php:191
-#: admin/transaction-list-table.php:241
+#: admin/transaction-list-table.php:239
 msgid "Payments"
 msgstr ""
 
@@ -1156,7 +1156,7 @@ msgid "Live"
 msgstr ""
 
 #: admin/settings.php:117
-#: admin/transaction-list-table.php:251
+#: admin/transaction-list-table.php:249
 #: settings.php:116
 msgid "Sandbox"
 msgstr ""
@@ -1333,8 +1333,8 @@ msgid "Disabled"
 msgstr ""
 
 #: admin/settings.php:168
-#: admin/transaction-list-table.php:157
-#: admin/transaction-list-table.php:178
+#: admin/transaction-list-table.php:155
+#: admin/transaction-list-table.php:176
 #: settings.php:167
 msgid "Archive"
 msgstr ""
@@ -1837,126 +1837,126 @@ msgstr ""
 msgid "Custom Texts ( JSON )"
 msgstr ""
 
-#: admin/transaction-list-table.php:15
+#: admin/transaction-list-table.php:13
 msgid "Transaction"
 msgstr ""
 
-#: admin/transaction-list-table.php:16
+#: admin/transaction-list-table.php:14
 msgid "Transactions"
 msgstr ""
 
-#: admin/transaction-list-table.php:21
+#: admin/transaction-list-table.php:19
 msgid "Export"
 msgstr ""
 
-#: admin/transaction-list-table.php:33
+#: admin/transaction-list-table.php:31
 msgid "All"
 msgstr ""
 
-#: admin/transaction-list-table.php:34
+#: admin/transaction-list-table.php:32
 msgid "Success"
 msgstr ""
 
-#: admin/transaction-list-table.php:35
+#: admin/transaction-list-table.php:33
 msgid "Failed"
 msgstr ""
 
-#: admin/transaction-list-table.php:36
+#: admin/transaction-list-table.php:34
 msgid "Cancelled"
 msgstr ""
 
-#: admin/transaction-list-table.php:37
+#: admin/transaction-list-table.php:35
 msgid "Pending"
 msgstr ""
 
-#: admin/transaction-list-table.php:38
-#: admin/transaction-list-table.php:253
+#: admin/transaction-list-table.php:36
+#: admin/transaction-list-table.php:251
 msgid "Created"
 msgstr ""
 
-#: admin/transaction-list-table.php:39
+#: admin/transaction-list-table.php:37
 msgid "Archived"
 msgstr ""
 
-#: admin/transaction-list-table.php:62
+#: admin/transaction-list-table.php:60
 msgid "All Engines"
 msgstr ""
 
-#: admin/transaction-list-table.php:69
+#: admin/transaction-list-table.php:67
 msgid "Filter"
 msgstr ""
 
-#: admin/transaction-list-table.php:134
+#: admin/transaction-list-table.php:132
 msgid "No transactions avaliable."
 msgstr ""
 
-#: admin/transaction-list-table.php:147
-#: admin/transaction-list-table.php:173
+#: admin/transaction-list-table.php:145
+#: admin/transaction-list-table.php:171
 msgid "Unarchive"
 msgstr ""
 
-#: admin/transaction-list-table.php:162
-#: admin/transaction-list-table.php:177
+#: admin/transaction-list-table.php:160
+#: admin/transaction-list-table.php:175
 msgid "Verify"
 msgstr ""
 
-#: admin/transaction-list-table.php:165
+#: admin/transaction-list-table.php:163
 msgid "Details"
 msgstr ""
 
-#: admin/transaction-list-table.php:236
+#: admin/transaction-list-table.php:234
 msgid "ID"
 msgstr ""
 
-#: admin/transaction-list-table.php:237
+#: admin/transaction-list-table.php:235
 msgid "Concept"
 msgstr ""
 
-#: admin/transaction-list-table.php:240
+#: admin/transaction-list-table.php:238
 msgid "Status"
 msgstr ""
 
-#: admin/transaction-list-table.php:242
+#: admin/transaction-list-table.php:240
 msgid "Transaction ID"
 msgstr ""
 
-#: admin/transaction-list-table.php:243
+#: admin/transaction-list-table.php:241
 msgid "Confirmation Code"
 msgstr ""
 
-#: admin/transaction-list-table.php:244
+#: admin/transaction-list-table.php:242
 msgid "User"
 msgstr ""
 
-#: admin/transaction-list-table.php:245
+#: admin/transaction-list-table.php:243
 msgid "URL"
 msgstr ""
 
-#: admin/transaction-list-table.php:246
+#: admin/transaction-list-table.php:244
 msgid "Parameters"
 msgstr ""
 
-#: admin/transaction-list-table.php:247
+#: admin/transaction-list-table.php:245
 msgid "IP Address"
 msgstr ""
 
-#: admin/transaction-list-table.php:248
+#: admin/transaction-list-table.php:246
 msgid "User Agent"
 msgstr ""
 
-#: admin/transaction-list-table.php:249
+#: admin/transaction-list-table.php:247
 msgid "Error"
 msgstr ""
 
-#: admin/transaction-list-table.php:250
+#: admin/transaction-list-table.php:248
 msgid "Token"
 msgstr ""
 
-#: admin/transaction-list-table.php:252
+#: admin/transaction-list-table.php:250
 msgid "Modified"
 msgstr ""
 
-#: admin/transaction-list-table.php:281
+#: admin/transaction-list-table.php:279
 msgid "Verification result for %s:<br />%s"
 msgstr ""
 

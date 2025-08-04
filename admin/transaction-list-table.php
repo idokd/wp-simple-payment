@@ -1,8 +1,6 @@
 <?php
 
-use leewillis77\WpListTableExportable;
-
-class Transaction_List extends WpListTableExportable {
+class Transaction_List extends leewillis77\WpListTableExportable\WpListTableExportable {
 
   public static $table_name = 'sp_transactions';
   public static $views_rendered = false;
