@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 2.4.5\n"
+"Project-Id-Version: Simple Payment 2.4.6\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-04T04:57:57+00:00\n"
+"POT-Creation-Date: 2025-10-06T05:41:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: simple-payment\n"
@@ -85,7 +85,7 @@ msgid "Product"
 msgstr ""
 
 #: addons/elementor/widget.php:103
-#: admin/transaction-list-table.php:236
+#: admin/transaction-list-table.php:238
 msgid "Amount"
 msgstr ""
 
@@ -201,7 +201,7 @@ msgstr ""
 #: addons/woocommerce/init.php:266
 #: addons/wpjobboard/config.php:12
 #: admin/settings.php:111
-#: admin/transaction-list-table.php:237
+#: admin/transaction-list-table.php:239
 #: settings.php:110
 msgid "Engine"
 msgstr ""
@@ -580,27 +580,27 @@ msgstr ""
 msgid "Add payment method error: %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:734
+#: addons/woocommerce/init.php:736
 msgid "Payment error [ SP ID: %s ]: %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:761
+#: addons/woocommerce/init.php:763
 msgid "Payment error[ SP ID: %s ]: unkown."
 msgstr ""
 
-#: addons/woocommerce/init.php:813
+#: addons/woocommerce/init.php:815
 msgid "Pay for order"
 msgstr ""
 
-#: addons/woocommerce/init.php:837
+#: addons/woocommerce/init.php:839
 msgid "Visa"
 msgstr ""
 
-#: addons/woocommerce/init.php:838
+#: addons/woocommerce/init.php:840
 msgid "Mastercard"
 msgstr ""
 
-#: addons/woocommerce/init.php:839
+#: addons/woocommerce/init.php:841
 msgid "American Express"
 msgstr ""
 
@@ -716,7 +716,7 @@ msgstr ""
 
 #: admin/admin.php:190
 #: admin/admin.php:191
-#: admin/transaction-list-table.php:239
+#: admin/transaction-list-table.php:241
 msgid "Payments"
 msgstr ""
 
@@ -1156,7 +1156,7 @@ msgid "Live"
 msgstr ""
 
 #: admin/settings.php:117
-#: admin/transaction-list-table.php:249
+#: admin/transaction-list-table.php:251
 #: settings.php:116
 msgid "Sandbox"
 msgstr ""
@@ -1333,8 +1333,8 @@ msgid "Disabled"
 msgstr ""
 
 #: admin/settings.php:168
-#: admin/transaction-list-table.php:155
-#: admin/transaction-list-table.php:176
+#: admin/transaction-list-table.php:157
+#: admin/transaction-list-table.php:178
 #: settings.php:167
 msgid "Archive"
 msgstr ""
@@ -1870,7 +1870,7 @@ msgid "Pending"
 msgstr ""
 
 #: admin/transaction-list-table.php:36
-#: admin/transaction-list-table.php:251
+#: admin/transaction-list-table.php:253
 msgid "Created"
 msgstr ""
 
@@ -1882,81 +1882,81 @@ msgstr ""
 msgid "All Engines"
 msgstr ""
 
-#: admin/transaction-list-table.php:67
+#: admin/transaction-list-table.php:69
 msgid "Filter"
 msgstr ""
 
-#: admin/transaction-list-table.php:132
+#: admin/transaction-list-table.php:134
 msgid "No transactions avaliable."
 msgstr ""
 
-#: admin/transaction-list-table.php:145
-#: admin/transaction-list-table.php:171
+#: admin/transaction-list-table.php:147
+#: admin/transaction-list-table.php:173
 msgid "Unarchive"
 msgstr ""
 
-#: admin/transaction-list-table.php:160
-#: admin/transaction-list-table.php:175
+#: admin/transaction-list-table.php:162
+#: admin/transaction-list-table.php:177
 msgid "Verify"
 msgstr ""
 
-#: admin/transaction-list-table.php:163
+#: admin/transaction-list-table.php:165
 msgid "Details"
 msgstr ""
 
-#: admin/transaction-list-table.php:234
+#: admin/transaction-list-table.php:236
 msgid "ID"
 msgstr ""
 
-#: admin/transaction-list-table.php:235
+#: admin/transaction-list-table.php:237
 msgid "Concept"
 msgstr ""
 
-#: admin/transaction-list-table.php:238
+#: admin/transaction-list-table.php:240
 msgid "Status"
 msgstr ""
 
-#: admin/transaction-list-table.php:240
+#: admin/transaction-list-table.php:242
 msgid "Transaction ID"
 msgstr ""
 
-#: admin/transaction-list-table.php:241
+#: admin/transaction-list-table.php:243
 msgid "Confirmation Code"
 msgstr ""
 
-#: admin/transaction-list-table.php:242
+#: admin/transaction-list-table.php:244
 msgid "User"
 msgstr ""
 
-#: admin/transaction-list-table.php:243
+#: admin/transaction-list-table.php:245
 msgid "URL"
 msgstr ""
 
-#: admin/transaction-list-table.php:244
+#: admin/transaction-list-table.php:246
 msgid "Parameters"
 msgstr ""
 
-#: admin/transaction-list-table.php:245
+#: admin/transaction-list-table.php:247
 msgid "IP Address"
 msgstr ""
 
-#: admin/transaction-list-table.php:246
+#: admin/transaction-list-table.php:248
 msgid "User Agent"
 msgstr ""
 
-#: admin/transaction-list-table.php:247
+#: admin/transaction-list-table.php:249
 msgid "Error"
 msgstr ""
 
-#: admin/transaction-list-table.php:248
+#: admin/transaction-list-table.php:250
 msgid "Token"
 msgstr ""
 
-#: admin/transaction-list-table.php:250
+#: admin/transaction-list-table.php:252
 msgid "Modified"
 msgstr ""
 
-#: admin/transaction-list-table.php:279
+#: admin/transaction-list-table.php:281
 msgid "Verification result for %s:<br />%s"
 msgstr ""
 
@@ -1969,23 +1969,27 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: simple-payment-plugin.php:144
+#: simple-payment-plugin.php:146
 msgid "Simple Payment License Error: %s"
 msgstr ""
 
-#: simple-payment-plugin.php:144
+#: simple-payment-plugin.php:146
 msgid "License error, or no license."
 msgstr ""
 
-#: simple-payment-plugin.php:190
+#: simple-payment-plugin.php:192
 msgid "Every %s Minutes"
 msgstr ""
 
-#: simple-payment-plugin.php:587
+#: simple-payment-plugin.php:599
 msgid "Error payment recharge"
 msgstr ""
 
-#: simple-payment-plugin.php:836
+#: simple-payment-plugin.php:832
+msgid "Couldn't register transaction: %s"
+msgstr ""
+
+#: simple-payment-plugin.php:855
 msgid "Couldn't update transaction: %s"
 msgstr ""
 

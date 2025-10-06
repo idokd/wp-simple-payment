@@ -656,3 +656,97 @@ Content-Type: application/x-www-form-urlencoded
 < content-length: 181
 < 
 * Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: 2607:f8b0:4012:808::2013
+* IPv4: 172.217.3.147
+*   Trying [2607:f8b0:4012:808::2013]:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Aug  9 05:17:41 2025 GMT
+*  expire date: Nov  7 06:04:50 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (2607:f8b0:4012:808::2013) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 5]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 5
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 5 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-ksg7nPT+IdK8wH8TvJQvncgMyDw"
+< vary: Accept-Encoding
+< x-cloud-trace-context: dee11b461b9238b47bc2823bbeea064b;o=1
+< date: Thu, 02 Oct 2025 01:12:13 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact
+* Host licensing.yalla-ya.com:443 was resolved.
+* IPv6: 2607:f8b0:4012:808::2013
+* IPv4: 172.217.3.147
+*   Trying [2607:f8b0:4012:808::2013]:443...
+* ALPN: curl offers h2,http/1.1
+*  CAfile: /usr/local/etc/openssl@3/cert.pem
+*  CApath: none
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=licensing.yalla-ya.com
+*  start date: Aug  9 05:17:41 2025 GMT
+*  expire date: Nov  7 06:04:50 2025 GMT
+*  subjectAltName: host "licensing.yalla-ya.com" matched cert's "licensing.yalla-ya.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR3
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+* Connected to licensing.yalla-ya.com (2607:f8b0:4012:808::2013) port 443
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://licensing.yalla-ya.com/validate
+* [HTTP/2] [1] [:method: POST]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: licensing.yalla-ya.com]
+* [HTTP/2] [1] [:path: /validate]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [content-length: 5]
+* [HTTP/2] [1] [content-type: application/x-www-form-urlencoded]
+> POST /validate HTTP/2
+Host: licensing.yalla-ya.com
+Accept: */*
+Content-Length: 5
+Content-Type: application/x-www-form-urlencoded
+
+* upload completely sent off: 5 bytes
+< HTTP/2 200 
+< x-powered-by: Express
+< content-type: application/json; charset=utf-8
+< etag: W/"b5-KIAY0Qta3YH+dNXP3Fnhv/lO+Zw"
+< vary: Accept-Encoding
+< x-cloud-trace-context: 8fafc6f3dee85d9ba599f71d1deb6c75;o=1
+< date: Thu, 02 Oct 2025 14:22:04 GMT
+< server: Google Frontend
+< content-length: 181
+< 
+* Connection #0 to host licensing.yalla-ya.com left intact

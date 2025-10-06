@@ -691,7 +691,9 @@ function sp_wc_gateway_init() {
             }
             try {
                 //get_checkout_order_received_url, get_cancel_order_url_raw
-
+                $settings = $this->get_option( 'settings' ) ? json_decode( $this->get_option( 'settings' ), true, 512, JSON_OBJECT_AS_ARRAY ) : [];
+                if ( $settings ) $params = array_merge( $settings, $params );
+                
                 $params[ 'redirect_url' ] = WC()->api_request_url( "{$this}" );
 
                 if ( version_compare( WOOCOMMERCE_VERSION, '2.2', '<' ) ) $params[ 'redirect_url' ] = add_query_arg( 'order', $order_id, add_query_arg( 'key', $order->get_order_key(), $params[ 'redirect_url' ] ) );   

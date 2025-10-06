@@ -59,11 +59,13 @@ class Transaction_List extends leewillis77\WpListTableExportable\WpListTableExpo
           if (count($options) > 1) {
               echo '<select id="engine" class="sp-filter-engine" name="engine"><option value="">' . __( 'All Engines', 'simple-payment' ) . '</option>';
               foreach ($options as $option) {
-                  if ( $option[ 'title' ] ) echo '<option value="' . esc_attr( $option[ 'title' ] ) . '"' . ( $engine == $option[ 'title' ] ? ' selected' : '' ) . '>' . esc_html( $option[ 'title' ] ) . '</option>';
+                  if ( $option[ 'title' ] ) 
+                    echo '<option value="' . esc_attr( $option[ 'title' ] ) . '"' . ( $engine == $option[ 'title' ] ? ' selected' : '' ) . '>'  
+                    . esc_html( $option[ 'title' ] ) . '</option>';
               }
               echo "</select>";
           }
-          echo '<label for="from-date">Date Range:</label><input type="date" name="created_from" id="from-date" value="' . ( isset( $_REQUEST[ 'created_from' ] ) ? $_REQUEST[ 'created_from' ] : '' ) . '" /><input type="date" name="created_to" id="to-date" value="' . ( isset( $_REQUEST[ 'created_to' ] ) ? $_REQUEST[ 'created_to' ] : '' ) . '" />';
+          echo '<label for="from-date">Date Range:</label><input type="date" name="created_from" id="from-date" value="' . ( isset( $_REQUEST[ 'created_from' ] ) ? sanitize_text_field( $_REQUEST[ 'created_from' ] ) : '' ) . '" /><input type="date" name="created_to" id="to-date" value="' . ( isset( $_REQUEST[ 'created_to' ] ) ? sanitize_text_field( $_REQUEST[ 'created_to' ] ) : '' ) . '" />';
           echo '<input type="submit" name="filter_action" id="transaction-query-submit" class="button" value="' . __( 'Filter', 'simple-payment' ) . '">';
           echo '</div>';
         }

@@ -162,7 +162,7 @@ abstract class Engine {
       $error = curl_error( $curl );
       # some error , send email to developer // TODO: Handle Error
       if ( !empty( $error ) ) {
-        throw new Exception( $error . ' ' . $response. ' - ' . $url . ' (' . print_r( $vars, true ) . ')', 500 );
+        throw new Exception( $error . ' ' . $response. ' - ' . $url, 500 );
       }
       curl_close( $curl );
       return( $response );

@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.4.6
+ * Version: 2.4.7
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -90,7 +90,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 			$this->sandbox = false;
 		}
 		if ( $engine != 'Custom' && $this->engine && $this->engine::$name == $engine ) return;
-		if ( file_exists( SPWP_PLUGIN_DIR . '/engines/' . strtolower( $engine ) . '.php' ) ) require_once( SPWP_PLUGIN_DIR . '/engines/' . strtolower( $engine ) . '.php' );
+		$filename =  strtolower( sanitize_file_name( wp_basename( $engine, '.php' ) ) );
+		if ( file_exists( SPWP_PLUGIN_DIR . '/engines/' . $filename . '.php' ) )
+			require_once( SPWP_PLUGIN_DIR . '/engines/' . $filename . '.php' );
 		parent::setEngine( $engine );
 		$callback = $this->callback_url();
 		if ( $this->engine ) $this->engine->setCallback( strpos( $callback, '://' ) ? $callback : site_url( $callback ) );
@@ -298,11 +300,14 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 			$args = [
 				'status' => self::TRANSACTION_SUCCESS
 			];
-			if ( $this->engine->confirmation_code) $args['confirmation_code'] = $this->engine->confirmation_code;
-			if ( $this->engine->payments) $args['payments'] = $this->engine->payments;
-			if ( $this->engine->amount) $args['amount'] = $this->engine->amount;
+			if ( $this->engine->confirmation_code) $args[ 'confirmation_code' ] = $this->engine->confirmation_code;
+			if ( $this->engine->payments) $args[ 'payments' ] = $this->engine->payments;
+			if ( $this->engine->amount) $args[ 'amount' ] = $this->engine->amount;
+			if ( $this->param( 'user_create' ) != 'disabled' && $this->param( 'user_create_step' ) == 'post' && !get_current_user_id() ) {
+				$user_id = $this->create_user( $params );
+				if ( $user_id ) $args[ 'user_id' ] = $user_id;
+			}
 			self::update( $this->payment_id ? : $this->engine->transaction, $args , !$this->payment_id );
-			if ( $this->param( 'user_create' ) != 'disabled' && $this->param( 'user_create_step' ) == 'post' && !get_current_user_id() ) $this->create_user( $params );
 			do_action( 'sp_payment_post_process', $params, $this->engine );
 			return( true );
 		}
@@ -333,22 +338,29 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 		}
 		if (!isset($params[self::FULL_NAME]) && (isset($params[self::FIRST_NAME]) || isset($params[self::LAST_NAME]))) $params[self::FULL_NAME] = trim((isset($params[self::FIRST_NAME]) ? $params[self::FIRST_NAME] : '').' '.(isset($params[self::LAST_NAME]) ? $params[self::LAST_NAME] : ''));
 		if (!isset($params[self::CARD_OWNER]) && isset($params[self::FULL_NAME])) $params[self::CARD_OWNER] = $params[self::FULL_NAME];
-		if (!isset($params['payment_id']) || !$params['payment_id']) $params['payment_id'] = $this->register($params);
-		$this->payment_id = $params['payment_id'];
+		//if ( !isset( $params[ 'payment_id' ] ) || !$params[ 'payment_id' ] ) $params[ 'payment_id' ] = 
+		$params = apply_filters( 'sp_payment_pre_process_filter', $params, $this->engine );
+		//if ( empty( $params[ 'payment_id' ] ) )
+		$params[ 'payment_id' ] = $this->payment_id = $this->register( $params );
 		try {
-			$params = apply_filters( 'sp_payment_pre_process_filter', $params, $this->engine );
 			$process = parent::pre_process( $params );
-			self::update( $params[ 'payment_id' ], [ 'status' => self::TRANSACTION_PENDING, 'transaction_id' => $this->engine->transaction ] );
+			self::update( $params[ 'payment_id' ], [ 
+				'status' => self::TRANSACTION_PENDING, 
+				'transaction_id' => $this->engine->transaction
+			] );
 		} catch ( Exception $e ) {
-			self::update($params[ 'payment_id' ], [
-				'status' => self::TRANSACTION_FAILED, 
+			self::update( $params[ 'payment_id' ], [
+				'status' => self::TRANSACTION_FAILED,
 				'transaction_id' => $this->engine->transaction,
 				'error_code' => $e->getCode(),
 				'error_description' => substr( $e->getMessage(), 0, 250 ),
 			] );
 			throw $e;
 		}
-		if ( $this->param( 'user_create' ) != 'disabled' && $this->param( 'user_create_step' ) == 'pre' && !get_current_user_id()) $this->create_user( $params );
+		if ( $this->param( 'user_create' ) != 'disabled' && $this->param( 'user_create_step' ) == 'pre' && !get_current_user_id() ) {
+			$user_id = $this->create_user( $params );
+			$params[ 'user_id' ] = $user_id;
+		}
 		do_action( 'sp_payment_pre_process', $params, $this->engine  );
 		return( $process );
 	}
@@ -365,8 +377,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 	function store( $params = [], $engine = null ) {
 		$engine = $engine ? : $this->param( 'engine' );
 		$this->setEngine( $engine );
-		$params[ 'payment_id' ] = $this->register( $params );
 		$params = apply_filters( 'sp_creditcard_token_params', $params, $this->engine  );
+		$params[ 'payment_id' ] = $this->register( $params );
 		if ( $params = parent::store( $params ) ) {
 			if ( isset( $params[ 'token' ] ) ) {
 				self::update( $this->payment_id ? : $this->engine->transaction, [
@@ -661,13 +673,15 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 				if ( !$username ) $username = wp_generate_password( 12, false );
 				$username = $this->generate_unique_username( strtolower( $username ) );
 				if ( $this->param( 'user_create_step' ) == 'register' ) $user_id = register_new_user( $username, $email );
-				else $user_id = wp_create_user( $username, wp_generate_password( 12, false), $email );
+				else $user_id = wp_create_user( $username, wp_generate_password( 12, false ), $email );
 				do_action( 'sp_user_created', $user_id, $params, false );
+
+				// TODO: allow ssetting for autologin, or not
                 wp_set_auth_cookie( $user_id );
 			}
 		}
 		if ( $user_id ) {
-            // TODO: Login should be handled by developer, implmention,
+            // TODO: Login should be handled by developer, implementation,
             // could be redirecting user to login screen, or validating 
             // other data field that comes in $params that indicates it the user. 
             // wp_set_auth_cookie( $user_id );
@@ -675,16 +689,15 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
         }
 		return( $user_id );
 	}
-
+		
 	function generate_unique_username( $username ) {
 		$username = sanitize_user( $username );
-		static $i;
-		if ( null === $i ) $i = 1;
-		else $i ++;
-		if (! username_exists( $username ) ) return( $username );
-		$new_username = sprintf( '%s-%s', $username, $i );
-		if ( !username_exists( $new_username ) ) return( $new_username );
-		else return( $this->generate_unique_username( $username ) );
+		$i = 1;
+		$new_username = $username;
+		while ( username_exists( $new_username ) ) {
+			$new_username = $username . '-' . $i++;
+		}
+		return( $new_username );
 	}
 
 	function shortcode( $atts ) {
@@ -798,27 +811,29 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 		global $wpdb;
 		$values = [
 			'engine' => $this->engine::$name,
-			'currency' => isset($params[self::CURRENCY]) && $params[self::CURRENCY] ? $params[self::CURRENCY] : $this->param('currency'),
-			'amount' => self::tofloat($params[self::AMOUNT]),
-			'concept' => $params['product'],
-			'payments' => isset($params[self::PAYMENTS]) ? $params[self::PAYMENTS] : null,
-			'parameters' => $this->sanitize_pci_dss(json_encode($params)),
+			'currency' => isset( $params[ self::CURRENCY ] ) && $params[ self::CURRENCY ] ? $params[ self::CURRENCY ] : $this->param('currency' ),
+			'amount' => self::tofloat( $params[ self::AMOUNT ] ),
+			'concept' => $params[ 'product' ] ?? ( isset( $params[ self::PRODUCT ] ) ? $params[ self::PRODUCT ] : null ),
+			'payments' => isset( $params[ self::PAYMENTS ] ) ? $params[ self::PAYMENTS ] : null,
+			'parameters' => $this->sanitize_pci_dss( json_encode( $params ) ),
 			'url' => wp_get_referer() ? $this->sanitize_pci_dss(wp_get_referer()) : '',
 			'status' => self::TRANSACTION_NEW,
 			'sandbox' => $this->sandbox,
-			'user_id' => get_current_user_id() ? : null,
-			'ip_address' => $_SERVER['REMOTE_ADDR'],
-			'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-			'parent_id' => isset($params['payment_id']) ? $params['payment_id'] : null,
+			'user_id' => $params[ 'user_id' ] ?? get_current_user_id(),
+			'ip_address' => $_SERVER[ 'REMOTE_ADDR' ] ?? null,
+			'user_agent' => $_SERVER[ 'HTTP_USER_AGENT' ] ?? null,
+			'parent_id' => isset( $params[ 'payment_id' ] ) ? $params[ 'payment_id' ] : null,
 			'modified' => current_time( 'mysql' ),
 			'created' => current_time( 'mysql' ),
 		];
-		$result = $wpdb->insert( $wpdb->prefix.self::$table_name, $values );
-		if ( $wpdb->insert_id ) {
-			$this->payment_id = $wpdb->insert_id;
-			return( $this->payment_id );
-		}
-		return( false );
+		$result = $wpdb->insert( $wpdb->prefix . self::$table_name, $values );
+		if ( $result === false ) 
+			throw new Exception( 
+				sprintf( __( "Couldn't register transaction: %s", 'simple-payment' ), 
+				$wpdb->last_error
+			) );
+		$this->payment_id = $wpdb->insert_id;
+		return( $this->payment_id ? : false );
 	}
 
 	protected static function update( $id, $params, $transaction_id = false ) {
@@ -832,8 +847,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 		// No need to update user_id, we are keeping original user
 		//$user_id = get_current_user_id();
 		//if ( $user_id ) $params[ 'user_id' ] = $user_id;
-		$result = $wpdb->update( $table_name, $params, [ ( $transaction_id ? 'transaction_id' : 'id' ) => $id ] );
-		if ( $result === false ) throw new Exception( sprintf( __( "Couldn't update transaction: %s", 'simple-payment' ), $wpdb->last_error ) );
+		$result = $wpdb->update( $table_name, $params, [ 
+			( $transaction_id ? 'transaction_id' : 'id' ) => $id 
+		] );
+		if ( $result === false ) 
+			throw new Exception( 
+				sprintf( __( "Couldn't update transaction: %s", 'simple-payment' ), $wpdb->last_error ) 
+			);
 		if ( isset( $token ) && $token ) {
 			do_action( 'sp_creditcard_token', $token, ( $id ? $id : $transaction_id ), $params );
 		}

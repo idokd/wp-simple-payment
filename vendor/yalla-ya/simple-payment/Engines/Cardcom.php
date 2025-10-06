@@ -547,9 +547,9 @@ class Cardcom extends Engine {
 
 
     if ($refund) $post[ 'TokenToCharge.RefundInsteadOfCharge' ] = $refund;
-    if ($params[ 'PAYMENTS' ] == 'monthly' ) $post[ 'TokenToCharge.IsAutoRecurringPayment' ] = 'true';
+    if ($params[ 'payments' ] == 'monthly' ) $post[ 'TokenToCharge.IsAutoRecurringPayment' ] = 'true';
 
-    if (isset($params[ 'approval_number' ]) && $params[ 'approval_number' ]) $post[ 'TokenToCharge.ApprovalNumber' ] = $params[ 'approval_number' ];
+    if ( !$refund  &&isset($params[ 'approval_number' ]) && $params[ 'approval_number' ]) $post[ 'TokenToCharge.ApprovalNumber' ] = $params[ 'approval_number' ];
 
 
     // $post = array_merge($post, $this->document(array_merge($params, [ 'language' => $language, 'currency' => $currency]) ));
