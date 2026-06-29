@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
 
+global $valid_override_username, $valid_username;
 GFForms::include_payment_addon_framework();
 
 class GFPayPalPaymentsPro extends GFPaymentAddOn {

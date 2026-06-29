@@ -292,11 +292,11 @@ class CreditGuard extends Engine {
       $post[ 'cancelUrl' ] = htmlentities( $this->url( SimplePayment::OPERATION_CANCEL, $params ) );
       $post[ 'uniqueid' ] = self::uuid();
 
-      $post[ 'ppsJSONConfig' ] = json_encode( [ 
+      $post[ 'paymentPageData' ] = [ 'ppsJSONConfig' => json_encode( [ 
         'uiCustomData' => [
-          'businessLogoUrl' => 'Erroca-by-super-pharm_Logo-Black.jpg'
+          'businessLogoUrl' => 'simple-payment-company-logo.jpg'
         ] 
-      ] );
+      ] ) ];
 
     } else {
       $post[ 'validation' ] = $this->param( 'validation' ); // TODO: determine the validation via parameter

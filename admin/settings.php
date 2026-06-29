@@ -133,6 +133,10 @@ $sp_settings = [
 	'safe_redirect_domains' => [ // Redirect URL
 		'title' => __( 'Safe Redirect Domains', 'simple-payment' ) 
 	],
+	'transaction_log_disabled' => [ // Redirect URL
+		'title' => __( 'Transaction Log Disabled', 'simple-payment' ),
+		'type' => 'check'
+	],
 	'form_type' => [ //Mode
 		'title' => __('Form Template', 'simple-payment'),
 		'type' => 'select',

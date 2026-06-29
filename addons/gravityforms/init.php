@@ -6,6 +6,8 @@ $_active_plugins = array_merge( is_multisite() ? array_keys( get_site_option( 'a
 
 if ( !in_array( 'gravityforms/gravityforms.php', $_active_plugins ) ) return; 
 
+global $gf_sp_payment, $gf_payment_gateway;
+$gf_sp_payment;
 
 // If Gravity Forms is loaded, bootstrap the Simple Payment Add-On.
 add_action( 'gform_loaded', [ 'GF_SimplePayment_Bootstrap', 'load' ], 5 );
@@ -44,12 +46,12 @@ class GFSimplePayment extends GFPaymentAddOn {
 	protected $_slug = 'simple-payment';
 	protected $_path = 'simple-payment/addons/gravityforms/init.php';
 	protected $_full_path = __FILE__;
-	protected $_url = 'http://simple-payment.yalla-ya.com';
+	protected $_url = 'https://simple-payment.yalla-ya.com';
 	protected $_title = 'Gravity Forms Simple Payment Add-On';
 	protected $_short_title = 'Simple Payment';
 	protected $_supports_callbacks = true;
     protected $_requires_credit_card = true;
-	protected $_enable_rg_autoupgrade = true;
+	protected $_enable_rg_autoupgrade = false;
     protected $redirect_url;
     
     protected $SPWP;
@@ -93,7 +95,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		parent::pre_init();
 		add_action( 'sp_payment_success', [ $this, 'payment_success' ] );
 		add_action( 'sp_payment_status', function( $params, $engine ) {
-			if ( $params[ 'confirmation_code' ] ) $this->payment_success( $params );
+			if ( $params[ 'source' ] == 'gravityforms' && $params[ 'confirmation_code' ] ) $this->payment_success( $this->SPWP->fetch( $params[ 'payment_id' ], $engineß ) );
 		}, 50, 2 );
 		add_action( 'sp_payment_verify', function( $params, $engine ) {
 			if ( $params[ 'confirmation_code' ] ) $this->payment_success( $params );
@@ -476,11 +478,9 @@ class GFSimplePayment extends GFPaymentAddOn {
 
 	public static function maybe_repayment_page() {
 		$instance = self::get_instance();
-		if ( ! $instance->is_gravityforms_supported() ) {
-			return;
-		}
+		if ( ! $instance->is_gravityforms_supported() ) return;
 		$retry = $str = rgget( 'gf_simplepayment_retry' );
-		if (!$retry) return;
+		if ( !$retry ) return;
 		
 		// TODO: validate payment status before continuing
 		// GFAPI::update_entry_property( $entry['id'], 'payment_status', 'Processing' );
@@ -520,9 +520,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 	public static function maybe_thankyou_page() {
 		global $SPWP;
 		$instance = self::get_instance();
-		if ( ! $instance->is_gravityforms_supported() ) {
-			return;
-		}
+		if ( ! $instance->is_gravityforms_supported() ) return;
 		if ( $str = rgget( 'gf_simplepayment_return' ) ) {
 			$str = base64_decode( $str );
 			parse_str( $str, $query );
@@ -530,7 +528,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 				list( $form_id, $lead_id ) = explode( '|', $query['ids'] );
 				$form = GFAPI::get_form( $form_id );
 				$lead = GFAPI::get_entry( $lead_id );
-				if ( ! class_exists( 'GFFormDisplay' ) ) {
+				if ( !class_exists( 'GFFormDisplay' ) ) {
 					require_once( GFCommon::get_base_path() . '/form_display.php' );
 				}
 				$confirmation = GFFormDisplay::handle_confirmation( $form, $lead, false );
@@ -564,7 +562,9 @@ class GFSimplePayment extends GFPaymentAddOn {
 					}*/
 					die();
 				}
-				GFFormDisplay::$submission[ $form_id ] = array( 'is_confirmation' => true, 'confirmation_message' => $confirmation, 'form' => $form, 'lead' => $lead );
+
+				//set_submission_if_null( $form_id, 'confirmation_message', $confirmation );
+				GFFormDisplay::$submission[ $form_id ] = [ 'is_confirmation' => true, 'confirmation_message' => $confirmation, 'form' => $form, 'lead' => $lead ];
 			}
 		}
     }

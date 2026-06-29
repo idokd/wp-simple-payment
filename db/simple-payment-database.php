@@ -7,7 +7,7 @@ $sp_db_version = '27';
 add_action( 'plugins_loaded', 'sp_update_db_check' );
 function sp_update_db_check() {
     global $sp_db_version;
-    if ( version_compare( $sp_db_version, get_option( 'sp_db_version' ) ) ) { // absint(  ) != absint( $sp_db_version ) ) {
+    if ( version_compare( $sp_db_version, get_option( 'sp_db_version', '' ), '>' ) ) { // absint(  ) != absint( $sp_db_version ) ) {
         sp_install();
     }
 }

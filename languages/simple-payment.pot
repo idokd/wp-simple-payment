@@ -1,15 +1,15 @@
-# Copyright (C) 2025 Ido Kobelkowsky / yalla ya!
+# Copyright (C) 2026 Ido Kobelkowsky / yalla ya!
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 2.4.6\n"
+"Project-Id-Version: Simple Payment 2.4.7\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-10-06T05:41:34+00:00\n"
+"POT-Creation-Date: 2026-06-29T08:24:29+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: simple-payment\n"
@@ -19,8 +19,8 @@ msgstr ""
 #: addons/admin-columns-pro/classes/Service/ColumnGroup.php:20
 #: addons/admin-columns-pro/classes/Service/ListScreens.php:19
 #: addons/elementor/widget.php:31
-#: addons/woocommerce/init.php:127
-#: addons/woocommerce/init.php:248
+#: addons/woocommerce/init.php:144
+#: addons/woocommerce/init.php:272
 #: addons/wpjobboard/config.php:8
 #: admin/admin.php:182
 #: admin/admin.php:183
@@ -79,7 +79,7 @@ msgid "Basic"
 msgstr ""
 
 #: addons/elementor/widget.php:97
-#: addons/woocommerce/init.php:297
+#: addons/woocommerce/init.php:321
 #: addons/wpjobboard/config.php:34
 msgid "Product"
 msgstr ""
@@ -103,16 +103,16 @@ msgstr ""
 
 #: addons/elementor/widget.php:123
 #: addons/elementor/widget.php:137
-#: admin/settings.php:139
+#: admin/settings.php:143
 #: settings.php:138
 msgid "Bootstrap Basic"
 msgstr ""
 
 #: addons/elementor/widget.php:124
 #: addons/elementor/widget.php:147
-#: addons/gravityforms/init.php:187
-#: addons/gravityforms/init.php:395
-#: addons/woocommerce/init.php:321
+#: addons/gravityforms/init.php:189
+#: addons/gravityforms/init.php:397
+#: addons/woocommerce/init.php:345
 #: addons/wpjobboard/config.php:47
 msgid "Template"
 msgstr ""
@@ -128,13 +128,13 @@ msgid "Form"
 msgstr ""
 
 #: addons/elementor/widget.php:136
-#: admin/settings.php:139
+#: admin/settings.php:143
 #: settings.php:138
 msgid "Legacy"
 msgstr ""
 
 #: addons/elementor/widget.php:138
-#: admin/settings.php:139
+#: admin/settings.php:143
 #: settings.php:138
 msgid "Bootstrap"
 msgstr ""
@@ -154,14 +154,14 @@ msgid "Redirct"
 msgstr ""
 
 #: addons/elementor/widget.php:160
-#: addons/gravityforms/init.php:159
-#: addons/gravityforms/init.php:352
+#: addons/gravityforms/init.php:161
+#: addons/gravityforms/init.php:354
 msgid "IFRAME"
 msgstr ""
 
 #: addons/elementor/widget.php:161
-#: addons/gravityforms/init.php:163
-#: addons/gravityforms/init.php:356
+#: addons/gravityforms/init.php:165
+#: addons/gravityforms/init.php:358
 msgid "Modal"
 msgstr ""
 
@@ -196,9 +196,9 @@ msgid "Advanced"
 msgstr ""
 
 #: addons/elementor/widget.php:204
-#: addons/gravityforms/init.php:142
-#: addons/gravityforms/init.php:333
-#: addons/woocommerce/init.php:266
+#: addons/gravityforms/init.php:144
+#: addons/gravityforms/init.php:335
+#: addons/woocommerce/init.php:290
 #: addons/wpjobboard/config.php:12
 #: admin/settings.php:111
 #: admin/transaction-list-table.php:239
@@ -211,10 +211,10 @@ msgid "Payment Gateway Method"
 msgstr ""
 
 #: addons/elementor/widget.php:221
-#: addons/gravityforms/init.php:175
-#: addons/gravityforms/init.php:368
-#: addons/woocommerce/init.php:222
-#: addons/woocommerce/init.php:313
+#: addons/gravityforms/init.php:177
+#: addons/gravityforms/init.php:370
+#: addons/woocommerce/init.php:246
+#: addons/woocommerce/init.php:337
 #: addons/wpjobboard/config.php:41
 #: templates/form-bootstrap-basic-id.php:75
 #: templates/form-bootstrap-basic.php:82
@@ -238,199 +238,199 @@ msgstr ""
 msgid "Amount Field"
 msgstr ""
 
-#: addons/gravityforms/init.php:130
+#: addons/gravityforms/init.php:132
 msgid "Simple Payment is a merchant account and gateway in one. Use Gravity Forms to collect payment information and automatically integrate to your Simple Payment account. If you don't have a Simple Payment account, you can %ssign up for one here.%s"
 msgstr ""
 
-#: addons/gravityforms/init.php:144
-#: addons/gravityforms/init.php:336
-#: addons/woocommerce/init.php:268
+#: addons/gravityforms/init.php:146
+#: addons/gravityforms/init.php:338
+#: addons/woocommerce/init.php:292
 msgid "Select Payment Gateway"
 msgstr ""
 
-#: addons/gravityforms/init.php:144
-#: addons/gravityforms/init.php:336
+#: addons/gravityforms/init.php:146
+#: addons/gravityforms/init.php:338
 msgid "If none selected it will use Simple Payment default"
 msgstr ""
 
-#: addons/gravityforms/init.php:150
 #: addons/gravityforms/init.php:152
-#: addons/gravityforms/init.php:342
-#: addons/gravityforms/init.php:345
-#: addons/woocommerce/init.php:280
-#: addons/woocommerce/init.php:282
+#: addons/gravityforms/init.php:154
+#: addons/gravityforms/init.php:344
+#: addons/gravityforms/init.php:347
+#: addons/woocommerce/init.php:304
+#: addons/woocommerce/init.php:306
 #: addons/wpjobboard/config.php:23
 msgid "Display Method"
 msgstr ""
 
-#: addons/gravityforms/init.php:152
-#: addons/gravityforms/init.php:345
-#: addons/woocommerce/init.php:269
-#: addons/woocommerce/init.php:283
+#: addons/gravityforms/init.php:154
+#: addons/gravityforms/init.php:347
+#: addons/woocommerce/init.php:293
+#: addons/woocommerce/init.php:307
 #: addons/wpjobboard/config.php:13
 #: addons/wpjobboard/config.php:24
 msgid "If none selected it will use Simple Payment default."
 msgstr ""
 
-#: addons/gravityforms/init.php:155
-#: addons/gravityforms/init.php:348
+#: addons/gravityforms/init.php:157
+#: addons/gravityforms/init.php:350
 #: addons/wpjobboard/config.php:6
 msgid "Default"
 msgstr ""
 
-#: addons/gravityforms/init.php:167
-#: addons/gravityforms/init.php:360
+#: addons/gravityforms/init.php:169
+#: addons/gravityforms/init.php:362
 msgid "redirect"
 msgstr ""
 
-#: addons/gravityforms/init.php:177
-#: addons/gravityforms/init.php:371
-#: addons/woocommerce/init.php:315
+#: addons/gravityforms/init.php:179
+#: addons/gravityforms/init.php:373
+#: addons/woocommerce/init.php:339
 msgid "Enable Insallments"
 msgstr ""
 
-#: addons/gravityforms/init.php:177
-#: addons/gravityforms/init.php:371
+#: addons/gravityforms/init.php:179
+#: addons/gravityforms/init.php:373
 msgid "Enable installments on checkout page."
 msgstr ""
 
-#: addons/gravityforms/init.php:190
-#: addons/gravityforms/init.php:399
-#: addons/woocommerce/init.php:323
+#: addons/gravityforms/init.php:192
+#: addons/gravityforms/init.php:401
+#: addons/woocommerce/init.php:347
 #: addons/wpjobboard/config.php:48
 msgid "Custom checkout template form"
 msgstr ""
 
-#: addons/gravityforms/init.php:190
-#: addons/gravityforms/init.php:399
-#: addons/woocommerce/init.php:324
+#: addons/gravityforms/init.php:192
+#: addons/gravityforms/init.php:401
+#: addons/woocommerce/init.php:348
 msgid "If you wish to use a custom form template."
 msgstr ""
 
-#: addons/gravityforms/init.php:194
+#: addons/gravityforms/init.php:196
 msgid "Shorten URLs"
 msgstr ""
 
-#: addons/gravityforms/init.php:196
+#: addons/gravityforms/init.php:198
 msgid "Enable Short URLs"
 msgstr ""
 
-#: addons/gravityforms/init.php:196
+#: addons/gravityforms/init.php:198
 msgid "Enable short urls to handle occasional issues."
 msgstr ""
 
-#: addons/gravityforms/init.php:206
-#: addons/gravityforms/init.php:403
-#: addons/woocommerce/init.php:329
+#: addons/gravityforms/init.php:208
+#: addons/gravityforms/init.php:405
+#: addons/woocommerce/init.php:353
 #: addons/wpjobboard/config.php:53
 msgid "Settings"
 msgstr ""
 
-#: addons/gravityforms/init.php:209
-#: addons/gravityforms/init.php:407
-#: addons/woocommerce/init.php:331
+#: addons/gravityforms/init.php:211
+#: addons/gravityforms/init.php:409
+#: addons/woocommerce/init.php:355
 #: addons/wpjobboard/config.php:54
 msgid "Custom & advanced checkout settings"
 msgstr ""
 
-#: addons/gravityforms/init.php:209
-#: addons/gravityforms/init.php:407
-#: addons/woocommerce/init.php:332
+#: addons/gravityforms/init.php:211
+#: addons/gravityforms/init.php:409
+#: addons/woocommerce/init.php:356
 msgid "Use if carefully"
 msgstr ""
 
-#: addons/gravityforms/init.php:248
-#: addons/gravityforms/init.php:260
+#: addons/gravityforms/init.php:250
+#: addons/gravityforms/init.php:262
 msgid "Pay Period"
 msgstr ""
 
-#: addons/gravityforms/init.php:251
+#: addons/gravityforms/init.php:253
 msgid "Weekly"
 msgstr ""
 
-#: addons/gravityforms/init.php:252
+#: addons/gravityforms/init.php:254
 msgid "Every Two Weeks"
 msgstr ""
 
-#: addons/gravityforms/init.php:253
+#: addons/gravityforms/init.php:255
 msgid "Twice Every Month"
 msgstr ""
 
-#: addons/gravityforms/init.php:254
+#: addons/gravityforms/init.php:256
 msgid "Every Four Weeks"
 msgstr ""
 
-#: addons/gravityforms/init.php:255
+#: addons/gravityforms/init.php:257
 msgid "Monthly"
 msgstr ""
 
-#: addons/gravityforms/init.php:256
+#: addons/gravityforms/init.php:258
 msgid "Quarterly"
 msgstr ""
 
-#: addons/gravityforms/init.php:257
+#: addons/gravityforms/init.php:259
 msgid "Twice Every Year"
 msgstr ""
 
-#: addons/gravityforms/init.php:258
+#: addons/gravityforms/init.php:260
 msgid "Yearly"
 msgstr ""
 
-#: addons/gravityforms/init.php:260
+#: addons/gravityforms/init.php:262
 msgid "Select pay period.  This determines how often the recurring payment should occur."
 msgstr ""
 
-#: addons/gravityforms/init.php:270
 #: addons/gravityforms/init.php:272
+#: addons/gravityforms/init.php:274
 msgid "Posts"
 msgstr ""
 
-#: addons/gravityforms/init.php:272
+#: addons/gravityforms/init.php:274
 msgid "Enable this option if you would like to change the post status when a subscription is cancelled."
 msgstr ""
 
-#: addons/gravityforms/init.php:275
+#: addons/gravityforms/init.php:277
 msgid "Update Post when subscription is cancelled."
 msgstr ""
 
-#: addons/gravityforms/init.php:290
 #: addons/gravityforms/init.php:292
+#: addons/gravityforms/init.php:294
 msgid "Custom Settings"
 msgstr ""
 
-#: addons/gravityforms/init.php:292
+#: addons/gravityforms/init.php:294
 msgid "Override the settings provided on the Simple Payment Settings page and use these instead for this feed."
 msgstr ""
 
-#: addons/gravityforms/init.php:381
+#: addons/gravityforms/init.php:383
 msgid "Multi-line Documents"
 msgstr ""
 
-#: addons/gravityforms/init.php:385
+#: addons/gravityforms/init.php:387
 msgid "Where possible issue receipt with products details"
 msgstr ""
 
-#: addons/gravityforms/init.php:385
+#: addons/gravityforms/init.php:387
 msgid "When receipt details is requried."
 msgstr ""
 
-#: addons/gravityforms/init.php:430
+#: addons/gravityforms/init.php:432
 msgid "Mark Post as Draft"
 msgstr ""
 
-#: addons/gravityforms/init.php:431
+#: addons/gravityforms/init.php:433
 msgid "Delete Post"
 msgstr ""
 
-#: addons/gravityforms/init.php:450
+#: addons/gravityforms/init.php:452
 msgid "Last Name"
 msgstr ""
 
-#: addons/gravityforms/init.php:455
+#: addons/gravityforms/init.php:457
 msgid "First Name"
 msgstr ""
 
-#: addons/gravityforms/init.php:460
+#: addons/gravityforms/init.php:462
 #: templates/form-bootstrap.php:36
 #: templates/form-cardcom-example.php:36
 #: templates/form-donation.php:48
@@ -438,11 +438,11 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: addons/gravityforms/init.php:465
+#: addons/gravityforms/init.php:467
 msgid "Company"
 msgstr ""
 
-#: addons/gravityforms/init.php:470
+#: addons/gravityforms/init.php:472
 msgid "Product Code"
 msgstr ""
 
@@ -459,7 +459,7 @@ msgid "Subscription Created"
 msgstr ""
 
 #: addons/gravityforms/init.php:1381
-#: addons/woocommerce/init.php:206
+#: addons/woocommerce/init.php:230
 #: templates/form-woocommerce.php:65
 msgid "Card Owner ID"
 msgstr ""
@@ -468,23 +468,31 @@ msgstr ""
 msgid "Configure"
 msgstr ""
 
-#: addons/woocommerce/init.php:75
+#: addons/woocommerce/init.php:81
 msgid "Important consult payment status before processing."
 msgstr ""
 
-#: addons/woocommerce/init.php:78
+#: addons/woocommerce/init.php:84
 msgid "Payment failed, redirecting user to checkout."
 msgstr ""
 
-#: addons/woocommerce/init.php:128
+#: addons/woocommerce/init.php:102
+msgid "Simple Payment ID:"
+msgstr ""
+
+#: addons/woocommerce/init.php:105
+msgid "Confirmation Code:"
+msgstr ""
+
+#: addons/woocommerce/init.php:145
 msgid "Allows integration of Simple Payment gateways into woocommerce"
 msgstr ""
 
-#: addons/woocommerce/init.php:139
+#: addons/woocommerce/init.php:156
 msgid "new payment method"
 msgstr ""
 
-#: addons/woocommerce/init.php:201
+#: addons/woocommerce/init.php:225
 #: templates/form-bootstrap-basic-id.php:30
 #: templates/form-bootstrap-basic.php:34
 #: templates/form-bootstrap.php:147
@@ -495,112 +503,116 @@ msgstr ""
 msgid "Name on card"
 msgstr ""
 
-#: addons/woocommerce/init.php:239
+#: addons/woocommerce/init.php:263
 msgid "Enable/Disable"
 msgstr ""
 
-#: addons/woocommerce/init.php:241
+#: addons/woocommerce/init.php:265
 msgid "Enable Simple Payment"
 msgstr ""
 
-#: addons/woocommerce/init.php:245
+#: addons/woocommerce/init.php:269
 msgid "Title"
 msgstr ""
 
-#: addons/woocommerce/init.php:247
+#: addons/woocommerce/init.php:271
 msgid "This controls the title for the payment method the customer sees during checkout."
 msgstr ""
 
-#: addons/woocommerce/init.php:252
+#: addons/woocommerce/init.php:276
 msgid "Description"
 msgstr ""
 
-#: addons/woocommerce/init.php:254
+#: addons/woocommerce/init.php:278
 msgid "Payment method description that the customer will see on your checkout."
 msgstr ""
 
-#: addons/woocommerce/init.php:255
+#: addons/woocommerce/init.php:279
 msgid "Please remit payment to Store Name upon pickup or delivery."
 msgstr ""
 
-#: addons/woocommerce/init.php:259
+#: addons/woocommerce/init.php:283
 msgid "Instructions"
 msgstr ""
 
-#: addons/woocommerce/init.php:261
+#: addons/woocommerce/init.php:285
 msgid "Instructions that will be added to the thank you page and emails."
 msgstr ""
 
-#: addons/woocommerce/init.php:289
+#: addons/woocommerce/init.php:313
 msgid "Show in Checkout"
 msgstr ""
 
-#: addons/woocommerce/init.php:291
+#: addons/woocommerce/init.php:315
 msgid "Show in Modal or IFRAME in Checkout page, instead of Order Review"
 msgstr ""
 
-#: addons/woocommerce/init.php:293
+#: addons/woocommerce/init.php:317
 msgid "For Modal & IFRAME Only, If none selected it will use Simple Payment default."
 msgstr ""
 
-#: addons/woocommerce/init.php:299
+#: addons/woocommerce/init.php:323
 msgid "Custom product name to use in Simple Payment"
 msgstr ""
 
-#: addons/woocommerce/init.php:300
+#: addons/woocommerce/init.php:324
 msgid "Simple Payment globalize the purchase to single product on the Payment Gateway."
 msgstr ""
 
-#: addons/woocommerce/init.php:301
+#: addons/woocommerce/init.php:325
 msgid "WooCommerce Order %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:305
+#: addons/woocommerce/init.php:329
 msgid "Single Item Orders"
 msgstr ""
 
-#: addons/woocommerce/init.php:307
+#: addons/woocommerce/init.php:331
 msgid "Single Item Order use as Product Name"
 msgstr ""
 
-#: addons/woocommerce/init.php:309
+#: addons/woocommerce/init.php:333
 msgid "When order has a single item use item name as product name"
 msgstr ""
 
-#: addons/woocommerce/init.php:317
+#: addons/woocommerce/init.php:341
 #: addons/wpjobboard/config.php:42
 msgid "Enable installments on checkout page"
 msgstr ""
 
-#: addons/woocommerce/init.php:531
+#: addons/woocommerce/init.php:417
+msgid "Payment failed."
+msgstr ""
+
+#: addons/woocommerce/init.php:571
 msgid "Payment error: %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:569
+#: addons/woocommerce/init.php:609
 msgid "Add payment method error: %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:736
+#: addons/woocommerce/init.php:776
 msgid "Payment error [ SP ID: %s ]: %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:763
+#: addons/woocommerce/init.php:805
 msgid "Payment error[ SP ID: %s ]: unkown."
 msgstr ""
 
-#: addons/woocommerce/init.php:815
+#: addons/woocommerce/init.php:857
 msgid "Pay for order"
 msgstr ""
 
-#: addons/woocommerce/init.php:839
+#: addons/woocommerce/init.php:882
 msgid "Visa"
 msgstr ""
 
-#: addons/woocommerce/init.php:840
+#: addons/woocommerce/init.php:883
 msgid "Mastercard"
 msgstr ""
 
-#: addons/woocommerce/init.php:841
+#: addons/woocommerce/init.php:884
 msgid "American Express"
 msgstr ""
 
@@ -853,7 +865,7 @@ msgid "Suspended Deal"
 msgstr ""
 
 #: admin/settings.php:7
-#: admin/settings.php:397
+#: admin/settings.php:401
 #: settings.php:6
 #: settings.php:391
 msgid "Invoice"
@@ -870,7 +882,7 @@ msgid "Order Confirmation"
 msgstr ""
 
 #: admin/settings.php:7
-#: admin/settings.php:397
+#: admin/settings.php:401
 #: settings.php:6
 #: settings.php:391
 msgid "Receipt"
@@ -1182,256 +1194,260 @@ msgid "Safe Redirect Domains"
 msgstr ""
 
 #: admin/settings.php:137
+msgid "Transaction Log Disabled"
+msgstr ""
+
+#: admin/settings.php:141
 #: settings.php:136
 msgid "Form Template"
 msgstr ""
 
-#: admin/settings.php:139
+#: admin/settings.php:143
 #: settings.php:138
 msgid "Experimental"
 msgstr ""
 
-#: admin/settings.php:141
+#: admin/settings.php:145
 #: settings.php:140
 msgid "Create Wordpress User"
 msgstr ""
 
-#: admin/settings.php:143
+#: admin/settings.php:147
 #: settings.php:142
 msgid "No Creation"
 msgstr ""
 
-#: admin/settings.php:143
+#: admin/settings.php:147
 #: settings.php:142
 msgid "Silent Creation"
 msgstr ""
 
-#: admin/settings.php:143
+#: admin/settings.php:147
 #: settings.php:142
 msgid "Registration"
 msgstr ""
 
-#: admin/settings.php:145
+#: admin/settings.php:149
 #: settings.php:144
 msgid "Create User Upon"
 msgstr ""
 
-#: admin/settings.php:147
+#: admin/settings.php:151
 #: settings.php:146
 msgid "Preprocessing"
 msgstr ""
 
-#: admin/settings.php:147
+#: admin/settings.php:151
 #: settings.php:146
 msgid "Post processing"
 msgstr ""
 
-#: admin/settings.php:150
+#: admin/settings.php:154
 #: settings.php:149
 msgid "Cron Schedule"
 msgstr ""
 
-#: admin/settings.php:152
+#: admin/settings.php:156
 #: settings.php:151
 msgid "Minute"
 msgstr ""
 
-#: admin/settings.php:152
-#: admin/settings.php:157
-#: admin/settings.php:163
+#: admin/settings.php:156
+#: admin/settings.php:161
+#: admin/settings.php:167
 #: settings.php:151
 #: settings.php:156
 #: settings.php:162
 msgid "10 Min"
 msgstr ""
 
-#: admin/settings.php:152
-#: admin/settings.php:157
-#: admin/settings.php:163
+#: admin/settings.php:156
+#: admin/settings.php:161
+#: admin/settings.php:167
 #: settings.php:151
 #: settings.php:156
 #: settings.php:162
 msgid "30 Min"
 msgstr ""
 
-#: admin/settings.php:152
-#: admin/settings.php:157
-#: admin/settings.php:163
+#: admin/settings.php:156
+#: admin/settings.php:161
+#: admin/settings.php:167
 #: settings.php:151
 #: settings.php:156
 #: settings.php:162
 msgid "1 Hour"
 msgstr ""
 
-#: admin/settings.php:152
-#: admin/settings.php:157
-#: admin/settings.php:163
+#: admin/settings.php:156
+#: admin/settings.php:161
+#: admin/settings.php:167
 #: settings.php:151
 #: settings.php:156
 #: settings.php:162
 msgid "12 Hours"
 msgstr ""
 
-#: admin/settings.php:152
-#: admin/settings.php:157
-#: admin/settings.php:163
+#: admin/settings.php:156
+#: admin/settings.php:161
+#: admin/settings.php:167
 #: settings.php:151
 #: settings.php:156
 #: settings.php:162
 msgid "1 Day"
 msgstr ""
 
-#: admin/settings.php:152
-#: admin/settings.php:157
-#: admin/settings.php:163
+#: admin/settings.php:156
+#: admin/settings.php:161
+#: admin/settings.php:167
 #: settings.php:151
 #: settings.php:156
 #: settings.php:162
 msgid "3 Days"
 msgstr ""
 
-#: admin/settings.php:152
-#: admin/settings.php:157
-#: admin/settings.php:163
+#: admin/settings.php:156
+#: admin/settings.php:161
+#: admin/settings.php:167
 #: settings.php:151
 #: settings.php:156
 #: settings.php:162
 msgid "7 Days"
 msgstr ""
 
-#: admin/settings.php:152
-#: admin/settings.php:157
-#: admin/settings.php:163
+#: admin/settings.php:156
+#: admin/settings.php:161
+#: admin/settings.php:167
 #: settings.php:151
 #: settings.php:156
 #: settings.php:162
 msgid "30 Days"
 msgstr ""
 
-#: admin/settings.php:155
+#: admin/settings.php:159
 #: settings.php:154
 msgid "Auto Transaction Verification"
 msgstr ""
 
-#: admin/settings.php:161
+#: admin/settings.php:165
 #: settings.php:160
 msgid "Fail Pending Transaction"
 msgstr ""
 
-#: admin/settings.php:166
+#: admin/settings.php:170
 #: settings.php:165
 msgid "Purge Transactions"
 msgstr ""
 
-#: admin/settings.php:168
-#: admin/settings.php:339
-#: admin/settings.php:421
+#: admin/settings.php:172
+#: admin/settings.php:343
+#: admin/settings.php:425
 #: settings.php:167
 #: settings.php:338
 #: settings.php:415
 msgid "Disabled"
 msgstr ""
 
-#: admin/settings.php:168
+#: admin/settings.php:172
 #: admin/transaction-list-table.php:157
 #: admin/transaction-list-table.php:178
 #: settings.php:167
 msgid "Archive"
 msgstr ""
 
-#: admin/settings.php:168
+#: admin/settings.php:172
 #: settings.php:167
 msgid "Purge"
 msgstr ""
 
-#: admin/settings.php:168
+#: admin/settings.php:172
 #: settings.php:167
 msgid "Archive & Purge"
 msgstr ""
 
-#: admin/settings.php:170
+#: admin/settings.php:174
 #: settings.php:169
 msgid "Purge Period (days)"
 msgstr ""
 
-#: admin/settings.php:173
-#: admin/settings.php:313
+#: admin/settings.php:177
+#: admin/settings.php:317
 #: settings.php:172
 #: settings.php:312
 msgid "CSS"
 msgstr ""
 
-#: admin/settings.php:177
+#: admin/settings.php:181
 #: settings.php:176
 msgid "Upon Uninstall"
 msgstr ""
 
-#: admin/settings.php:181
+#: admin/settings.php:185
 #: settings.php:180
 msgid "Keep Database & Settings"
 msgstr ""
 
-#: admin/settings.php:181
+#: admin/settings.php:185
 #: settings.php:180
 msgid "Erase Settings"
 msgstr ""
 
-#: admin/settings.php:181
+#: admin/settings.php:185
 #: settings.php:180
 msgid "Erase Database"
 msgstr ""
 
-#: admin/settings.php:181
+#: admin/settings.php:185
 #: settings.php:180
 msgid "Erase All Database & Settings"
 msgstr ""
 
-#: admin/settings.php:184
+#: admin/settings.php:188
 #: settings.php:183
 msgid "Min # of Payments"
 msgstr ""
 
-#: admin/settings.php:190
+#: admin/settings.php:194
 #: settings.php:189
 msgid "Max # of Payments"
 msgstr ""
 
-#: admin/settings.php:196
+#: admin/settings.php:200
 #: settings.php:195
 msgid "Default # of Payments"
 msgstr ""
 
-#: admin/settings.php:203
+#: admin/settings.php:207
 #: settings.php:202
 msgid "Client ID"
 msgstr ""
 
-#: admin/settings.php:206
+#: admin/settings.php:210
 #: settings.php:205
 msgid "Client Secret"
 msgstr ""
 
-#: admin/settings.php:210
+#: admin/settings.php:214
 #: settings.php:209
 msgid "Business"
 msgstr ""
 
-#: admin/settings.php:213
+#: admin/settings.php:217
 #: settings.php:212
 msgid "Hosted Button ID"
 msgstr ""
 
-#: admin/settings.php:217
-#: admin/settings.php:446
+#: admin/settings.php:221
+#: admin/settings.php:450
 #: settings.php:216
 #: settings.php:440
 msgid "Terminal ID"
 msgstr ""
 
-#: admin/settings.php:221
-#: admin/settings.php:381
-#: admin/settings.php:451
-#: admin/settings.php:569
+#: admin/settings.php:225
+#: admin/settings.php:385
+#: admin/settings.php:455
+#: admin/settings.php:573
 #: settings.php:220
 #: settings.php:375
 #: settings.php:445
@@ -1439,15 +1455,15 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: admin/settings.php:225
+#: admin/settings.php:229
 #: settings.php:224
 msgid "API Password"
 msgstr ""
 
-#: admin/settings.php:230
-#: admin/settings.php:523
-#: admin/settings.php:538
-#: admin/settings.php:629
+#: admin/settings.php:234
+#: admin/settings.php:527
+#: admin/settings.php:542
+#: admin/settings.php:633
 #: settings.php:229
 #: settings.php:517
 #: settings.php:532
@@ -1455,384 +1471,384 @@ msgstr ""
 msgid "Operation"
 msgstr ""
 
-#: admin/settings.php:236
-#: admin/settings.php:617
+#: admin/settings.php:240
+#: admin/settings.php:621
 #: settings.php:235
 #: settings.php:611
 msgid "Force Language Interface"
 msgstr ""
 
-#: admin/settings.php:243
+#: admin/settings.php:247
 #: settings.php:242
 msgid "Credit Type"
 msgstr ""
 
-#: admin/settings.php:251
+#: admin/settings.php:255
 #: settings.php:250
 msgid "Name field settings"
 msgstr ""
 
-#: admin/settings.php:257
+#: admin/settings.php:261
 #: settings.php:256
 msgid "Phone field settings"
 msgstr ""
 
-#: admin/settings.php:263
+#: admin/settings.php:267
 #: settings.php:262
 msgid "Email field settings"
 msgstr ""
 
-#: admin/settings.php:269
+#: admin/settings.php:273
 #: settings.php:268
 msgid "Hide Credit Card User ID"
 msgstr ""
 
-#: admin/settings.php:274
+#: admin/settings.php:278
 #: settings.php:273
 msgid "Invoice Processing"
 msgstr ""
 
-#: admin/settings.php:281
-#: admin/settings.php:395
+#: admin/settings.php:285
+#: admin/settings.php:399
 #: settings.php:280
 #: settings.php:389
 msgid "Document Type Upon Success"
 msgstr ""
 
-#: admin/settings.php:289
+#: admin/settings.php:293
 #: settings.php:288
 msgid "Auto Create/Update Account"
 msgstr ""
 
-#: admin/settings.php:294
+#: admin/settings.php:298
 #: settings.php:293
 msgid "Load Account Info to Invoice"
 msgstr ""
 
-#: admin/settings.php:300
+#: admin/settings.php:304
 #: settings.php:299
 msgid "Information to print on document"
 msgstr ""
 
-#: admin/settings.php:308
+#: admin/settings.php:312
 #: settings.php:307
 msgid "Show Invoice Information"
 msgstr ""
 
-#: admin/settings.php:319
+#: admin/settings.php:323
 #: settings.php:318
 msgid "Prices Globally VAT Free"
 msgstr ""
 
-#: admin/settings.php:324
+#: admin/settings.php:328
 #: settings.php:323
 msgid "Email Invoice to Client"
 msgstr ""
 
-#: admin/settings.php:329
+#: admin/settings.php:333
 #: settings.php:328
 msgid "Department ID"
 msgstr ""
 
-#: admin/settings.php:331
+#: admin/settings.php:335
 #: settings.php:330
 msgid "Numeric ID"
 msgstr ""
 
-#: admin/settings.php:336
-#: admin/settings.php:418
+#: admin/settings.php:340
+#: admin/settings.php:422
 #: settings.php:335
 #: settings.php:412
 msgid "Enable Recurring (Direct Debit) Payments"
 msgstr ""
 
-#: admin/settings.php:339
-#: admin/settings.php:421
+#: admin/settings.php:343
+#: admin/settings.php:425
 #: settings.php:338
 #: settings.php:415
 msgid "Provider"
 msgstr ""
 
-#: admin/settings.php:343
+#: admin/settings.php:347
 #: settings.php:342
 msgid "Process Recurring Upon"
 msgstr ""
 
-#: admin/settings.php:346
+#: admin/settings.php:350
 #: settings.php:345
 msgid "Post Process"
 msgstr ""
 
-#: admin/settings.php:346
+#: admin/settings.php:350
 #: settings.php:345
 msgid "Status Process"
 msgstr ""
 
-#: admin/settings.php:350
+#: admin/settings.php:354
 #: settings.php:349
 msgid "Direct Debit Terminal"
 msgstr ""
 
-#: admin/settings.php:355
+#: admin/settings.php:359
 #: settings.php:354
 msgid "Direct Debit Operation"
 msgstr ""
 
-#: admin/settings.php:362
+#: admin/settings.php:366
 #: settings.php:361
 msgid "Repeated Recurring"
 msgstr ""
 
-#: admin/settings.php:367
+#: admin/settings.php:371
 #: settings.php:366
 msgid "Recurring Interval ID"
 msgstr ""
 
-#: admin/settings.php:372
+#: admin/settings.php:376
 msgid "Short URLs"
 msgstr ""
 
-#: admin/settings.php:377
+#: admin/settings.php:381
 #: settings.php:371
 msgid "Business ID"
 msgstr ""
 
-#: admin/settings.php:385
-#: admin/settings.php:456
-#: admin/settings.php:573
+#: admin/settings.php:389
+#: admin/settings.php:460
+#: admin/settings.php:577
 #: settings.php:379
 #: settings.php:450
 #: settings.php:567
 msgid "Password"
 msgstr ""
 
-#: admin/settings.php:390
+#: admin/settings.php:394
 #: settings.php:384
 msgid "Use CC Storage"
 msgstr ""
 
-#: admin/settings.php:397
-#: admin/settings.php:403
+#: admin/settings.php:401
+#: admin/settings.php:407
 #: settings.php:391
 #: settings.php:397
 msgid "None"
 msgstr ""
 
-#: admin/settings.php:397
+#: admin/settings.php:401
 #: settings.php:391
 msgid "Invoice / Receipt"
 msgstr ""
 
-#: admin/settings.php:397
+#: admin/settings.php:401
 #: settings.php:391
 msgid "Deal"
 msgstr ""
 
-#: admin/settings.php:397
+#: admin/settings.php:401
 #: settings.php:391
 msgid "Offer"
 msgstr ""
 
-#: admin/settings.php:397
+#: admin/settings.php:401
 #: settings.php:391
 msgid "Order"
 msgstr ""
 
-#: admin/settings.php:401
+#: admin/settings.php:405
 #: settings.php:395
 msgid "Document VAT Type"
 msgstr ""
 
-#: admin/settings.php:403
+#: admin/settings.php:407
 #: settings.php:397
 msgid "Included"
 msgstr ""
 
-#: admin/settings.php:403
+#: admin/settings.php:407
 #: settings.php:397
 msgid "Exempt"
 msgstr ""
 
-#: admin/settings.php:407
+#: admin/settings.php:411
 #: settings.php:401
 msgid "Auto invoice on installments"
 msgstr ""
 
-#: admin/settings.php:412
+#: admin/settings.php:416
 #: settings.php:406
 msgid "Email Document to Client"
 msgstr ""
 
-#: admin/settings.php:425
+#: admin/settings.php:429
 #: settings.php:419
 msgid "Seller ID"
 msgstr ""
 
-#: admin/settings.php:430
+#: admin/settings.php:434
 #: settings.php:424
 msgid "Client Key"
 msgstr ""
 
-#: admin/settings.php:435
+#: admin/settings.php:439
 #: settings.php:429
 msgid "Merchant Secret"
 msgstr ""
 
-#: admin/settings.php:440
+#: admin/settings.php:444
 #: settings.php:434
 msgid "Notify Client"
 msgstr ""
 
-#: admin/settings.php:462
+#: admin/settings.php:466
 #: settings.php:456
 msgid "API Key"
 msgstr ""
 
-#: admin/settings.php:469
+#: admin/settings.php:473
 #: settings.php:463
 msgid "User ID"
 msgstr ""
 
-#: admin/settings.php:474
+#: admin/settings.php:478
 #: settings.php:468
 msgid "Page Code (CC)"
 msgstr ""
 
-#: admin/settings.php:479
+#: admin/settings.php:483
 #: settings.php:473
 msgid "Page Code (Subscriptions)"
 msgstr ""
 
-#: admin/settings.php:484
+#: admin/settings.php:488
 #: settings.php:478
 msgid "Page Code (bit)"
 msgstr ""
 
-#: admin/settings.php:489
-#: admin/settings.php:653
+#: admin/settings.php:493
+#: admin/settings.php:657
 #: settings.php:483
 #: settings.php:647
 msgid "API KEY"
 msgstr ""
 
-#: admin/settings.php:493
+#: admin/settings.php:497
 #: settings.php:487
 msgid "Tokenize"
 msgstr ""
 
-#: admin/settings.php:498
+#: admin/settings.php:502
 #: settings.php:492
 msgid "Commission"
 msgstr ""
 
-#: admin/settings.php:503
+#: admin/settings.php:507
 #: settings.php:497
 msgid "Payment Token"
 msgstr ""
 
-#: admin/settings.php:508
-#: admin/settings.php:624
+#: admin/settings.php:512
+#: admin/settings.php:628
 #: settings.php:502
 #: settings.php:618
 msgid "Create Tokens"
 msgstr ""
 
-#: admin/settings.php:513
+#: admin/settings.php:517
 #: settings.php:507
 msgid "Token Box"
 msgstr ""
 
-#: admin/settings.php:517
+#: admin/settings.php:521
 #: settings.php:511
 msgid "Apply Credit Above Payments"
 msgstr ""
 
-#: admin/settings.php:529
+#: admin/settings.php:533
 #: settings.php:523
 msgid "VAT Free"
 msgstr ""
 
-#: admin/settings.php:534
+#: admin/settings.php:538
 #: settings.php:528
 msgid "Company Name"
 msgstr ""
 
-#: admin/settings.php:544
+#: admin/settings.php:548
 #: settings.php:538
 msgid "Vendor Name"
 msgstr ""
 
-#: admin/settings.php:548
+#: admin/settings.php:552
 #: settings.php:542
 msgid "Company Key"
 msgstr ""
 
-#: admin/settings.php:554
+#: admin/settings.php:558
 #: settings.php:548
 msgid "Company Logo"
 msgstr ""
 
-#: admin/settings.php:558
+#: admin/settings.php:562
 #: settings.php:552
 msgid "Use CVV"
 msgstr ""
 
-#: admin/settings.php:565
+#: admin/settings.php:569
 #: settings.php:559
 msgid "Gateway URL"
 msgstr ""
 
-#: admin/settings.php:578
+#: admin/settings.php:582
 #: settings.php:572
 msgid "Terminal"
 msgstr ""
 
-#: admin/settings.php:582
+#: admin/settings.php:586
 #: settings.php:576
 msgid "Merchant ID"
 msgstr ""
 
-#: admin/settings.php:586
+#: admin/settings.php:590
 #: settings.php:580
 msgid "Supplier ID"
 msgstr ""
 
-#: admin/settings.php:590
+#: admin/settings.php:594
 #: settings.php:584
 msgid "Integration Mode"
 msgstr ""
 
-#: admin/settings.php:597
+#: admin/settings.php:601
 #: settings.php:591
 msgid "Check May Be Duplicate"
 msgstr ""
 
-#: admin/settings.php:602
+#: admin/settings.php:606
 #: settings.php:596
 msgid "Use CVV on Payment Page"
 msgstr ""
 
-#: admin/settings.php:607
+#: admin/settings.php:611
 #: settings.php:601
 msgid "Use Personal ID on Payment Page"
 msgstr ""
 
-#: admin/settings.php:612
+#: admin/settings.php:616
 #: settings.php:606
 msgid "Use frameAncestorURLs Protection"
 msgstr ""
 
-#: admin/settings.php:635
+#: admin/settings.php:639
 #: settings.php:629
 msgid "Validation"
 msgstr ""
 
-#: admin/settings.php:641
+#: admin/settings.php:645
 #: settings.php:635
 msgid "Custom CSS"
 msgstr ""
 
-#: admin/settings.php:646
+#: admin/settings.php:650
 #: settings.php:640
 msgid "Custom Texts ( JSON )"
 msgstr ""
@@ -1981,15 +1997,15 @@ msgstr ""
 msgid "Every %s Minutes"
 msgstr ""
 
-#: simple-payment-plugin.php:599
+#: simple-payment-plugin.php:603
 msgid "Error payment recharge"
 msgstr ""
 
-#: simple-payment-plugin.php:832
+#: simple-payment-plugin.php:836
 msgid "Couldn't register transaction: %s"
 msgstr ""
 
-#: simple-payment-plugin.php:855
+#: simple-payment-plugin.php:859
 msgid "Couldn't update transaction: %s"
 msgstr ""
 

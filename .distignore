@@ -12,3 +12,4 @@ pop-version.sh
 composer.json
 composer.lock
 cloudbuild.yaml
+curl.log

@@ -208,8 +208,8 @@ class SimplePayment {
             CURLOPT_POST => TRUE,
             CURLOPT_POSTFIELDS => $payload,
             CURLOPT_RETURNTRANSFER => TRUE,
-            CURLOPT_VERBOSE => TRUE,
-            CURLOPT_STDERR => $verbose = fopen( SPWP_PLUGIN_DIR . '/curl.log', 'a+' ),
+//            CURLOPT_VERBOSE => TRUE,
+//            CURLOPT_STDERR => $verbose = fopen( SPWP_PLUGIN_DIR . '/curl.log', 'a+' ),
             CURLOPT_TIMEOUT => 10,
             CURLOPT_HTTPHEADER => isset( $post[ 'headers' ] ) ? $post[ 'headers' ] : [],
         ];

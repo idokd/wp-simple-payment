@@ -278,6 +278,7 @@ class Cardcom extends Engine {
 
     if (isset($params[ 'phone' ]) && $params[ 'phone' ]) $post[ 'CardOwnerPhone' ] = $params[ 'phone' ];
     if (isset($params[ 'email' ]) && $params[ 'email' ]) $post[ 'CardOwnerEmail' ] = $params[ 'email' ];
+    if (isset($params[ 'card_owner_id' ]) && $params[ 'card_owner_id' ]) $post[ 'CardOwnerId' ] = $params[ 'card_owner_id' ];
 
     if (isset($params[ 'payment_id' ]) && $params[ 'payment_id' ]) $post[ 'ReturnValue' ] = $params[ 'payment_id' ];
 
@@ -344,10 +345,13 @@ class Cardcom extends Engine {
     if ( $operation != 3 && !isset( $post[ 'InvoiceHead.CustName' ]) && isset( $params[ 'full_name' ]) && $params[ 'full_name' ]) $post[ 'InvoiceHead.CustName' ] = $params[ 'full_name' ];
     if ( $operation != 3 ) $post = array_merge( $post, $this->document( array_merge( $params, [ 'language' => $language, 'currency' => $currency ] ) ));
 
+    if ( $this->param( 'refund' ) || ( isset( $params[ 'refund' ] ) && $params[ 'refund' ] ) ) {
+      $post[ 'RefundDeal' ] = $this->param( 'refund' ) ? $this->param( 'refund' ) : $params[ 'refund' ];
+    }
+    
     // TODO: Analyze how to use those parameters
     // SumInStars
     // SapakMutav
-    // RefundDeal
     // IsAVSEnable =
     // AutoRedirect - false
     // IsVirtualTerminalMode - false
@@ -614,7 +618,7 @@ class Cardcom extends Engine {
         $post[ 'InvoiceLines' . $index . '.Price' ] = $product[ 'amount' ];
         $post[ 'InvoiceLines' . $index . '.Quantity' ] = $product[ 'qty' ];
         $post[ 'InvoiceLines' . $index . '.IsPriceIncludeVAT' ] = 'true'; // Must be true - API requirement
-        // TODO: support per item: $post[ 'InvoiceLines1.IsVatFree' ] = 'true';
+        // TODO: support per item: $post[ 'InvoiceLines' . $index . '.IsVatFree' ] = 'true';
         if ( isset( $product[ 'id' ] ) && $product[ 'id' ] ) $post[ 'InvoiceLines' . $index . '.ProductID' ] = $product[ 'id' ];
         $index++;
       }

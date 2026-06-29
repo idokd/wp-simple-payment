@@ -23,6 +23,12 @@ function sp_wc_gateway_plugin_links( $links ) {
 }
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'sp_wc_gateway_plugin_links' );
 
+add_action( 'sp_pre_callback', function() {
+    if ( function_exists( 'WC' ) ) {
+        WC()->payment_gateways();
+    }
+} );
+
 $_sp_woocommerce_save_token = null;
 function sp_wc_save_token( $transaction, $transaction_id = null, $params = [], $user_id = 0, $default = false ) {
     global $_sp_woocommerce_save_token;
@@ -31,8 +37,8 @@ function sp_wc_save_token( $transaction, $transaction_id = null, $params = [], $
     $token = isset( $transaction[ 'token' ] ) && is_array( $transaction[ 'token' ] ) ? $transaction[ 'token' ] : $transaction;
     if ( $_sp_woocommerce_save_token == $token ) return( null );
     $_sp_woocommerce_save_token = $token;
-    $engine = isset( $token[ 'engine' ] ) ? $token[ 'engine' ] : $transaction[ 'engine' ];
-    if ( !SimplePaymentPlugin::supports( 'tokenization', $engine ) ) return( null );
+    $engine = $token[ 'engine' ] ?? $transaction[ 'engine' ] ?? null;
+    if ( !$engine || !SimplePaymentPlugin::supports( 'tokenization', $engine ) ) return( null );
 
     require_once( 'payment-token.php' );
 
@@ -61,7 +67,7 @@ add_action( 'sp_creditcard_token', 'sp_wc_save_token' );
 
 add_action( 'plugins_loaded', 'sp_wc_gateway_init', 11 );
 
-function sp_wc_maybe_failed_order() {
+function sp_wc_maybe_failed_order( ) {
 	global $SPWP;
     if ( $payment_id = ( isset( $_REQUEST[ SimplePaymentPlugin::PAYMENT_ID ] ) ? $_REQUEST[ SimplePaymentPlugin::PAYMENT_ID ] : null ) ) {
         if ( $url = $_REQUEST[ 'redirect_url' ] ) {
@@ -71,7 +77,7 @@ function sp_wc_maybe_failed_order() {
             SimplePaymentPlugin::instance();
             // TODO: should validate the payment id status instead of the url param
             $ops = $_REQUEST[ $SPWP::SPOP ] ?? ( $_REQUEST[ $SPWP::SPOP ] ?? false );
-            if ( $ops == SimplePaymentPlugin::OPERATION_SUCCESS ) {
+            if ( in_array( $ops, [ SimplePaymentPlugin::OPERATION_SUCCESS ] ) ) {
                 $order->add_order_note( __( 'Important consult payment status before processing.', 'simple-payment' ) );
                 $url = add_query_arg( 'payment_id', $payment_id, $url );
             } else {
@@ -88,6 +94,17 @@ function sp_wc_maybe_failed_order() {
     }
 }
 add_action( 'wc_ajax_checkout', 'sp_wc_maybe_failed_order', 5 );
+
+add_action( 'woocommerce_admin_order_data_header_right', function( $order ) {
+    $payment_id = $order->get_meta( '_sp_transaction_code' );
+    $confirmation_code = $order->get_meta( '_sp_confirmation_code' );
+    if ( $payment_id ) {
+        echo '<p><strong>' . __( 'Simple Payment ID:', 'simple-payment' ) . '</strong> ' . esc_html( $payment_id ) . '</p>';
+    }
+    if ( $confirmation_code ) {
+        echo '<p><strong>' . __( 'Confirmation Code:', 'simple-payment' ) . '</strong> ' . esc_html( $confirmation_code ) . '</p>';
+    }
+} );
 
 function sp_wc_gateway_init() {
     
@@ -158,7 +175,7 @@ function sp_wc_gateway_init() {
             
             // Customer Emails
 			add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ), 10, 3 );
-       
+
             /** @since 1.2.0 */
             add_filter( 'woocommerce_available_payment_gateways', 				array( $this, 'selected_payment_gateways' ) );
             add_filter( 'woocommerce_get_customer_payment_tokens', 				array( $this, 'selected_customer_payment_token' ), 10, 3 );
@@ -175,6 +192,13 @@ function sp_wc_gateway_init() {
                 // Setting some value so it will go into the payment_fields() function
                 $this->description = ' ';
             }
+
+            add_action( 'sp_payment_status', function( $params ) {
+                $params = SimplePaymentPlugin::instance()->fetch( $params[ 'payment_id' ] );
+                if ( $params[ 'source' ] == 'woocommerce' && $params[ 'confirmation_code' ] && $url = $_REQUEST[ 'redirect_url' ] ) {
+                    $this->gateway_response( $params[ 'source_id' ], false );
+                }
+            } );
 
             add_filter( 'woocommerce_credit_card_form_fields', [ $this, 'fields' ], 50, 2 );
         }
@@ -359,34 +383,49 @@ function sp_wc_gateway_init() {
             print $this->SPWP->checkout( $params);
         }
 
-        public function gateway_response() {
-            $order_key = $_REQUEST[ 'key' ];
-            $order_id = $_REQUEST[ 'order-pay' ];
+        public function gateway_response( $order_id = null, $redirect = true ) {
             if ( !$order_id ) {
-                return;
+                $order_key = $_REQUEST[ 'key' ];
+                $order_id = $_REQUEST[ 'order-pay' ];
+                if ( !$order_id ) {
+                    return;
+                }
             }
+            if ( !$order_id ) return;
             $order = wc_get_order( $order_id );
             // TODO: Maybe here check if the payment was approved
-            if ( !$order = wc_get_order( $order_id ) ) {
-                return;
-            }
-            $payment_id = $_REQUEST[ SimplePaymentPlugin::PAYMENT_ID ]; // get payment id
+            if ( !$order = wc_get_order( $order_id ) ) return;
 
+            $payment_id = $_REQUEST[ SimplePaymentPlugin::PAYMENT_ID ] ?? false; // get payment id
+            if ( !$payment_id ) {
+                $last_payment = get_transient( 'sp-payment-last' );
+                $payment_id = $last_payment[ SimplePaymentPlugin::PAYMENT_ID ] ?? false;
+            }
             if ( !empty( $payment_id ) && $order->get_customer_id() ) {
 				sp_wc_save_token( $payment_id, null, null, $order->get_customer_id() );
             }
-            $order->update_meta_data( '_sp_transaction_id', $payment_id );
-            // TODO: validate if it was success??
 
-            $order->payment_complete( $payment_id );
-            //
+            $payment = SimplePaymentPlugin::instance()->fetch( $payment_id );
+            $order->update_meta_data( '_sp_transaction_id', $payment_id );
+            $order->update_meta_data( '_sp_confirmation_code', $payment[ 'confirmation_code' ] );
+            $order->update_meta_data( '_sp_transaction_code', $payment[ 'transaction_id' ] );
+
+            // TODO: validate if it was success??
+            if ( $payment[ 'confirmation_code' ] ) {
+                $order->payment_complete( $payment_id );
+            } else {
+                $order->add_order_note( sprintf( __( 'Payment failed.', 'simple-payment' ), $payment_id ) );
+            }
+            if ( !$redirect ) {
+                return;
+            }    //
             // $order->payment_failed();
 
            // Remove cart.
-            if ( isset( WC()->cart ) ) {
-                WC()->cart->empty_cart();
+            if ( function_exists( 'wc_empty_cart' ) ) {
+                wc_empty_cart();
             }
-
+            
             // TODO: consider using SPWP::redirect()
             $target = isset( $_REQUEST[ 'target' ] ) ? $_REQUEST[ 'target' ] : '';
             $targets = explode( ':', $target );
@@ -407,10 +446,11 @@ function sp_wc_gateway_init() {
                   break;
                 case '_self':
                 default:
-                    echo '<html><head><script type="text/javascript"> location.replace("' . $url . '"); </script></head><body></body</html>'; 
-                    wp_redirect( $url );
+                    if ( true || headers_sent() )  // It cannot use redirect when it is IFRAME as it seems since it loses cookies
+                        echo '<html><head><script type="text/javascript"> location.replace("' . $url . '"); </script></head><body></body</html>'; 
+                    else wp_redirect( $url, 303 );
             }
-            wp_die();
+            die();
             return;
             //WC()->session->save_payment_method 	= null;
 		    //WC()->session->selected_token_id 	= null;
@@ -643,7 +683,7 @@ function sp_wc_gateway_init() {
         }
 
         protected function product( $params ) {
-            $product = sprintf( $this->get_option( 'product' ), isset( $params[ 'id' ] ) ) ? : $params[ 'id' ]; 
+            $product = sprintf( $this->get_option( 'product' ), isset( $params[ 'number' ] ) ? $params[ 'number' ] : $params[ 'id' ] ); 
             if ( isset( $params[ 'line_items' ] ) && count( $params[ 'line_items' ] ) == 1 && $this->get_option( 'single_item_use_name' ) == 'yes' ) {
                 $product = array_shift( $params[ 'line_items' ] );
                 $product = $product->get_name();
@@ -753,7 +793,9 @@ function sp_wc_gateway_init() {
 
             if ( $url === true ) {
                 $order->payment_complete( $this->SPWP->payment_id );
-
+                $payment = SimplePaymentPlugin::instance()->fetch( $this->SPWP->payment_id );
+                $order->update_meta_data( '_sp_confirmation_code', $payment[ 'confirmation_code' ] );
+                $order->update_meta_data( '_sp_transaction_code', $payment[ 'transaction_id' ] );
                 // Remove cart.
                 if ( isset( WC()->cart ) ) {
                     WC()->cart->empty_cart();
@@ -823,9 +865,10 @@ function sp_wc_gateway_init() {
         public function process_refund( $order_id, $amount = null, $reason = '' ) {
             $order = wc_get_order( $order_id );
             $params = [];
-            $params[ SimplePayment::PRODUCT ] = get_the_title( $order->get_id() );
-            $params[ SimplePayment::AMOUNT ] = $amount;
-            return( $this->SPWP->payment_refund( $order->get_transaction_id(), $params ) );
+            $params[ SimplePaymentPlugin::PRODUCT ] = get_the_title( $order->get_id() );
+            $params[ SimplePaymentPlugin::AMOUNT ] = $amount;
+            // TODO: need to raise exception when fails
+            return( SimplePaymentPlugin::instance()->payment_refund( $order->get_transaction_id(), $params ) );
         }
 
 		/**

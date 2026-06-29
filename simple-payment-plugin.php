@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.4.7
+ * Version: 2.4.8
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -274,9 +274,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
 	function status( $params = [] ) {
 		$params = apply_filters( 'sp_payment_status_filter', $params, $this->engine );
-		$data = [];
-		if ( isset( $params[ 'payment_id' ] )) $data = $this->fetch( $params[ 'payment_id' ] );
-		$status = false; 
+		$data = isset( $params[ 'payment_id' ] ) ? $this->fetch( $params[ 'payment_id' ] ) : [];
+		$status = false;
 		if ( $code = parent::status( array_merge( $data, $params ) ) ) {
 			$params[ 'confirmation_code' ] = $code;
 			$status = self::update( $this->payment_id ? : $this->engine->transaction, [
@@ -300,8 +299,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 			$args = [
 				'status' => self::TRANSACTION_SUCCESS
 			];
-			if ( $this->engine->confirmation_code) $args[ 'confirmation_code' ] = $this->engine->confirmation_code;
-			if ( $this->engine->payments) $args[ 'payments' ] = $this->engine->payments;
+			if ( $this->engine->confirmation_code ) $args[ 'confirmation_code' ] = $this->engine->confirmation_code;
+			if ( $this->engine->payments ) $args[ 'payments' ] = $this->engine->payments;
 			if ( $this->engine->amount) $args[ 'amount' ] = $this->engine->amount;
 			if ( $this->param( 'user_create' ) != 'disabled' && $this->param( 'user_create_step' ) == 'post' && !get_current_user_id() ) {
 				$user_id = $this->create_user( $params );
@@ -407,6 +406,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
 		$engine = isset( $_REQUEST[ 'engine' ] ) ? sanitize_text_field( $_REQUEST[ 'engine' ] ) : ( isset( $ops[ 2 ] ) && $ops[ 2 ] ? $ops[ 2 ] : self::param( 'engine' ) );
 		$op = isset( $_REQUEST[ self::OP ] ) ? strtolower( sanitize_text_field( $_REQUEST[ self::OP ] ) ) : strtolower( isset( $ops[ 3 ] ) ? $ops[ 3 ] : '' );
+		do_action( 'sp_pre_callback_' . $op, $_REQUEST, $engine );
+		do_action( 'sp_pre_callback', $op, $_REQUEST, $engine );
 		try {
 			switch ( $op ) {
 				case self::OPERATION_REDIRECT:
@@ -486,7 +487,8 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 				case self::OPERATION_STATUS:
 					try {
 						$this->setEngine( $engine );
-						$this->status( $_REQUEST ); 
+						set_transient( 'sp-payment-last', $_REQUEST );
+						$this->status( $_REQUEST );
 					} catch ( Exception $e ) {
 						$status[ 'transaction_id' ] = $this->engine->transaction;
 						$status[ 'payment_id' ] = $this->payment_id;
@@ -528,7 +530,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 			$status[ 'status' ] = $e->getCode();
 			$status[ 'message' ] = self::set_message( $e->getMessage() );
 			$url .= ( strpos( $url, '?' ) ? '&' : '?' ) . http_build_query( $status );
-		} 
+		}
+		do_action( 'sp_callback_' . $op, $_REQUEST, $engine );
+		do_action( 'sp_callback', $op, $_REQUEST, $engine );
 		if ( $url ) {
 			if ( $op == 'purchase ') $target = '';
 			else $target = isset( $target ) && $target ? $target : ( isset( $_REQUEST[ 'target' ] ) ? $_REQUEST[ 'target' ] : null );
@@ -866,7 +870,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
 	public function fetch( $id, $engine = null ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix.self::$table_name;
+		$table_name = $wpdb->prefix . self::$table_name;
 		if ( !$engine ) {
 			$sql = "SELECT * FROM " . $table_name . " WHERE `id` = %d LIMIT 1";
 			$sql = sprintf( $sql, absint( $id ) );
@@ -876,7 +880,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 		}
 		$result = $wpdb->get_results( $sql , 'ARRAY_A' );
 		$data = count( $result ) ? $result[ 0 ] : null;
-		if ( $data && isset( $data[ 'parameters' ] ) && $data[ 'parameters' ] ) $data = array_merge( $data, json_decode( $data[ 'parameters' ], true ) );
+		if ( $data && isset( $data[ 'parameters' ] ) && $data[ 'parameters' ] ) $data = array_merge( json_decode( $data[ 'parameters' ], true ), $data );
 		return( $data );
 	}
 
@@ -891,7 +895,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
      */
 	public function load_textdomain() {
 		$lang_dir = apply_filters( 'sp_languages_directory', SPWP_PLUGIN_DIR . '/languages/' );
-		load_plugin_textdomain( 'simple-payment', $lang_dir, str_replace(WP_PLUGIN_DIR, '', $lang_dir) );
+		load_plugin_textdomain( 'simple-payment', $lang_dir, str_replace( WP_PLUGIN_DIR, '', $lang_dir ) );
 	}
 
 	public static function verify( $id = null, $counter = true ) {
@@ -979,6 +983,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 			}
 			unset( $params[ 'token' ] );
 		}
+		if ( self::param( 'transaction_log_disabled', false ) ) return( false );
 
 		foreach ( $params as $field => $value ) $params[ $field ] = $this->sanitize_pci_dss( $value );
 		if ( !isset( $params[ 'payment_id' ] ) ) {
@@ -989,11 +994,11 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 		if ( !isset( $params[ 'user_agent' ] ) ) $params[ 'user_agent' ] = $_SERVER[ 'HTTP_USER_AGENT' ];
 		if ( $id ) {
 			$params[ 'modified' ] = current_time( 'mysql' );
-			$result = $wpdb->update( $wpdb->prefix . 'sp_' . $tablename, $params, [ 'id' => $id ] );
+			$result = $wpdb->update( $wpdb->prefix . 'sp_' . $tablename, apply_filters( 'sp_transaction_save', $params ), [ 'id' => $id ] );
 		} else {
 			$params[ 'modified' ] = current_time( 'mysql' );
 			$params[ 'created' ] = current_time( 'mysql' );
-			$result = $wpdb->insert( $wpdb->prefix . 'sp_' . $tablename, $params );
+			$result = $wpdb->insert( $wpdb->prefix . 'sp_' . $tablename, apply_filters( 'sp_transaction_save', $params ) );
 		}
 		// TODO: use and keep token
 		return( $result != null ? $wpdb->insert_id : false );
