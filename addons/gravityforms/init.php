@@ -95,7 +95,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 		parent::pre_init();
 		add_action( 'sp_payment_success', [ $this, 'payment_success' ] );
 		add_action( 'sp_payment_status', function( $params, $engine ) {
-			if ( $params[ 'source' ] == 'gravityforms' && $params[ 'confirmation_code' ] ) $this->payment_success( $this->SPWP->fetch( $params[ 'payment_id' ], $engineß ) );
+			if ( $params[ 'source' ] == 'gravityforms' && $params[ 'confirmation_code' ] ) $this->payment_success( $this->SPWP->fetch( $params[ 'payment_id' ], $engine ) );
 		}, 50, 2 );
 		add_action( 'sp_payment_verify', function( $params, $engine ) {
 			if ( $params[ 'confirmation_code' ] ) $this->payment_success( $params );
