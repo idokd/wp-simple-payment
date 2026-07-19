@@ -911,6 +911,192 @@ function sp_wc_gateway_init() {
     </div>
     <?php } ?>
     */
-  } 
+  }
 
 }
+
+/* ============================================================================
+ * Companion (incoming orders) handling.
+ *
+ * When THIS WooCommerce store is the third party that RECEIVES purchases as
+ * orders, created via the WooCommerce REST API by a Simple Payment "WooCommerce"
+ * engine running on another (source) website, this companion:
+ *   1. exposes / validates / keeps the sp_* meta data sent with the order,
+ *   2. on a successful payment, optionally skips "processing" and sets the order
+ *      directly to "completed" (when the setting is enabled),
+ *   3. redirects the customer back to the originating site once the order is
+ *      paid correctly (breaking out of the iframe / popup).
+ * ==========================================================================*/
+
+// The meta keys the engine sends along with the remote order.
+function sp_wc_incoming_meta_keys() {
+    return( apply_filters( 'sp_wc_incoming_meta_keys', [
+        'sp_return_url', 'sp_success_url', 'sp_cancel_url', 'sp_error_url',
+        'sp_status_url', 'sp_payment_id', 'sp_source', 'sp_product', 'sp_product_code',
+    ] ) );
+}
+
+function sp_wc_incoming_enabled() {
+    return( (bool) SimplePaymentPlugin::param( 'wc_incoming.enabled' ) );
+}
+
+function sp_wc_incoming_autocomplete_enabled() {
+    return( (bool) SimplePaymentPlugin::param( 'wc_incoming.autocomplete' ) );
+}
+
+function sp_wc_incoming_redirect_enabled() {
+    return( (bool) SimplePaymentPlugin::param( 'wc_incoming.redirect' ) );
+}
+
+// Whether a given order originated from a Simple Payment "WooCommerce" engine.
+function sp_wc_incoming_is( $order ) {
+    if ( !$order || !is_a( $order, 'WC_Order' ) ) return( false );
+    if ( 'yes' === $order->get_meta( '_sp_incoming' ) ) return( true );
+    return( (bool) ( $order->get_meta( 'sp_source' ) || $order->get_meta( 'sp_payment_id' )
+        || $order->get_meta( 'sp_return_url' ) || $order->get_meta( 'sp_success_url' ) ) );
+}
+
+function sp_wc_incoming_is_url_key( $key ) {
+    return( '_url' === substr( $key, -4 ) );
+}
+
+// Resolve a meta value from an incoming REST request (sp_ key, plain key or meta_data).
+function sp_wc_incoming_request_value( $request, $key ) {
+    if ( isset( $request[ $key ] ) && '' !== $request[ $key ] ) return( $request[ $key ] );
+    $plain = preg_replace( '/^sp_/', '', $key );
+    if ( $plain !== $key && isset( $request[ $plain ] ) && '' !== $request[ $plain ] ) return( $request[ $plain ] );
+    $meta = isset( $request[ 'meta_data' ] ) ? $request[ 'meta_data' ] : null;
+    if ( is_array( $meta ) ) {
+        foreach ( $meta as $m ) {
+            $mk = is_array( $m ) ? ( $m[ 'key' ] ?? null ) : ( is_object( $m ) ? ( $m->key ?? null ) : null );
+            $mv = is_array( $m ) ? ( $m[ 'value' ] ?? null ) : ( is_object( $m ) ? ( $m->value ?? null ) : null );
+            if ( $mk === $key && null !== $mv && '' !== $mv ) return( $mv );
+        }
+    }
+    return( null );
+}
+
+function sp_wc_incoming_sanitize( $key, $value ) {
+    return( sp_wc_incoming_is_url_key( $key ) ? esc_url_raw( $value ) : sanitize_text_field( $value ) );
+}
+
+// 1a. Register the sp_* order meta so it is exposed and sanitized on the REST API.
+add_action( 'init', function() {
+    if ( !sp_wc_incoming_enabled() || !post_type_exists( 'shop_order' ) || !function_exists( 'register_post_meta' ) ) return;
+    foreach ( sp_wc_incoming_meta_keys() as $key ) {
+        register_post_meta( 'shop_order', $key, [
+            'type' => 'string',
+            'single' => true,
+            'show_in_rest' => true,
+            'sanitize_callback' => sp_wc_incoming_is_url_key( $key ) ? 'esc_url_raw' : 'sanitize_text_field',
+            'auth_callback' => function() { return( current_user_can( 'edit_shop_orders' ) ); },
+        ] );
+    }
+}, 20 );
+
+// 1b. Receive, validate and keep the sp_* values when an order is created via REST.
+add_action( 'woocommerce_rest_insert_shop_order_object', 'sp_wc_incoming_rest_insert', 10, 3 );
+function sp_wc_incoming_rest_insert( $order, $request, $creating ) {
+    if ( !sp_wc_incoming_enabled() || !is_a( $order, 'WC_Order' ) ) return;
+    $found = false;
+    foreach ( sp_wc_incoming_meta_keys() as $key ) {
+        // Prefer a value already stored by WooCommerce (sent as meta_data), then the request.
+        $value = $order->get_meta( $key );
+        if ( '' === $value || null === $value ) $value = sp_wc_incoming_request_value( $request, $key );
+        if ( null === $value || '' === $value ) continue;
+        $value = sp_wc_incoming_sanitize( $key, $value );
+        if ( '' === $value ) continue;
+        $order->update_meta_data( $key, $value );
+        $found = true;
+    }
+    if ( $found ) {
+        $order->update_meta_data( '_sp_incoming', 'yes' );
+        $order->save();
+        do_action( 'sp_wc_incoming_order_created', $order, $request );
+    }
+}
+
+// 2. On a successful payment, skip "processing" and go directly to "completed".
+add_filter( 'woocommerce_payment_complete_order_status', function( $status, $order_id, $order = null ) {
+    if ( !sp_wc_incoming_enabled() || !sp_wc_incoming_autocomplete_enabled() ) return( $status );
+    $order = $order ? : wc_get_order( $order_id );
+    if ( sp_wc_incoming_is( $order ) ) return( 'completed' );
+    return( $status );
+}, 20, 3 );
+
+// 2b. Fallback: complete orders that reached "processing" without the filter above.
+add_action( 'woocommerce_order_status_processing', function( $order_id, $order = null ) {
+    if ( !sp_wc_incoming_enabled() || !sp_wc_incoming_autocomplete_enabled() ) return;
+    $order = $order ? : wc_get_order( $order_id );
+    if ( sp_wc_incoming_is( $order ) ) $order->update_status( 'completed', __( 'Auto completed by Simple Payment companion.', 'simple-payment' ) );
+}, 20, 2 );
+
+// 3. Redirect the customer back to the originating site once the order is paid.
+add_action( 'template_redirect', 'sp_wc_incoming_maybe_redirect', 20 );
+function sp_wc_incoming_maybe_redirect() {
+    if ( is_admin() || !sp_wc_incoming_enabled() || !sp_wc_incoming_redirect_enabled() ) return;
+    if ( !function_exists( 'is_order_received_page' ) || !is_order_received_page() ) return;
+    global $wp;
+    $order_id = absint( isset( $wp->query_vars[ 'order-received' ] ) ? $wp->query_vars[ 'order-received' ] : 0 );
+    if ( !$order_id ) return;
+    $order = wc_get_order( $order_id );
+    if ( !$order || !sp_wc_incoming_is( $order ) ) return;
+    // Validate the order key when present, so we only redirect the genuine buyer.
+    $key = isset( $_GET[ 'key' ] ) ? wc_clean( wp_unslash( $_GET[ 'key' ] ) ) : '';
+    if ( $key && !hash_equals( $order->get_order_key(), $key ) ) return;
+
+    $url = '';
+    if ( $order->is_paid() ) {
+        $url = $order->get_meta( 'sp_success_url' ) ? : $order->get_meta( 'sp_return_url' );
+    } elseif ( $order->has_status( 'cancelled' ) ) {
+        $url = $order->get_meta( 'sp_cancel_url' ) ? : $order->get_meta( 'sp_return_url' );
+    } elseif ( $order->has_status( 'failed' ) ) {
+        $url = $order->get_meta( 'sp_error_url' ) ? : $order->get_meta( 'sp_return_url' );
+    }
+    $url = apply_filters( 'sp_wc_incoming_redirect_url', $url, $order );
+    if ( $url ) sp_wc_incoming_break_out( $url );
+}
+
+// Break out of the iframe / popup and navigate the top window back to the source site.
+function sp_wc_incoming_break_out( $url ) {
+    $url = esc_url_raw( $url );
+    if ( !$url ) return;
+    $json = wp_json_encode( $url );
+    nocache_headers();
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' . esc_html__( 'Redirecting…', 'simple-payment' ) . '</title>';
+    echo '<script type="text/javascript">try{(window.top||window).location.replace(' . $json . ');}catch(e){window.location.replace(' . $json . ');}</script>';
+    echo '</head><body><noscript><a href="' . esc_url( $url ) . '">' . esc_html__( 'Continue', 'simple-payment' ) . '</a></noscript></body></html>';
+    exit;
+}
+
+// Companion settings, shown on the WooCommerce tab of the Simple Payment settings.
+add_filter( 'sp_admin_sections', function( $sections ) {
+    $sections[ 'wc_incoming_settings' ] = [
+        'title' => __( 'WooCommerce Incoming Orders (Companion)', 'simple-payment' ),
+        'description' => __( 'When this store receives purchases as orders from a remote Simple Payment "WooCommerce" engine, configure how paid orders are completed and how the customer is returned to the originating site.', 'simple-payment' ),
+        'section' => 'woocommerce'
+    ];
+    return( $sections );
+} );
+
+add_filter( 'sp_admin_settings', function( $settings ) {
+    $settings[ 'wc_incoming.enabled' ] = [
+        'title' => __( 'Enable Companion Handling', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Receive and keep the sp_* parameters sent with REST orders and act on them.', 'simple-payment' )
+    ];
+    $settings[ 'wc_incoming.autocomplete' ] = [
+        'title' => __( 'Auto Complete Paid Orders', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'On successful payment, skip Processing and set the order directly to Completed.', 'simple-payment' )
+    ];
+    $settings[ 'wc_incoming.redirect' ] = [
+        'title' => __( 'Redirect Back After Payment', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Once the order is paid, return the customer to the originating site (success / return url).', 'simple-payment' )
+    ];
+    return( $settings );
+} );

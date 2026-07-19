@@ -217,7 +217,7 @@ class SimplePaymentAdmin {
 
 		$tab = isset( $_GET[ 'tab' ] ) ? sanitize_text_field( $_GET[ 'tab' ] ) : 'sp';
 		$section = $tab;
-		$tabs = apply_filters( 'sp_admin_tabs', [ 'General', 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'Meshulam',  'YaadPay', 'iCredit', 'CreditGuard', 'Credit2000', 'License', 'Extensions', 'Shortcode', 'Instructions' ] );
+		$tabs = apply_filters( 'sp_admin_tabs', [ 'General', 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'Meshulam',  'YaadPay', 'iCredit', 'CreditGuard', 'Credit2000', 'WooCommerce', 'License', 'Extensions', 'Shortcode', 'Instructions' ] );
 ?>
 <div class="wrap">
 	<h1><?php _e( 'Simple Payment Settings', 'simple-payment' ); ?></h1>
