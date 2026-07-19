@@ -19,7 +19,7 @@ Simple Payment works with many payment gateways, and enables you to add you cust
 
 Major features in Simple Payment include:
 
-* Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount, PayMe, iCredit, Credit2000)
+* Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount, PayMe, iCredit, Credit2000, WooCommerce)
 * Selection of Payment Forms to choose from (Basic, Bootstrap, Legacy, Donation)
 * Works with plugins such as: Gutenberg Editor, WooCommerce, WPJobBoard, GravityForms, Form Maker.
 * Extend workflow with Zapier - get triggers and preform actions on payments via Zapier.
@@ -91,6 +91,9 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.1 =
+* Added WooCommerce payment engine: create the purchase as an order on a third party WooCommerce website via its REST API, and open the returned redirect url in an iframe / popup for payment
 
 = 2.5.0 =
 *Release Data - 14 Jul 2026*

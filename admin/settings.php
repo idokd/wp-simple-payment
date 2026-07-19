@@ -104,13 +104,18 @@ $sp_sections = [
 		'description' => __('Setup your Simple Payment to accept Credit 2000 Payments', 'simple-payment'),
 		'section' => 'credit2000'
 	],
+	'woocommerce_settings' => [
+		'title' => __( 'WooCommerce Gateway Settings', 'simple-payment' ),
+		'description' => __( 'Take the purchase and create it as an order on a third party WooCommerce website (via its REST API). The order response is expected to return a redirect url which is opened in an iframe / popup so the purchase is paid on the remote website.', 'simple-payment' ),
+		'section' => 'woocommerce'
+	],
 ];
 
 $sp_settings = [
 	'engine' => [
 		'title' => __('Engine', 'simple-payment'),
 		'type' => 'select',
-		'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'CreditGuard' => __( 'CreditGuard', 'simple-payment' ), 'Meshulam' => __( 'Meshulam', 'simple-payment' ), 'YaadPay' => __( 'YaadPay', 'simple-payment' ),'Credit2000' => __('Credit2000', 'simple-payment'), 'Custom' => __('Custom', 'simple-payment'), 'Test' => __( 'Test', 'simple-payment' ) ] ],
+		'options' => ['PayPal' => __('PayPal', 'simple-payment'), 'Cardcom' => __('Cardcom', 'simple-payment'), 'iCount' => __('iCount', 'simple-payment'), 'PayMe' => __('PayMe', 'simple-payment'), 'iCredit' => __('iCredit', 'simple-payment'), 'CreditGuard' => __( 'CreditGuard', 'simple-payment' ), 'Meshulam' => __( 'Meshulam', 'simple-payment' ), 'YaadPay' => __( 'YaadPay', 'simple-payment' ),'Credit2000' => __('Credit2000', 'simple-payment'), 'WooCommerce' => __( 'WooCommerce', 'simple-payment' ), 'Custom' => __('Custom', 'simple-payment'), 'Test' => __( 'Test', 'simple-payment' ) ] ],
 	'mode' => [ //Mode
 		'title' => __( 'Mode', 'simple-payment' ),
 		'type' => 'radio',
@@ -652,6 +657,62 @@ $sp_settings = [
 		'type' => 'textarea'
 	],
 
+	'woocommerce.url' => [
+		'title' => __( 'WooCommerce Site URL', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'description' => __( 'The third party WooCommerce website address, e.g. https://shop.example.com', 'simple-payment' )
+	],
+	'woocommerce.consumer_key' => [
+		'title' => __( 'Consumer Key', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'description' => __( 'REST API consumer key (ck_...) created on the remote WooCommerce site.', 'simple-payment' )
+	],
+	'woocommerce.consumer_secret' => [
+		'title' => __( 'Consumer Secret', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'type' => 'password',
+		'description' => __( 'REST API consumer secret (cs_...) created on the remote WooCommerce site.', 'simple-payment' )
+	],
+	'woocommerce.order_status' => [
+		'title' => __( 'Create Order With Status', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'type' => 'select',
+		'options' => [ 'pending' => __( 'Pending payment', 'simple-payment' ), 'on-hold' => __( 'On hold', 'simple-payment' ), 'processing' => __( 'Processing', 'simple-payment' ) ]
+	],
+	'woocommerce.redirect_field' => [
+		'title' => __( 'Redirect Field', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'description' => __( 'Field on the order response that holds the redirect (payment) url. Defaults to WooCommerce\'s payment_url when empty.', 'simple-payment' )
+	],
+	'woocommerce.product_id' => [
+		'title' => __( 'Remote Product ID', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'description' => __( 'Optional. A WooCommerce product id on the remote site to use as the order line. When empty the amount is added as a fee line.', 'simple-payment' )
+	],
+	'woocommerce.payment_method' => [
+		'title' => __( 'Payment Method ID', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'description' => __( 'Optional. The payment_method id set on the created order (default: simple_payment).', 'simple-payment' )
+	],
+	'woocommerce.payment_method_title' => [
+		'title' => __( 'Payment Method Title', 'simple-payment' ),
+		'section' => 'woocommerce_settings'
+	],
+	'woocommerce.paid_statuses' => [
+		'title' => __( 'Paid Statuses', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'description' => __( 'Comma separated order statuses considered as paid (default: processing,completed).', 'simple-payment' )
+	],
+	'woocommerce.namespace' => [
+		'title' => __( 'REST API Namespace', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'description' => __( 'WooCommerce REST API namespace (default: wc/v3).', 'simple-payment' )
+	],
+	'woocommerce.verify_ssl' => [
+		'title' => __( 'Verify SSL', 'simple-payment' ),
+		'section' => 'woocommerce_settings',
+		'type' => 'check'
+	],
 
 	'api_key' => [
 		'title' => __('API KEY', 'simple-payment'),
