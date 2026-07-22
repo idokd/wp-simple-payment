@@ -1069,15 +1069,27 @@ add_action( 'woocommerce_order_status_processing', function( $order_id, $order =
     if ( sp_wc_incoming_is( $order ) ) $order->update_status( 'completed', __( 'Auto completed by Simple Payment companion.', 'simple-payment' ) );
 }, 20, 2 );
 
-// The url to send the customer back to, based on the order outcome.
+// Log a companion diagnostic line (WooCommerce > Status > Logs, source sp-companion).
+// Enabled when WP_DEBUG is on, or via the sp_wc_incoming_debug filter.
+function sp_wc_incoming_log( $message ) {
+    if ( !apply_filters( 'sp_wc_incoming_debug', defined( 'WP_DEBUG' ) && WP_DEBUG ) ) return;
+    if ( function_exists( 'wc_get_logger' ) ) wc_get_logger()->info( $message, [ 'source' => 'sp-companion' ] );
+    else error_log( '[sp-companion] ' . $message );
+}
+
+// The url to send the customer back to, based on the order outcome. Reaching the
+// order-received page means the order was placed, so we always return a url:
+// success/return when paid or pending, cancel/error only for those statuses.
 function sp_wc_incoming_return_url( $order ) {
-    $url = '';
-    if ( $order->is_paid() ) {
-        $url = $order->get_meta( 'sp_success_url' ) ? : $order->get_meta( 'sp_return_url' );
-    } elseif ( $order->has_status( 'cancelled' ) ) {
+    if ( $order->has_status( 'cancelled' ) ) {
         $url = $order->get_meta( 'sp_cancel_url' ) ? : $order->get_meta( 'sp_return_url' );
     } elseif ( $order->has_status( 'failed' ) ) {
         $url = $order->get_meta( 'sp_error_url' ) ? : $order->get_meta( 'sp_return_url' );
+    } elseif ( $order->is_paid() ) {
+        $url = $order->get_meta( 'sp_success_url' ) ? : $order->get_meta( 'sp_return_url' );
+    } else {
+        // pending / on-hold: return the customer neutrally; the source verifies later.
+        $url = $order->get_meta( 'sp_return_url' ) ? : $order->get_meta( 'sp_success_url' );
     }
     return( apply_filters( 'sp_wc_incoming_redirect_url', $url, $order ) );
 }
@@ -1101,11 +1113,12 @@ function sp_wc_incoming_received_order() {
 // Primary: template_redirect (clean server redirect before output).
 add_action( 'template_redirect', 'sp_wc_incoming_maybe_redirect', 20 );
 function sp_wc_incoming_maybe_redirect() {
-    if ( is_admin() || !sp_wc_incoming_enabled() || !sp_wc_incoming_redirect_enabled() ) return;
+    if ( is_admin() ) return;
+    if ( !sp_wc_incoming_enabled() ) return;
+    if ( !sp_wc_incoming_redirect_enabled() ) return;
     $order = sp_wc_incoming_received_order();
-    if ( !$order || !sp_wc_incoming_is( $order ) ) return;
-    $url = sp_wc_incoming_return_url( $order );
-    if ( $url ) sp_wc_incoming_break_out( $url );
+    if ( !$order ) return; // not an order-received page
+    sp_wc_incoming_maybe_redirect_order( $order, 'template_redirect' );
 }
 
 // Fallback: some themes / gateways reach the thank-you page without matching the
@@ -1113,11 +1126,27 @@ function sp_wc_incoming_maybe_redirect() {
 // fires there with the order id (redirect happens via JS since output started).
 add_action( 'woocommerce_thankyou', 'sp_wc_incoming_thankyou_redirect', 1 );
 function sp_wc_incoming_thankyou_redirect( $order_id ) {
-    if ( is_admin() || !sp_wc_incoming_enabled() || !sp_wc_incoming_redirect_enabled() ) return;
+    if ( is_admin() ) return;
+    if ( !sp_wc_incoming_enabled() || !sp_wc_incoming_redirect_enabled() ) return;
     $order = wc_get_order( $order_id );
-    if ( !$order || !sp_wc_incoming_is( $order ) ) return;
+    if ( !$order ) return;
+    sp_wc_incoming_maybe_redirect_order( $order, 'thankyou' );
+}
+
+// Shared decision + logging for the return redirect.
+function sp_wc_incoming_maybe_redirect_order( $order, $where ) {
+    $id = $order->get_id();
+    if ( !sp_wc_incoming_is( $order ) ) {
+        sp_wc_incoming_log( "$where: order $id is not an incoming Simple Payment order (no sp_* meta) - not redirecting" );
+        return;
+    }
     $url = sp_wc_incoming_return_url( $order );
-    if ( $url ) sp_wc_incoming_break_out( $url );
+    if ( !$url ) {
+        sp_wc_incoming_log( "$where: order $id (status={$order->get_status()}) has no sp_success_url / sp_return_url meta - not redirecting" );
+        return;
+    }
+    sp_wc_incoming_log( "$where: order $id (status={$order->get_status()}) redirecting to $url" );
+    sp_wc_incoming_break_out( $url );
 }
 
 // Redirect the customer back to the source site. Navigates the current window
@@ -1127,15 +1156,16 @@ function sp_wc_incoming_break_out( $url ) {
     $url = esc_url_raw( $url );
     if ( !$url ) return;
     $url = apply_filters( 'sp_wc_incoming_break_out_url', $url );
-    if ( !headers_sent() ) {
-        nocache_headers();
-        wp_redirect( $url );
-        exit;
-    }
+    // Use a client-side redirect (meta refresh + JS) rather than wp_redirect: it
+    // works cross-domain regardless of security plugins that filter wp_redirect,
+    // and navigates the current window only.
+    if ( !headers_sent() ) nocache_headers();
     $json = wp_json_encode( $url );
-    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' . esc_html__( 'Redirecting…', 'simple-payment' ) . '</title>';
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8">';
+    echo '<meta http-equiv="refresh" content="0;url=' . esc_attr( $url ) . '">';
+    echo '<title>' . esc_html__( 'Redirecting…', 'simple-payment' ) . '</title>';
     echo '<script type="text/javascript">window.location.replace(' . $json . ');</script>';
-    echo '</head><body><noscript><a href="' . esc_url( $url ) . '">' . esc_html__( 'Continue', 'simple-payment' ) . '</a></noscript></body></html>';
+    echo '</head><body><a href="' . esc_url( $url ) . '">' . esc_html__( 'Continue', 'simple-payment' ) . '</a></body></html>';
     exit;
 }
 
