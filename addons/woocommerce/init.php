@@ -1017,8 +1017,41 @@ function sp_wc_incoming_rest_insert( $order, $request, $creating ) {
     }
     if ( $found ) {
         $order->update_meta_data( '_sp_incoming', 'yes' );
+        // The source site cannot know which gateways exist here, so assign a
+        // payment method the companion actually has (or let the customer choose).
+        sp_wc_incoming_assign_payment_method( $order );
         $order->save();
         do_action( 'sp_wc_incoming_order_created', $order, $request );
+    }
+}
+
+// Registered payment gateways on this (companion) site, excluding our own gateway.
+function sp_wc_incoming_gateways() {
+    $list = [];
+    if ( !function_exists( 'WC' ) || !WC()->payment_gateways() ) return( $list );
+    foreach ( WC()->payment_gateways()->payment_gateways() as $gateway ) {
+        if ( 'simple-payment' === $gateway->id ) continue; // avoid pointing back at ourselves
+        $list[ $gateway->id ] = $gateway;
+    }
+    return( $list );
+}
+
+// Assign the gateway chosen for incoming orders (or normalise an unknown one).
+function sp_wc_incoming_assign_payment_method( $order ) {
+    $gateways = sp_wc_incoming_gateways();
+    $chosen = SimplePaymentPlugin::param( 'wc_incoming.payment_method' );
+    $chosen = apply_filters( 'sp_wc_incoming_payment_method', $chosen, $order, $gateways );
+    if ( $chosen && isset( $gateways[ $chosen ] ) ) {
+        // set_payment_method() with a gateway object sets both the id and title.
+        $order->set_payment_method( $gateways[ $chosen ] );
+        return;
+    }
+    // No explicit choice: if the source sent a method this site does not have,
+    // clear it so the remote payment page cleanly lets the customer choose.
+    $current = $order->get_payment_method();
+    if ( $current && !isset( $gateways[ $current ] ) ) {
+        $order->set_payment_method( '' );
+        $order->set_payment_method_title( '' );
     }
 }
 
@@ -1110,6 +1143,18 @@ add_filter( 'sp_admin_settings', function( $settings ) {
         'type' => 'check',
         'section' => 'wc_incoming_settings',
         'description' => __( 'Once the order is paid, return the customer to the originating site (success / return url).', 'simple-payment' )
+    ];
+    $options = [ '' => __( 'Let the customer choose on the payment page', 'simple-payment' ) ];
+    foreach ( sp_wc_incoming_gateways() as $id => $gateway ) {
+        $title = $gateway->get_method_title() ? : $gateway->get_title();
+        $options[ $id ] = ( $title ? $title : $id ) . ' (' . $id . ')';
+    }
+    $settings[ 'wc_incoming.payment_method' ] = [
+        'title' => __( 'Incoming Orders Payment Method', 'simple-payment' ),
+        'type' => 'select',
+        'options' => $options,
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Gateway to assign to orders received from the source site (which cannot know this store\'s gateways). Leave on "Let the customer choose" to present the available gateways on the payment page.', 'simple-payment' )
     ];
     return( $settings );
 } );

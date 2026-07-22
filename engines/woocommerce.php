@@ -80,14 +80,23 @@ class WooCommerce extends Engine {
     ];
 
     $order = [
-      'payment_method' => $this->param( 'payment_method' ) ? : 'simple_payment',
-      'payment_method_title' => $this->param( 'payment_method_title' ) ? : SimplePayment::param( 'engine' ),
       'set_paid' => false,
       'status' => $this->param( 'order_status' ) ? : 'pending',
       'currency' => $currency,
       'billing' => $this->billing( $params ),
       'meta_data' => [],
     ];
+
+    // Only set a payment method when the merchant explicitly configured one: the
+    // remote (companion) site owns the list of available gateways, so we do not
+    // assume a slug here. Left empty, the companion picks the gateway (and the
+    // customer chooses on the remote payment page).
+    $payment_method = $this->param( 'payment_method' );
+    if ( $payment_method ) {
+      $order[ 'payment_method' ] = $payment_method;
+      $payment_method_title = $this->param( 'payment_method_title' );
+      if ( $payment_method_title ) $order[ 'payment_method_title' ] = $payment_method_title;
+    }
 
     // The purchase total: either a configured product line or an arbitrary fee line.
     $product_id = $this->param( 'product_id' );

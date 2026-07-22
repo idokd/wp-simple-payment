@@ -692,7 +692,7 @@ $sp_settings = [
 	'woocommerce.payment_method' => [
 		'title' => __( 'Payment Method ID', 'simple-payment' ),
 		'section' => 'woocommerce_settings',
-		'description' => __( 'Optional. The payment_method id set on the created order (default: simple_payment).', 'simple-payment' )
+		'description' => __( 'Optional. Leave empty unless you know a specific gateway slug on the remote site. When empty, the remote (companion) site chooses the gateway.', 'simple-payment' )
 	],
 	'woocommerce.payment_method_title' => [
 		'title' => __( 'Payment Method Title', 'simple-payment' ),

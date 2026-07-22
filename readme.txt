@@ -95,6 +95,7 @@ I hope it is useful for you and look forward to reading your reviews! 😉 Thank
 = 2.5.1 =
 * Added WooCommerce payment engine: create the purchase as an order on a third party WooCommerce website via its REST API, and open the returned redirect url in an iframe / popup for payment
 * Added WooCommerce companion handling for the receiving store: exposes / validates / keeps the sp_* order parameters on the REST API, can auto complete paid orders (skipping processing), and redirects the customer back to the originating site once the order is paid
+* WooCommerce companion: the receiving store selects the gateway for incoming orders (the source site does not need to know the remote gateways); unknown incoming payment methods are cleared so the customer can choose on the payment page
 
 = 2.5.0 =
 *Release Data - 14 Jul 2026*
