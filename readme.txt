@@ -1,7 +1,7 @@
 === Simple Payment ===
 Contributors: idokd
 Donate link: https://simple-payment.yalla-ya.com/get
-Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal
+Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
 Stable tag: 2.5.0
@@ -9,38 +9,53 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Simple Payment enables a simple, fast and powerful integration to process payments. Convert any Post/Page to a product - easy and very customizable tool
+Turn any post, page or form into a "Buy Now" — collect credit-card payments, donations and recurring charges through the gateway you already use. No store required.
 
 == Description ==
 
-Simple Payment enables a simple, fast and powerful integration to process payments, converting any post or page to a Product or Service, no need to install complicated plugins.
+**Selling something shouldn't require a full shopping cart.** Simple Payment turns any WordPress post, page, block, form or button into a ready-to-pay product or service in minutes — and routes the money through the payment gateway you already trust. No bloated store to configure, no checkout to rebuild: just a shortcode (or a block, or an Elementor widget) and you are taking payments.
 
-Simple Payment works with many payment gateways, and enables you to add you customized gateway easily
+From a single "Donate" button to installment plans, saved cards, subscriptions and multi-gateway checkouts, Simple Payment scales from a personal blog to a commercial site — while keeping sensitive card data out of your database.
 
-Major features in Simple Payment include:
+= Why you'll love it =
 
-* Integrate any of the supported Payment gateways (PayPal, Cardcom, iCount, PayMe, iCredit, Credit2000, WooCommerce)
-* Selection of Payment Forms to choose from (Basic, Bootstrap, Legacy, Donation)
-* Works with plugins such as: Gutenberg Editor, WooCommerce, WPJobBoard, GravityForms, Form Maker.
-* Extend workflow with Zapier - get triggers and preform actions on payments via Zapier.
-* Donation Form for free entry amount
-* PCI-DSS Data Protection Ready (All sensitive are masked in database)
-* Convert Any Post / Page to a Service/ Product
-* Automatically takes Post/Page Title as Product Name
-* Simple integrate Buy Button everywhere
-* Custom Field: amount - will be the amount to be charged
-* Full Form with Templates: Bootstrap, Legacy
-* Support for personalized theme payment forms templates
-* Simple Use of Shortcode to convert any post/page
-* Enable Multiple Payment Engines
-* Transactions / Payments Log with Filtering
-* Export Transactions to CSV
+* **Sell in minutes, not days.** Drop one shortcode on any page and you have a working, styled payment form. Post/page titles become the product name and a custom field becomes the price — automatically.
+* **Use the gateway you already have.** One consistent form and workflow in front of many gateways — switch providers without rebuilding your pages.
+* **Built for real money flows.** Installments, monthly subscriptions / recurring, saved-card tokenization, refunds, invoices/receipts, and automatic transaction verification.
+* **Beautiful, flexible forms.** Multiple templates (Bootstrap, Legacy, Donation, free-amount), inline, IFRAME or modal display, and full support for your own theme templates.
+* **Privacy first.** PCI-DSS friendly: card data is masked/redacted before anything touches the database, and old records can be auto-archived and purged.
+* **Developer friendly.** A rich set of actions and filters, a documented Engine API to extend any gateway or build your own, plus a full transactions log with filtering and CSV export.
 
-Currently on Beta: PayMe - please contact if require assistance.
+= Supported payment gateways (Engines) =
 
-Soon to be released: Pelecard, Tranzilla, CreditGuard
+PayPal, Cardcom, iCount, PayMe, iCredit, CreditGuard, Meshulam, YaadPay, Credit2000, WooCommerce (third-party site), plus a Custom engine for anything else and a Test engine for development.
 
-PS: You'll need an [Simple Payment API key for advanced gateways](https://simple-payment.yalla-ya.com/get/) to use it.  Keys are available for personal blogs; single domain, multiple domains, businesses and commercial sites.
+= NEW: Sell on one site, charge on another (WooCommerce engine) =
+
+The **WooCommerce engine** lets your site take a purchase and hand the actual payment off to a **separate, third-party WooCommerce store** over its REST API — perfect for agencies, marketplaces, franchises and multi-brand operators who want a central "storefront" and one billing store that owns the gateways, invoices and bookkeeping.
+
+* The customer clicks Buy on your site; Simple Payment creates the order on the remote WooCommerce store with the correct total and customer details.
+* The shopper pays on the remote store (in a redirect, popup or modal) using whatever gateways that store has enabled.
+* A bundled **Companion mode** on the receiving store validates and keeps the originating parameters, can auto-complete paid orders, silences the remote store's duplicate customer/admin emails for outsourced requests, and sends the customer straight back to your site when payment succeeds.
+* You keep a full record of every transaction on the originating site, with automatic status verification.
+
+= Works with your favorite tools =
+
+Gutenberg block editor, Elementor, WooCommerce, WPJobBoard, GravityForms and Form Maker — plus **Zapier** to trigger workflows (CRM, email, spreadsheets, fulfilment) on every payment.
+
+= What you can build =
+
+* One-click "Buy" / "Donate" buttons anywhere on your site
+* Pay-what-you-want donation forms with a free-entry amount
+* Membership, course or service checkouts on a single landing page
+* Installment plans and monthly subscriptions
+* Central storefront that bills through a separate WooCommerce store
+
+Currently on Beta: PayMe - please contact if you require assistance.
+
+Soon to be released: Pelecard, Tranzila.
+
+PS: You'll need a [Simple Payment API key for advanced gateways](https://simple-payment.yalla-ya.com/get/) to use it. Keys are available for personal blogs; single domain, multiple domains, businesses and commercial sites.
 
 == Installation ==
 
@@ -58,7 +73,23 @@ PS: You'll need an [Simple Payment API key for advanced gateways](https://simple
 
 = Which Payment Gateway this plugin support? =
 
-Currently it supports PayPal, Cardcom, iCount, PayMe, iCredit, with another new payment gateway added every month.
+Out of the box it supports PayPal, Cardcom, iCount, PayMe, iCredit, CreditGuard, Meshulam, YaadPay, Credit2000 and a third-party WooCommerce store, plus a Custom engine so you can add your own — with new gateways added regularly.
+
+= Do I need WooCommerce or a shopping cart? =
+
+No. Simple Payment works on its own — a shortcode, block, Elementor widget or button on any page is enough. It also integrates with WooCommerce (both as a WooCommerce gateway and by sending purchases to a separate WooCommerce store) if you want it.
+
+= Can I take the payment on a different WooCommerce website? =
+
+Yes. Choose the WooCommerce engine and point it at a third-party WooCommerce store's REST API (consumer key/secret). Simple Payment creates the order there with the correct total, the shopper pays on that store, and they are returned to your site automatically. Install Simple Payment on the receiving store too and enable Companion mode so it recognises the incoming orders, picks the gateway, optionally auto-completes them, mutes duplicate emails and redirects the buyer back. Ideal for agencies, marketplaces, franchises and central-billing setups.
+
+= Does it support installments, subscriptions and saved cards? =
+
+Yes, where the selected gateway supports them: installment plans, monthly/recurring subscriptions, saved-card tokenization and refunds are all available.
+
+= Can I display the payment in a popup or IFRAME? =
+
+Yes. Forms can be shown inline, in a modal, or in an IFRAME. (When paying through a third-party WooCommerce store, a redirect or popup is recommended, since external gateways such as Stripe cannot complete card authentication inside a cross-domain IFRAME.)
 
 = How does Simple Payment complies with PCI-DSS =
 
