@@ -1069,20 +1069,8 @@ add_action( 'woocommerce_order_status_processing', function( $order_id, $order =
     if ( sp_wc_incoming_is( $order ) ) $order->update_status( 'completed', __( 'Auto completed by Simple Payment companion.', 'simple-payment' ) );
 }, 20, 2 );
 
-// 3. Redirect the customer back to the originating site once the order is paid.
-add_action( 'template_redirect', 'sp_wc_incoming_maybe_redirect', 20 );
-function sp_wc_incoming_maybe_redirect() {
-    if ( is_admin() || !sp_wc_incoming_enabled() || !sp_wc_incoming_redirect_enabled() ) return;
-    if ( !function_exists( 'is_order_received_page' ) || !is_order_received_page() ) return;
-    global $wp;
-    $order_id = absint( isset( $wp->query_vars[ 'order-received' ] ) ? $wp->query_vars[ 'order-received' ] : 0 );
-    if ( !$order_id ) return;
-    $order = wc_get_order( $order_id );
-    if ( !$order || !sp_wc_incoming_is( $order ) ) return;
-    // Validate the order key when present, so we only redirect the genuine buyer.
-    $key = isset( $_GET[ 'key' ] ) ? wc_clean( wp_unslash( $_GET[ 'key' ] ) ) : '';
-    if ( $key && !hash_equals( $order->get_order_key(), $key ) ) return;
-
+// The url to send the customer back to, based on the order outcome.
+function sp_wc_incoming_return_url( $order ) {
     $url = '';
     if ( $order->is_paid() ) {
         $url = $order->get_meta( 'sp_success_url' ) ? : $order->get_meta( 'sp_return_url' );
@@ -1091,7 +1079,44 @@ function sp_wc_incoming_maybe_redirect() {
     } elseif ( $order->has_status( 'failed' ) ) {
         $url = $order->get_meta( 'sp_error_url' ) ? : $order->get_meta( 'sp_return_url' );
     }
-    $url = apply_filters( 'sp_wc_incoming_redirect_url', $url, $order );
+    return( apply_filters( 'sp_wc_incoming_redirect_url', $url, $order ) );
+}
+
+// Resolve the order shown on the current order-received page (query var or key).
+function sp_wc_incoming_received_order() {
+    if ( !function_exists( 'is_order_received_page' ) || !is_order_received_page() ) return( false );
+    global $wp;
+    $order_id = absint( isset( $wp->query_vars[ 'order-received' ] ) ? $wp->query_vars[ 'order-received' ] : 0 );
+    $key = isset( $_GET[ 'key' ] ) ? wc_clean( wp_unslash( $_GET[ 'key' ] ) ) : '';
+    if ( !$order_id && $key && function_exists( 'wc_get_order_id_by_order_key' ) ) $order_id = wc_get_order_id_by_order_key( $key );
+    if ( !$order_id ) return( false );
+    $order = wc_get_order( $order_id );
+    if ( !$order ) return( false );
+    // Validate the order key when present, so we only redirect the genuine buyer.
+    if ( $key && !hash_equals( $order->get_order_key(), $key ) ) return( false );
+    return( $order );
+}
+
+// 3. Redirect the customer back to the originating site once the order is paid.
+// Primary: template_redirect (clean server redirect before output).
+add_action( 'template_redirect', 'sp_wc_incoming_maybe_redirect', 20 );
+function sp_wc_incoming_maybe_redirect() {
+    if ( is_admin() || !sp_wc_incoming_enabled() || !sp_wc_incoming_redirect_enabled() ) return;
+    $order = sp_wc_incoming_received_order();
+    if ( !$order || !sp_wc_incoming_is( $order ) ) return;
+    $url = sp_wc_incoming_return_url( $order );
+    if ( $url ) sp_wc_incoming_break_out( $url );
+}
+
+// Fallback: some themes / gateways reach the thank-you page without matching the
+// order-received query var at template_redirect. woocommerce_thankyou always
+// fires there with the order id (redirect happens via JS since output started).
+add_action( 'woocommerce_thankyou', 'sp_wc_incoming_thankyou_redirect', 1 );
+function sp_wc_incoming_thankyou_redirect( $order_id ) {
+    if ( is_admin() || !sp_wc_incoming_enabled() || !sp_wc_incoming_redirect_enabled() ) return;
+    $order = wc_get_order( $order_id );
+    if ( !$order || !sp_wc_incoming_is( $order ) ) return;
+    $url = sp_wc_incoming_return_url( $order );
     if ( $url ) sp_wc_incoming_break_out( $url );
 }
 
