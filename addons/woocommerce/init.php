@@ -1057,14 +1057,21 @@ function sp_wc_incoming_maybe_redirect() {
     if ( $url ) sp_wc_incoming_break_out( $url );
 }
 
-// Break out of the iframe / popup and navigate the top window back to the source site.
+// Redirect the customer back to the source site. Navigates the current window
+// only (does not force window.top), so an iframe / popup stays in control of
+// its own frame and the source callback decides any further target.
 function sp_wc_incoming_break_out( $url ) {
     $url = esc_url_raw( $url );
     if ( !$url ) return;
+    $url = apply_filters( 'sp_wc_incoming_break_out_url', $url );
+    if ( !headers_sent() ) {
+        nocache_headers();
+        wp_redirect( $url );
+        exit;
+    }
     $json = wp_json_encode( $url );
-    nocache_headers();
     echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' . esc_html__( 'Redirecting…', 'simple-payment' ) . '</title>';
-    echo '<script type="text/javascript">try{(window.top||window).location.replace(' . $json . ');}catch(e){window.location.replace(' . $json . ');}</script>';
+    echo '<script type="text/javascript">window.location.replace(' . $json . ');</script>';
     echo '</head><body><noscript><a href="' . esc_url( $url ) . '">' . esc_html__( 'Continue', 'simple-payment' ) . '</a></noscript></body></html>';
     exit;
 }
