@@ -852,7 +852,7 @@ function sp_wc_gateway_init() {
          */
 		public function selected_payment_gateways( $available_gateways ) {
 			$is_checkout_pay_page = is_checkout_pay_page();
-			if ( $is_checkout_pay_page ) {
+			if ( $is_checkout_pay_page && isset( $available_gateways[ $this->id ] ) ) {
 				$gateway = $available_gateways[ $this->id ];
 				$gateway->order_button_text = apply_filters( 'sp_wc_order_button_text', __( 'Pay for order', 'simple-payment' ), $is_checkout_pay_page );
 				if ( ! empty( WC()->session->selected_token_id ) ) {
