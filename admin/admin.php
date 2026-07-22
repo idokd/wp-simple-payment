@@ -272,7 +272,7 @@ class SimplePaymentAdmin {
 		require( SPWP_PLUGIN_DIR . '/admin/settings.php' );
 		$this->sections = apply_filters( 'sp_admin_sections', $sp_sections );
 		$sp_settings = apply_filters( 'sp_admin_settings', $sp_settings );
-		foreach ( $sp_sections as $key => $section ) {
+		foreach ( $this->sections as $key => $section ) {
 			add_settings_section(
 				$key,
 				$section[ 'title' ],
