@@ -28,6 +28,17 @@ define( 'SPWP_VERSION', get_file_data( __FILE__, [ 'Version' => 'Version' ], fal
 
 require_once( SPWP_PLUGIN_DIR . '/vendor/autoload.php' );
 
+// Autoload plugin-provided engines (e.g. engines/woocommerce.php) under the
+// SimplePayment\Engines namespace, so class_exists( 'SimplePayment\Engines\X' )
+// resolves them even when an engine name collides with a global class.
+spl_autoload_register( function( $class ) {
+	$prefix = 'SimplePayment\\Engines\\';
+	if ( strncmp( $class, $prefix, strlen( $prefix ) ) !== 0 ) return;
+	$name = substr( $class, strlen( $prefix ) );
+	$file = SPWP_PLUGIN_DIR . '/engines/' . strtolower( str_replace( '\\', '/', $name ) ) . '.php';
+	if ( is_file( $file ) ) require_once( $file );
+} );
+
 class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
 	const OP = 'op';
