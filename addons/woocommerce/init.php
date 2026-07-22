@@ -1139,6 +1139,41 @@ function sp_wc_incoming_break_out( $url ) {
     exit;
 }
 
+// 4. Suppress WooCommerce emails for incoming (outsourced) orders when configured.
+// WooCommerce order emails, split by audience.
+function sp_wc_incoming_customer_email_ids() {
+    return( apply_filters( 'sp_wc_incoming_customer_email_ids', [
+        'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order',
+        'customer_refunded_order', 'customer_invoice', 'customer_note',
+    ] ) );
+}
+function sp_wc_incoming_admin_email_ids() {
+    return( apply_filters( 'sp_wc_incoming_admin_email_ids', [
+        'new_order', 'cancelled_order', 'failed_order',
+    ] ) );
+}
+
+// Gate each email via woocommerce_email_enabled_{id}; the order is passed in, so
+// only orders that originated from the source site are affected.
+foreach ( sp_wc_incoming_customer_email_ids() as $sp_wc_email_id ) {
+    add_filter( 'woocommerce_email_enabled_' . $sp_wc_email_id, function( $enabled, $object ) {
+        return( sp_wc_incoming_filter_email( $enabled, $object, 'customer' ) );
+    }, 100, 2 );
+}
+foreach ( sp_wc_incoming_admin_email_ids() as $sp_wc_email_id ) {
+    add_filter( 'woocommerce_email_enabled_' . $sp_wc_email_id, function( $enabled, $object ) {
+        return( sp_wc_incoming_filter_email( $enabled, $object, 'admin' ) );
+    }, 100, 2 );
+}
+unset( $sp_wc_email_id );
+
+function sp_wc_incoming_filter_email( $enabled, $object, $audience ) {
+    if ( !$enabled || !sp_wc_incoming_enabled() ) return( $enabled );
+    if ( !is_a( $object, 'WC_Order' ) || !sp_wc_incoming_is( $object ) ) return( $enabled );
+    $flag = 'admin' === $audience ? 'wc_incoming.disable_admin_emails' : 'wc_incoming.disable_customer_emails';
+    return( SimplePaymentPlugin::param( $flag ) ? false : $enabled );
+}
+
 // Companion settings, shown on the WooCommerce tab of the Simple Payment settings.
 add_filter( 'sp_admin_sections', function( $sections ) {
     $sections[ 'wc_incoming_settings' ] = [
@@ -1179,6 +1214,18 @@ add_filter( 'sp_admin_settings', function( $settings ) {
         'options' => $options,
         'section' => 'wc_incoming_settings',
         'description' => __( 'Gateway to assign to orders received from the source site (which cannot know this store\'s gateways). Leave on "Let the customer choose" to present the available gateways on the payment page.', 'simple-payment' )
+    ];
+    $settings[ 'wc_incoming.disable_customer_emails' ] = [
+        'title' => __( 'Disable Customer Emails', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Do not send WooCommerce customer emails for orders received from the source site (outsourced payment requests).', 'simple-payment' )
+    ];
+    $settings[ 'wc_incoming.disable_admin_emails' ] = [
+        'title' => __( 'Disable Admin Emails', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Do not send WooCommerce admin / store emails (new order, cancelled, failed) for orders received from the source site.', 'simple-payment' )
     ];
     return( $settings );
 } );
