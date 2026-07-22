@@ -207,6 +207,12 @@ function sp_wc_gateway_init() {
             return( false );
         }
 
+        public function is_available() {
+            // Do not offer the gateway at checkout unless it is enabled in WooCommerce.
+            if ( 'yes' !== $this->enabled ) return( false );
+            return( parent::is_available() );
+        }
+
         function wc_get_account_saved_payment_methods_list_item( $item, $payment_token ) {
 			if ( 'simplepayment' !== strtolower( $payment_token->get_type() ) ) {
 				return( $item );
