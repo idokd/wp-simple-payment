@@ -337,6 +337,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 			$parts = explode('-', get_bloginfo('language'));
 			$params[self::LANGUAGE] = $parts[0];
 		}
+		if (!isset($params[self::CURRENCY]) || !$params[self::CURRENCY]) $params[self::CURRENCY] = self::param('currency');
 		if (!isset($params['concept']) && isset($params[self::PRODUCT])) $params['concept'] = $params[self::PRODUCT];
 		if ($method) $params[self::METHOD] = $method;
 		if (isset($params[self::FULL_NAME]) && trim($params[self::FULL_NAME])) {
