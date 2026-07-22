@@ -1025,12 +1025,11 @@ function sp_wc_incoming_rest_insert( $order, $request, $creating ) {
     }
 }
 
-// Registered payment gateways on this (companion) site, excluding our own gateway.
+// Registered payment gateways on this (companion) site.
 function sp_wc_incoming_gateways() {
     $list = [];
     if ( !function_exists( 'WC' ) || !WC()->payment_gateways() ) return( $list );
     foreach ( WC()->payment_gateways()->payment_gateways() as $gateway ) {
-        if ( 'simple-payment' === $gateway->id ) continue; // avoid pointing back at ourselves
         $list[ $gateway->id ] = $gateway;
     }
     return( $list );
