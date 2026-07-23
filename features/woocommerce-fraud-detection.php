@@ -36,7 +36,7 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 		'title' => __( 'Match by Email', 'simple-payment' ),
 		'type' => 'check',
 		'section' => 'wc_fraud_settings',
-		'description' => __( 'Count consecutive failed orders sharing the same billing email.', 'simple-payment' )
+		'description' => __( 'Count consecutive failed orders sharing the same billing email. Leave all four match fields unchecked to use the default: Email + Phone + IP.', 'simple-payment' )
 	];
 	$settings[ 'wc_fraud.by_phone' ] = [
 		'title' => __( 'Match by Billing Phone', 'simple-payment' ),
@@ -56,21 +56,21 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 		'section' => 'wc_fraud_settings',
 		'description' => __( 'Count consecutive failed orders sharing the same browser user agent (WooCommerce order attribution _wc_order_attribution_user_agent).', 'simple-payment' )
 	];
-	$settings[ 'wc_fraud.combined' ] = [
-		'title' => __( 'Combine Fields', 'simple-payment' ),
+	$settings[ 'wc_fraud.independent' ] = [
+		'title' => __( 'Count Fields Independently', 'simple-payment' ),
 		'type' => 'check',
 		'section' => 'wc_fraud_settings',
-		'description' => __( 'Link failed orders that share ANY matched value into one cluster, and count the cluster as a whole (e.g. X/Y, then X/Z, then B/Y count as 3). User agent is excluded from linking. When off, each field is counted independently.', 'simple-payment' )
+		'description' => __( 'By default (unchecked), failed orders that share ANY matched value are linked into one cluster and counted together (e.g. X/Y, then X/Z, then B/Y count as 3; user agent is excluded from linking). Check this to count each field separately instead.', 'simple-payment' )
 	];
 	$settings[ 'wc_fraud.threshold' ] = [
 		'title' => __( 'Failed Orders Threshold', 'simple-payment' ),
 		'section' => 'wc_fraud_settings',
-		'description' => __( 'Number of failed orders (per value, or per cluster when Combine Fields is on) within the timeframe that triggers a block. Default 3.', 'simple-payment' )
+		'description' => __( 'Number of failed orders (per cluster, or per value when counting independently) within the timeframe that triggers a block. Default 3.', 'simple-payment' )
 	];
 	$settings[ 'wc_fraud.period' ] = [
 		'title' => __( 'Timeframe (seconds)', 'simple-payment' ),
 		'section' => 'wc_fraud_settings',
-		'description' => __( 'How far back to count failed orders from the same email / IP. Default 3600 (1 hour).', 'simple-payment' )
+		'description' => __( 'How far back to count failed orders from the same identity. Default 86400 (24 hours).', 'simple-payment' )
 	];
 	$settings[ 'wc_fraud.cooldown' ] = [
 		'title' => __( 'Cooldown / Block Duration (seconds)', 'simple-payment' ),
@@ -111,8 +111,11 @@ function sp_wc_fraud_int( $key, $default ) {
 }
 
 function sp_wc_fraud_threshold() { return( sp_wc_fraud_int( 'threshold', 3 ) ); }
-function sp_wc_fraud_period()    { return( sp_wc_fraud_int( 'period', HOUR_IN_SECONDS ) ); }
-function sp_wc_fraud_cooldown()  { return( sp_wc_fraud_int( 'cooldown', HOUR_IN_SECONDS ) ); }
+function sp_wc_fraud_period()    { return( sp_wc_fraud_int( 'period', DAY_IN_SECONDS ) ); }
+function sp_wc_fraud_cooldown()  { return( sp_wc_fraud_int( 'cooldown', DAY_IN_SECONDS ) ); }
+
+// Combined (linked) matching is the default; the "independent" flag opts out.
+function sp_wc_fraud_is_combined() { return( !sp_wc_fraud_param( 'independent' ) ); }
 
 function sp_wc_fraud_excluded_roles() {
 	$raw = sp_wc_fraud_param( 'excluded_roles' );
@@ -146,7 +149,7 @@ function sp_wc_fraud_fields() {
 	if ( sp_wc_fraud_param( 'by_phone' ) ) $fields[] = 'phone';
 	if ( sp_wc_fraud_param( 'by_ip' ) ) $fields[] = 'ip';
 	if ( sp_wc_fraud_param( 'by_user_agent' ) ) $fields[] = 'user_agent';
-	if ( !$fields ) $fields = [ 'email', 'ip' ];
+	if ( !$fields ) $fields = [ 'email', 'phone', 'ip' ];
 	return( apply_filters( 'sp_wc_fraud_fields', $fields ) );
 }
 
@@ -232,7 +235,7 @@ function sp_wc_fraud_record_failure( $order_id, $order = null ) {
 	if ( !$order ) return;
 	$keys = sp_wc_fraud_order_keys( $order );
 	if ( !$keys ) return;
-	if ( sp_wc_fraud_param( 'combined' ) && sp_wc_fraud_link_fields() ) sp_wc_fraud_record_combined( $order, $keys );
+	if ( sp_wc_fraud_is_combined() && sp_wc_fraud_link_fields() ) sp_wc_fraud_record_combined( $order, $keys );
 	else sp_wc_fraud_record_independent( $order, $keys );
 }
 
