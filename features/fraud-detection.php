@@ -56,26 +56,39 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 	$settings[ 'fraud.period' ] = [ 'title' => __( 'Timeframe (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => DAY_IN_SECONDS, 'description' => __( 'How far back to count failed attempts. Default 86400 (24 hours).', 'simple-payment' ) ];
 	$settings[ 'fraud.cooldown' ] = [ 'title' => __( 'Cooldown / Block Duration (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => DAY_IN_SECONDS, 'description' => __( 'How long to block once the threshold is reached. Default 86400 (24 hours).', 'simple-payment' ) ];
 	$settings[ 'fraud.permanent_after' ] = [ 'title' => __( 'Permanent Block After', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => 0, 'description' => __( 'After an identity has been (temporarily) blocked this many times, move it to the permanent block list below. 0 disables permanent blocking. Example: 2.', 'simple-payment' ) ];
-	$settings[ 'sp_fraud_blocked' ] = [ 'title' => __( 'Permanent Blocks', 'simple-payment' ), 'type' => 'textarea', 'legacy' => true, 'section' => 'fraud_settings', 'description' => __( 'Permanently blocked identities - <strong>one identity per line</strong>. On each line list its data keys <strong>comma-separated</strong> as <code>field:value</code>; a visitor matching ANY key (on any line) is blocked. Never expires - edit or remove lines to manage.<br>Example (two blocked identities):<br><code>email:bad@guy.com,ip:1.2.3.4,phone:5551234</code><br><code>ip:203.0.113.9</code>', 'simple-payment' ) ];
+	$settings[ 'sp_fraud_blocked' ] = [ 'title' => __( 'Permanent Blocks', 'simple-payment' ), 'type' => 'textarea', 'legacy' => true, 'section' => 'fraud_settings', 'description' => __( 'Permanently blocked identities - <strong>one identity per line</strong>, data keys <strong>comma-separated</strong> as <code>field:value</code>; a visitor matching ANY key (on any line) is blocked. You can also block a whole role with <code>role:slug</code>. Never expires - edit or remove lines to manage.<br>Example:<br><code>email:bad@guy.com,ip:1.2.3.4,phone:5551234</code><br><code>ip:203.0.113.9</code><br><code>role:subscriber</code>', 'simple-payment' ) ];
 	$settings[ 'fraud.message' ] = [ 'title' => __( 'Blocked Message', 'simple-payment' ), 'type' => 'textarea', 'section' => 'fraud_settings', 'description' => __( 'Shown instead of the payment methods when blocked. HTML allowed.', 'simple-payment' ) ];
-	$settings[ 'fraud.excluded_roles' ] = [ 'title' => __( 'Excluded Roles', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => sprintf( __( 'Optional. Comma-separated role slugs to whitelist (never blocked). Available: %s', 'simple-payment' ), $roles ? implode( ', ', $roles ) : '-' ) ];
-	$settings[ 'fraud.exclude_registered' ] = [ 'title' => __( 'Exclude Registered Users', 'simple-payment' ), 'type' => 'check', 'section' => 'fraud_settings', 'description' => __( 'Never block logged-in (registered) users.', 'simple-payment' ) ];
+	$settings[ 'sp_fraud_whitelist' ] = [ 'title' => __( 'Whitelist', 'simple-payment' ), 'type' => 'textarea', 'legacy' => true, 'section' => 'fraud_settings', 'description' => sprintf( __( 'Never-blocked identities - one <code>field:value</code> key per line (or comma-separated). A visitor matching ANY key is never blocked. Supports <code>role:slug</code>, <code>email:...</code>, <code>ip:...</code>, <code>phone:...</code>.<br>Example:<br><code>role:administrator</code><br><code>email:ido@yalla-ya.com</code><br>Available roles: %s', 'simple-payment' ), $roles ? implode( ', ', $roles ) : '-' ) ];
+	$settings[ 'fraud.exclude_registered' ] = [ 'title' => __( 'Exclude Registered Users', 'simple-payment' ), 'type' => 'check', 'section' => 'fraud_settings', 'description' => __( 'Never block any logged-in (registered) user, regardless of role.', 'simple-payment' ) ];
 
 	$settings[ 'fraud.wc_enabled' ] = [ 'title' => __( 'Enable WooCommerce Fraud Detection', 'simple-payment' ), 'type' => 'check', 'default' => true, 'section' => 'fraud_settings', 'description' => __( 'Apply fraud detection to the WooCommerce checkout (failed orders, hide payment methods when blocked). On by default.', 'simple-payment' ) ];
 	return( $settings );
 } );
 
-// The permanent block list is a standalone option (get_option( 'sp_fraud_blocked' )),
-// editable via the textarea above and saved through the Settings API.
+// The permanent block and whitelist are standalone options
+// (get_option( 'sp_fraud_blocked' ) / get_option( 'sp_fraud_whitelist' )),
+// editable via the textareas above and saved through the Settings API.
 add_action( 'admin_init', function() {
-	register_setting( 'sp', 'sp_fraud_blocked', [ 'type' => 'string', 'sanitize_callback' => 'sp_fraud_sanitize_blocked', 'default' => '' ] );
+	register_setting( 'sp', 'sp_fraud_blocked', [ 'type' => 'string', 'sanitize_callback' => 'sp_fraud_sanitize_keylist', 'default' => '' ] );
+	register_setting( 'sp', 'sp_fraud_whitelist', [ 'type' => 'string', 'sanitize_callback' => 'sp_fraud_sanitize_keylist', 'default' => '' ] );
 } );
 
-function sp_fraud_sanitize_blocked( $value ) {
+// Normalize a single 'field:value' key so admin-typed keys match generated ones
+// (lowercase, phone digits only). A bare value with no field is lowercased.
+function sp_fraud_normalize_key( $key ) {
+	$parts = explode( ':', $key, 2 );
+	if ( count( $parts ) < 2 ) return( strtolower( trim( $key ) ) );
+	$field = strtolower( trim( $parts[ 0 ] ) );
+	return( $field . ':' . sp_fraud_normalize( $field, $parts[ 1 ] ) );
+}
+
+function sp_fraud_sanitize_keylist( $value ) {
 	$lines = preg_split( '/\r\n|\r|\n/', (string) $value );
 	$out = [];
 	foreach ( $lines as $line ) {
-		$keys = array_values( array_unique( array_filter( array_map( 'trim', explode( ',', $line ) ) ) ) );
+		$keys = [];
+		foreach ( explode( ',', $line ) as $k ) { $k = trim( $k ); if ( $k !== '' ) $keys[] = sp_fraud_normalize_key( $k ); }
+		$keys = array_values( array_unique( $keys ) );
 		if ( $keys ) $out[] = implode( ',', $keys );
 	}
 	return( implode( "\n", $out ) );
@@ -119,12 +132,6 @@ function sp_fraud_fields()         { return( array_values( array_filter( sp_frau
 function sp_fraud_cluster_fields() { return( array_values( array_filter( sp_fraud_all_fields(), function( $f ) { return( sp_fraud_field_mode( $f ) === 'cluster' ); } ) ) ); }
 function sp_fraud_primary_fields() { return( array_values( array_filter( sp_fraud_all_fields(), function( $f ) { return( sp_fraud_field_mode( $f ) === 'primary' ); } ) ) ); }
 
-function sp_fraud_excluded_roles() {
-	$raw = sp_fraud_param( 'excluded_roles' );
-	if ( !$raw ) return( [] );
-	return( array_filter( array_map( 'trim', explode( ',', $raw ) ) ) );
-}
-
 function sp_fraud_message() {
 	$message = sp_fraud_param( 'message' );
 	if ( !$message ) $message = __( 'Please contact support.', 'simple-payment' );
@@ -166,17 +173,41 @@ function sp_fraud_keys( $values, $fields = null ) {
 function sp_fraud_bucket_key( $key ) { return( 'sp_fraud_f_' . md5( $key ) ); }
 function sp_fraud_block_key( $key )  { return( 'sp_fraud_b_' . md5( $key ) ); }
 
+// Keys used to match a visitor against the permanent block and whitelist:
+// all identity fields (regardless of their detection mode) PLUS role:<slug>.
+function sp_fraud_match_keys( $values ) {
+	$keys = sp_fraud_keys( $values, sp_fraud_all_fields() );
+	if ( isset( $values[ 'role' ] ) ) {
+		foreach ( (array) $values[ 'role' ] as $role ) {
+			$role = strtolower( trim( $role ) );
+			if ( $role !== '' ) $keys[] = 'role:' . $role;
+		}
+	}
+	return( array_values( array_unique( $keys ) ) );
+}
+
 /* -------------------------------------------------------------------------
- * Whitelisting
+ * Whitelisting (get_option( 'sp_fraud_whitelist' ) - one field:value per line).
  * ---------------------------------------------------------------------- */
 
-function sp_fraud_is_whitelisted() {
-	if ( is_user_logged_in() ) {
-		if ( sp_fraud_param( 'exclude_registered' ) ) return( true );
-		$roles = sp_fraud_excluded_roles();
-		if ( $roles && array_intersect( $roles, (array) wp_get_current_user()->roles ) ) return( true );
+// Flattened set of whitelist keys.
+function sp_fraud_whitelist_keys() {
+	$set = [];
+	foreach ( preg_split( '/\r\n|\r|\n/', (string) get_option( 'sp_fraud_whitelist', '' ) ) as $line ) {
+		foreach ( explode( ',', $line ) as $k ) {
+			$k = trim( $k );
+			if ( $k !== '' ) $set[ sp_fraud_normalize_key( $k ) ] = 1;
+		}
 	}
-	return( (bool) apply_filters( 'sp_fraud_whitelisted', false ) );
+	return( $set );
+}
+
+function sp_fraud_is_whitelisted( $values = null ) {
+	if ( is_user_logged_in() && sp_fraud_param( 'exclude_registered' ) ) return( true );
+	if ( $values === null ) $values = sp_fraud_current_values();
+	$white = sp_fraud_whitelist_keys();
+	if ( $white ) foreach ( sp_fraud_match_keys( $values ) as $key ) if ( isset( $white[ $key ] ) ) return( true );
+	return( (bool) apply_filters( 'sp_fraud_whitelisted', false, $values ) );
 }
 
 /* -------------------------------------------------------------------------
@@ -184,12 +215,14 @@ function sp_fraud_is_whitelisted() {
  * comma-separated keys). Never expire.
  * ---------------------------------------------------------------------- */
 
-// Permanent blocks as an array of groups (each group an array of keys).
+// Permanent blocks as an array of groups (each group an array of normalized keys).
 function sp_fraud_permanent_groups() {
 	$raw = (string) get_option( 'sp_fraud_blocked', '' );
 	$groups = [];
 	foreach ( preg_split( '/\r\n|\r|\n/', $raw ) as $line ) {
-		$keys = array_values( array_unique( array_filter( array_map( 'trim', explode( ',', $line ) ) ) ) );
+		$keys = [];
+		foreach ( explode( ',', $line ) as $k ) { $k = trim( $k ); if ( $k !== '' ) $keys[] = sp_fraud_normalize_key( $k ); }
+		$keys = array_values( array_unique( $keys ) );
 		if ( $keys ) $groups[] = $keys;
 	}
 	return( $groups );
@@ -226,7 +259,7 @@ function sp_fraud_permanent_add( $keys ) {
 function sp_fraud_is_permanently_blocked( $values ) {
 	$permanent = sp_fraud_permanent_keys();
 	if ( !$permanent ) return( false );
-	foreach ( sp_fraud_keys( $values ) as $key ) if ( isset( $permanent[ $key ] ) ) return( true );
+	foreach ( sp_fraud_match_keys( $values ) as $key ) if ( isset( $permanent[ $key ] ) ) return( true );
 	return( false );
 }
 
@@ -320,7 +353,7 @@ function sp_fraud_component( $log, $start ) {
 }
 
 function sp_fraud_is_blocked( $values ) {
-	if ( sp_fraud_is_whitelisted() ) return( false );
+	if ( sp_fraud_is_whitelisted( $values ) ) return( false );
 	if ( sp_fraud_is_permanently_blocked( $values ) ) return( true );
 	foreach ( sp_fraud_keys( $values ) as $key ) {
 		if ( get_transient( sp_fraud_block_key( $key ) ) ) return( true );
@@ -346,18 +379,22 @@ function sp_fraud_clear( $values ) {
 function sp_fraud_current_values( $overrides = [] ) {
 	$emails = isset( $overrides[ 'email' ] ) ? (array) $overrides[ 'email' ] : [];
 	$phones = isset( $overrides[ 'phone' ] ) ? (array) $overrides[ 'phone' ] : [];
+	$roles = [];
 	if ( is_user_logged_in() ) {
 		$uid = get_current_user_id();
-		$emails[] = wp_get_current_user()->user_email;
+		$user = wp_get_current_user();
+		$emails[] = $user->user_email;
 		$emails[] = get_user_meta( $uid, 'billing_email', true );
 		$phones[] = get_user_meta( $uid, 'billing_phone', true );
 		$phones[] = get_user_meta( $uid, 'shipping_phone', true );
+		$roles = (array) $user->roles;
 	}
 	$values = [
 		'ip' => sp_fraud_ip(),
 		'user_agent' => sp_fraud_user_agent(),
 		'email' => array_values( array_unique( array_filter( $emails ) ) ),
 		'phone' => array_values( array_unique( array_filter( $phones ) ) ),
+		'role' => $roles,
 	];
 	// Let other overrides (e.g. ip / user_agent from a custom integration) apply.
 	foreach ( $overrides as $key => $value ) if ( !in_array( $key, [ 'email', 'phone' ], true ) ) $values[ $key ] = $value;
