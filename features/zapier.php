@@ -45,11 +45,13 @@ function sp_zapier_enabled() {
 	return( $value !== '0' && $value !== '' && (bool) $value );
 }
 
-// The Zapier endpoint URL (callback URL + op=zapier + api_key).
+// The Zapier endpoint URL (front-end callback + op=zapier + api_key). Built from
+// the configured payment page / callback url, falling back to site_url() - never
+// the current (admin) request URL.
 function sp_zapier_url() {
-	$sp = SimplePaymentPlugin::instance();
-	$callback = method_exists( $sp, 'callback_url' ) ? $sp->callback_url() : '';
-	if ( !$callback ) $callback = home_url( '/' );
+	$page = SimplePaymentPlugin::param( 'payment_page' );
+	$callback = $page ? get_page_link( $page ) : SimplePaymentPlugin::param( 'callback_url' );
+	if ( !$callback ) $callback = site_url( '/' );
 	if ( strpos( $callback, '://' ) === false ) $callback = site_url( $callback );
 	return( add_query_arg( [ SimplePaymentPlugin::OP => 'zapier', 'api_key' => SimplePaymentPlugin::param( 'api_key' ) ], $callback ) );
 }
@@ -85,6 +87,7 @@ function sp_zapier( $params = [] ) {
           $zapier = $SPWP->fetch($_REQUEST['id']);
           break;
         case 'transactions':
+        default:
           $sql = 'SELECT * FROM '.$wpdb->prefix.SimplePaymentPlugin::$table_name.' WHERE `archived` = 0';
           if (isset($_REQUEST['status']) && $_REQUEST['status'])
               $sql .= sprintf(" AND `status` LIKE '%s'", esc_sql($_REQUEST['status']));
@@ -118,7 +121,6 @@ function sp_zapier( $params = [] ) {
           break;
         case 'subscribe':
         case 'auth':
-        default:
           $zapier = [
             'site' => get_bloginfo('url'),
             'version' => SimplePaymentPlugin::VERSION,
