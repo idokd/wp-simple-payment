@@ -32,6 +32,30 @@ add_filter( 'sp_admin_sections', function( $sections ) {
 
 add_filter( 'sp_admin_settings', function( $settings ) {
 	$roles = function_exists( 'wp_roles' ) ? array_keys( wp_roles()->roles ) : [];
+	$settings[ 'wc_fraud.by_email' ] = [
+		'title' => __( 'Match by Email', 'simple-payment' ),
+		'type' => 'check',
+		'section' => 'wc_fraud_settings',
+		'description' => __( 'Count consecutive failed orders sharing the same billing email.', 'simple-payment' )
+	];
+	$settings[ 'wc_fraud.by_phone' ] = [
+		'title' => __( 'Match by Billing Phone', 'simple-payment' ),
+		'type' => 'check',
+		'section' => 'wc_fraud_settings',
+		'description' => __( 'Count consecutive failed orders sharing the same billing phone.', 'simple-payment' )
+	];
+	$settings[ 'wc_fraud.by_ip' ] = [
+		'title' => __( 'Match by IP Address', 'simple-payment' ),
+		'type' => 'check',
+		'section' => 'wc_fraud_settings',
+		'description' => __( 'Count consecutive failed orders sharing the same IP address.', 'simple-payment' )
+	];
+	$settings[ 'wc_fraud.by_user_agent' ] = [
+		'title' => __( 'Match by User Agent', 'simple-payment' ),
+		'type' => 'check',
+		'section' => 'wc_fraud_settings',
+		'description' => __( 'Count consecutive failed orders sharing the same browser user agent (WooCommerce order attribution _wc_order_attribution_user_agent).', 'simple-payment' )
+	];
 	$settings[ 'wc_fraud.threshold' ] = [
 		'title' => __( 'Failed Orders Threshold', 'simple-payment' ),
 		'section' => 'wc_fraud_settings',
@@ -108,24 +132,74 @@ function sp_wc_fraud_ip() {
 function sp_wc_fraud_bucket_key( $key ) { return( 'sp_fraud_f_' . md5( $key ) ); }
 function sp_wc_fraud_block_key( $key )  { return( 'sp_fraud_b_' . md5( $key ) ); }
 
-// The identity keys (email + ip) to track for a given order.
+// Identity fields enabled for matching "the same user". Falls back to email + ip
+// if the admin has not selected any, so the feature still works out of the box.
+function sp_wc_fraud_fields() {
+	$fields = [];
+	if ( sp_wc_fraud_param( 'by_email' ) ) $fields[] = 'email';
+	if ( sp_wc_fraud_param( 'by_phone' ) ) $fields[] = 'phone';
+	if ( sp_wc_fraud_param( 'by_ip' ) ) $fields[] = 'ip';
+	if ( sp_wc_fraud_param( 'by_user_agent' ) ) $fields[] = 'user_agent';
+	if ( !$fields ) $fields = [ 'email', 'ip' ];
+	return( apply_filters( 'sp_wc_fraud_fields', $fields ) );
+}
+
+function sp_wc_fraud_normalize( $field, $value ) {
+	$value = trim( (string) $value );
+	if ( $value === '' ) return( '' );
+	if ( $field === 'phone' ) return( preg_replace( '/\D/', '', $value ) );
+	return( strtolower( $value ) );
+}
+
+// Resolve an identity field's value from a given order.
+function sp_wc_fraud_order_value( $order, $field ) {
+	switch ( $field ) {
+		case 'email': return( $order->get_billing_email() );
+		case 'phone': return( $order->get_billing_phone() );
+		case 'ip': return( $order->get_customer_ip_address() ? : sp_wc_fraud_ip() );
+		case 'user_agent':
+			$ua = $order->get_meta( '_wc_order_attribution_user_agent' );
+			return( $ua ? : sp_wc_fraud_user_agent() );
+	}
+	return( '' );
+}
+
+// Resolve an identity field's value for the current visitor / posted checkout data.
+function sp_wc_fraud_current_value( $field, $posted = [] ) {
+	switch ( $field ) {
+		case 'email':
+			if ( !empty( $posted[ 'email' ] ) ) return( $posted[ 'email' ] );
+			return( is_user_logged_in() ? wp_get_current_user()->user_email : '' );
+		case 'phone':
+			if ( !empty( $posted[ 'phone' ] ) ) return( $posted[ 'phone' ] );
+			return( is_user_logged_in() ? get_user_meta( get_current_user_id(), 'billing_phone', true ) : '' );
+		case 'ip': return( sp_wc_fraud_ip() );
+		case 'user_agent': return( sp_wc_fraud_user_agent() );
+	}
+	return( '' );
+}
+
+function sp_wc_fraud_user_agent() {
+	return( isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ? sanitize_text_field( wp_unslash( $_SERVER[ 'HTTP_USER_AGENT' ] ) ) : '' );
+}
+
+// The identity keys to track for a given order.
 function sp_wc_fraud_order_keys( $order ) {
 	$keys = [];
-	$email = $order->get_billing_email();
-	if ( $email ) $keys[] = 'email:' . strtolower( $email );
-	$ip = $order->get_customer_ip_address();
-	if ( !$ip ) $ip = sp_wc_fraud_ip();
-	if ( $ip ) $keys[] = 'ip:' . $ip;
+	foreach ( sp_wc_fraud_fields() as $field ) {
+		$value = sp_wc_fraud_normalize( $field, sp_wc_fraud_order_value( $order, $field ) );
+		if ( $value !== '' ) $keys[] = $field . ':' . $value;
+	}
 	return( $keys );
 }
 
 // The identity keys for the current visitor / posted checkout data.
-function sp_wc_fraud_current_keys( $email = null ) {
+function sp_wc_fraud_current_keys( $posted = [] ) {
 	$keys = [];
-	$ip = sp_wc_fraud_ip();
-	if ( $ip ) $keys[] = 'ip:' . $ip;
-	if ( !$email && is_user_logged_in() ) $email = wp_get_current_user()->user_email;
-	if ( $email ) $keys[] = 'email:' . strtolower( $email );
+	foreach ( sp_wc_fraud_fields() as $field ) {
+		$value = sp_wc_fraud_normalize( $field, sp_wc_fraud_current_value( $field, $posted ) );
+		if ( $value !== '' ) $keys[] = $field . ':' . $value;
+	}
 	return( $keys );
 }
 
@@ -185,9 +259,9 @@ function sp_wc_fraud_clear_for_order( $order_id ) {
  * Enforcement: is the current visitor blocked?
  * ---------------------------------------------------------------------- */
 
-function sp_wc_fraud_is_blocked( $email = null ) {
+function sp_wc_fraud_is_blocked( $posted = [] ) {
 	if ( sp_wc_fraud_is_whitelisted() ) return( false );
-	foreach ( sp_wc_fraud_current_keys( $email ) as $key ) {
+	foreach ( sp_wc_fraud_current_keys( $posted ) as $key ) {
 		if ( get_transient( sp_wc_fraud_block_key( $key ) ) ) return( true );
 	}
 	return( false );
@@ -211,8 +285,10 @@ function sp_wc_fraud_no_methods_message( $message ) {
 // Server-side guard: refuse to place the order when blocked (defense in depth).
 add_action( 'woocommerce_checkout_process', 'sp_wc_fraud_checkout_guard' );
 function sp_wc_fraud_checkout_guard() {
-	$email = isset( $_POST[ 'billing_email' ] ) ? sanitize_email( wp_unslash( $_POST[ 'billing_email' ] ) ) : null;
-	if ( sp_wc_fraud_is_blocked( $email ) ) {
+	$posted = [];
+	if ( isset( $_POST[ 'billing_email' ] ) ) $posted[ 'email' ] = sanitize_email( wp_unslash( $_POST[ 'billing_email' ] ) );
+	if ( isset( $_POST[ 'billing_phone' ] ) ) $posted[ 'phone' ] = sanitize_text_field( wp_unslash( $_POST[ 'billing_phone' ] ) );
+	if ( sp_wc_fraud_is_blocked( $posted ) ) {
 		wc_add_notice( wp_kses_post( sp_wc_fraud_message() ), 'error' );
 	}
 }
