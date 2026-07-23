@@ -43,17 +43,18 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 		'' => __( 'Default (our behaviour)', 'simple-payment' ),
 		'cluster' => __( 'Cluster', 'simple-payment' ),
 		'primary' => __( 'Primary (sole data point)', 'simple-payment' ),
+		'none' => __( 'Disable (none)', 'simple-payment' ),
 	];
-	$field_desc = __( 'How this field is used: Default (email/phone/IP cluster, user agent ignored), Cluster (linked with other clustered fields), or Primary (counted on its own).', 'simple-payment' );
+	$field_desc = __( 'How this field is used: Default (email/phone/IP cluster, user agent ignored), Cluster (linked with other clustered fields), Primary (counted on its own), or Disable (none) to ignore this field.', 'simple-payment' );
 	$settings[ 'fraud.field_email' ] = [ 'title' => __( 'Match by Email', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
 	$settings[ 'fraud.field_phone' ] = [ 'title' => __( 'Match by Billing Phone', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
 	$settings[ 'fraud.field_ip' ] = [ 'title' => __( 'Match by IP Address', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
 	$settings[ 'fraud.field_user_agent' ] = [ 'title' => __( 'Match by User Agent', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => __( 'User agent (order attribution). Ignored by default - it is a broad signal that can over-block. Set to Cluster or Primary to use it.', 'simple-payment' ) ];
 
-	$settings[ 'fraud.threshold' ] = [ 'title' => __( 'Failed Attempts Threshold', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => __( 'Number of failed attempts (per cluster, or per value for Primary fields) within the timeframe that triggers a block. Default 3.', 'simple-payment' ) ];
-	$settings[ 'fraud.period' ] = [ 'title' => __( 'Timeframe (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => __( 'How far back to count failed attempts. Default 86400 (24 hours).', 'simple-payment' ) ];
-	$settings[ 'fraud.cooldown' ] = [ 'title' => __( 'Cooldown / Block Duration (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => __( 'How long to block once the threshold is reached. Default 86400 (24 hours).', 'simple-payment' ) ];
-	$settings[ 'fraud.permanent_after' ] = [ 'title' => __( 'Permanent Block After', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => __( 'After an identity has been (temporarily) blocked this many times, move it to the permanent block list below. 0 disables permanent blocking. Example: 2.', 'simple-payment' ) ];
+	$settings[ 'fraud.threshold' ] = [ 'title' => __( 'Failed Attempts Threshold', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => 3, 'description' => __( 'Number of failed attempts (per cluster, or per value for Primary fields) within the timeframe that triggers a block. Default 3.', 'simple-payment' ) ];
+	$settings[ 'fraud.period' ] = [ 'title' => __( 'Timeframe (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => DAY_IN_SECONDS, 'description' => __( 'How far back to count failed attempts. Default 86400 (24 hours).', 'simple-payment' ) ];
+	$settings[ 'fraud.cooldown' ] = [ 'title' => __( 'Cooldown / Block Duration (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => DAY_IN_SECONDS, 'description' => __( 'How long to block once the threshold is reached. Default 86400 (24 hours).', 'simple-payment' ) ];
+	$settings[ 'fraud.permanent_after' ] = [ 'title' => __( 'Permanent Block After', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => 0, 'description' => __( 'After an identity has been (temporarily) blocked this many times, move it to the permanent block list below. 0 disables permanent blocking. Example: 2.', 'simple-payment' ) ];
 	$settings[ 'sp_fraud_blocked' ] = [ 'title' => __( 'Permanent Blocks', 'simple-payment' ), 'type' => 'textarea', 'legacy' => true, 'section' => 'fraud_settings', 'description' => __( 'Permanently blocked identities, one cluster per line, comma-separated keys (e.g. email:bad@guy.com,ip:1.2.3.4,phone:5551234). Edit or remove lines to manage. Never expires.', 'simple-payment' ) ];
 	$settings[ 'fraud.message' ] = [ 'title' => __( 'Blocked Message', 'simple-payment' ), 'type' => 'textarea', 'section' => 'fraud_settings', 'description' => __( 'Shown instead of the payment methods when blocked. HTML allowed.', 'simple-payment' ) ];
 	$settings[ 'fraud.excluded_roles' ] = [ 'title' => __( 'Excluded Roles', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => sprintf( __( 'Optional. Comma-separated role slugs to whitelist (never blocked). Available: %s', 'simple-payment' ), $roles ? implode( ', ', $roles ) : '-' ) ];
@@ -107,6 +108,7 @@ function sp_fraud_all_fields() { return( apply_filters( 'sp_fraud_all_fields', [
 // Matching mode for a field: 'off', 'cluster' or 'primary'.
 function sp_fraud_field_mode( $field ) {
 	$mode = sp_fraud_param( 'field_' . $field );
+	if ( $mode === 'none' ) return( 'off' );
 	if ( $mode === 'cluster' || $mode === 'primary' ) return( $mode );
 	// default behaviour: cluster the strong identifiers, ignore the user agent.
 	return( $field === 'user_agent' ? 'off' : 'cluster' );

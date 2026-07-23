@@ -441,7 +441,8 @@ class SimplePaymentAdmin {
 	function setting_text_fn( $key, $params = null ) {
 		$option = self::param( $key );
 		$field = $this->option_name . $this->param_name( $key );
-		echo "<input id='" . esc_attr( $key ) . "' name='" . esc_attr( $field ) . "' size='40' type='text' value='" . esc_attr( $option ) . "' />";
+		$placeholder = isset( $params[ 'placeholder' ] ) ? " placeholder='" . esc_attr( $params[ 'placeholder' ] ) . "'" : '';
+		echo "<input id='" . esc_attr( $key ) . "' name='" . esc_attr( $field ) . "' size='40' type='text' value='" . esc_attr( $option ) . "'" . $placeholder . " />";
 	}
 
 	function setting_check_fn( $key, $params = null ) {
