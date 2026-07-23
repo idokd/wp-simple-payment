@@ -144,7 +144,51 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 		
 		add_action( 'sp_validate_license', [ $this, 'validate_plugin_license' ] );
 		add_action( 'upgrader_process_complete', [ $this, 'validate_periodic_license' ] );
+
+		add_filter( 'sp_admin_settings', [ $this, 'feature_settings' ] );
+		$this->load_features();
+
 		do_action( 'sp_loaded' );
+	}
+
+	/**
+	 * Experimental features registry. Each entry is a slug => [ title, description ].
+	 * Enabling a feature loads features/{slug}.php, which registers its own settings.
+	 */
+	public static function features() {
+		return( apply_filters( 'sp_features', [
+			'woocommerce-fraud-detection' => [
+				'title' => __( 'WooCommerce Fraud Detection', 'simple-payment' ),
+				'description' => __( 'Block checkout for repeated failed orders from the same email or IP address, showing a custom message instead of the payment methods.', 'simple-payment' ),
+			],
+		] ) );
+	}
+
+	/**
+	 * Load enabled experimental features from the features/ directory.
+	 */
+	public function load_features() {
+		foreach ( self::features() as $slug => $feature ) {
+			if ( !self::param( 'features.' . $slug ) ) continue;
+			$file = SPWP_PLUGIN_DIR . '/features/' . sanitize_file_name( $slug ) . '.php';
+			if ( file_exists( $file ) ) require_once( $file );
+		}
+		do_action( 'sp_features_loaded' );
+	}
+
+	/**
+	 * Register the on/off toggle for each experimental feature.
+	 */
+	public function feature_settings( $settings ) {
+		foreach ( self::features() as $slug => $feature ) {
+			$settings[ 'features.' . $slug ] = [
+				'title' => isset( $feature[ 'title' ] ) ? $feature[ 'title' ] : $slug,
+				'type' => 'check',
+				'section' => 'experimental_settings',
+				'description' => isset( $feature[ 'description' ] ) ? $feature[ 'description' ] : '',
+			];
+		}
+		return( $settings );
 	}
 
 	function validate_periodic_license() {

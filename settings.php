@@ -30,6 +30,11 @@ $sp_sections = [
     'description' => __('Setup how Simple Payment extends and connects via API:', 'simple-payment'),
     'section' => 'extensions'
   ],
+  'experimental_settings' => [
+    'title' => __('Experimental Features', 'simple-payment'),
+    'description' => __('Enable experimental features. Each enabled feature loads on plugin start and exposes its own settings below.', 'simple-payment'),
+    'section' => 'experimental'
+  ],
   'installments' => [
     'title' => __('Installments Settings', 'simple-payment'),
     'description' => __('Setup how Simple Payment should operate installments and recurring payments:', 'simple-payment'),

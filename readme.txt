@@ -128,6 +128,8 @@ I hope it is useful for you and look forward to reading your reviews! 😉 Thank
 * Added WooCommerce companion handling for the receiving store: exposes / validates / keeps the sp_* order parameters on the REST API, can auto complete paid orders (skipping processing), and redirects the customer back to the originating site once the order is paid
 * WooCommerce companion: the receiving store selects the gateway for incoming orders (the source site does not need to know the remote gateways, and its own Simple Payment gateway may be used); unknown incoming payment methods are cleared so the customer can choose on the payment page
 * WooCommerce companion: flags to disable WooCommerce customer and/or admin emails for orders received from the source site (outsourced payment requests)
+* Added an Experimental Features framework (Settings > Experimental): toggle features on/off, each loads on plugin start with its own settings
+* New experimental feature "WooCommerce Fraud Detection": blocks the checkout (hides payment methods and shows a custom message) after repeated failed orders from the same email or IP within a timeframe, with a cooldown, role whitelist and an option to exempt registered users
 
 = 2.5.0 =
 *Release Data - 14 Jul 2026*
