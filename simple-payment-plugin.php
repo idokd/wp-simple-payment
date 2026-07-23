@@ -161,6 +161,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 				'title' => __( 'Fraud Detection', 'simple-payment' ),
 				'description' => __( 'Detect repeated failed payments from the same identity (email, phone, IP, user agent) and block further attempts. Integrates with WooCommerce and can be reused by other integrations.', 'simple-payment' ),
 			],
+			'zapier' => [
+				'title' => __( 'Zapier', 'simple-payment' ),
+				'description' => __( 'Expose a Zapier endpoint so payments and updates can trigger Zaps.', 'simple-payment' ),
+			],
 		] ) );
 	}
 
@@ -1108,7 +1112,6 @@ global $SPWP;
 $SPWP = SimplePaymentPlugin::instance();
 
 require_once( 'addons/gutenberg/init.php' );
-require_once( 'addons/zapier/init.php' );
 require_once( 'addons/woocommerce/init.php' );
 require_once( 'addons/woocommerce-subscriptions/init.php' );
 
