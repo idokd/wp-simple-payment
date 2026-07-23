@@ -129,7 +129,7 @@ I hope it is useful for you and look forward to reading your reviews! 😉 Thank
 * WooCommerce companion: the receiving store selects the gateway for incoming orders (the source site does not need to know the remote gateways, and its own Simple Payment gateway may be used); unknown incoming payment methods are cleared so the customer can choose on the payment page
 * WooCommerce companion: flags to disable WooCommerce customer and/or admin emails for orders received from the source site (outsourced payment requests)
 * Added an Experimental Features framework (Settings > Experimental): toggle features on/off, each loads on plugin start with its own settings
-* New experimental feature "WooCommerce Fraud Detection": blocks the checkout (hides payment methods and shows a custom message) after repeated failed orders that share the same identity within a timeframe, with a cooldown, role whitelist and an option to exempt registered users. The identity is configurable per field - match by email, billing phone, IP address and/or user agent (order attribution)
+* New experimental feature "WooCommerce Fraud Detection": blocks the checkout (hides payment methods and shows a custom message) after repeated failed orders that share the same identity within a timeframe, with a cooldown, role whitelist and an option to exempt registered users. The identity is configurable per field - match by email, billing phone, IP address and/or user agent (order attribution) - and an optional "combine fields" mode links failed orders that share any matched value into a single cluster (e.g. X/Y, then X/Z, then B/Y count as 3)
 
 = 2.5.0 =
 *Release Data - 14 Jul 2026*

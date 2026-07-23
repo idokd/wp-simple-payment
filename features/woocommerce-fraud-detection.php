@@ -56,10 +56,16 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 		'section' => 'wc_fraud_settings',
 		'description' => __( 'Count consecutive failed orders sharing the same browser user agent (WooCommerce order attribution _wc_order_attribution_user_agent).', 'simple-payment' )
 	];
+	$settings[ 'wc_fraud.combined' ] = [
+		'title' => __( 'Combine Fields', 'simple-payment' ),
+		'type' => 'check',
+		'section' => 'wc_fraud_settings',
+		'description' => __( 'Link failed orders that share ANY matched value into one cluster, and count the cluster as a whole (e.g. X/Y, then X/Z, then B/Y count as 3). User agent is excluded from linking. When off, each field is counted independently.', 'simple-payment' )
+	];
 	$settings[ 'wc_fraud.threshold' ] = [
 		'title' => __( 'Failed Orders Threshold', 'simple-payment' ),
 		'section' => 'wc_fraud_settings',
-		'description' => __( 'Number of failed orders from the same email or IP within the timeframe that triggers a block. Default 3.', 'simple-payment' )
+		'description' => __( 'Number of failed orders (per value, or per cluster when Combine Fields is on) within the timeframe that triggers a block. Default 3.', 'simple-payment' )
 	];
 	$settings[ 'wc_fraud.period' ] = [
 		'title' => __( 'Timeframe (seconds)', 'simple-payment' ),
@@ -224,11 +230,19 @@ add_action( 'woocommerce_order_status_failed', 'sp_wc_fraud_record_failure', 10,
 function sp_wc_fraud_record_failure( $order_id, $order = null ) {
 	$order = $order ? : wc_get_order( $order_id );
 	if ( !$order ) return;
+	$keys = sp_wc_fraud_order_keys( $order );
+	if ( !$keys ) return;
+	if ( sp_wc_fraud_param( 'combined' ) && sp_wc_fraud_link_fields() ) sp_wc_fraud_record_combined( $order, $keys );
+	else sp_wc_fraud_record_independent( $order, $keys );
+}
+
+// Independent mode: each identity value has its own counter.
+function sp_wc_fraud_record_independent( $order, $keys ) {
 	$now = time();
 	$period = sp_wc_fraud_period();
 	$threshold = sp_wc_fraud_threshold();
 	$cooldown = sp_wc_fraud_cooldown();
-	foreach ( sp_wc_fraud_order_keys( $order ) as $key ) {
+	foreach ( $keys as $key ) {
 		$fails = get_transient( sp_wc_fraud_bucket_key( $key ) );
 		$fails = is_array( $fails ) ? $fails : [];
 		$fails[] = $now;
@@ -242,16 +256,85 @@ function sp_wc_fraud_record_failure( $order_id, $order = null ) {
 	}
 }
 
-// A successful payment breaks the streak: clear failures + block for that identity.
+// Fields used to LINK failures into a cluster in combined mode. User agent is a
+// broad signal so it is excluded from linking by default (but is still blocked
+// once its cluster trips). Adjust with the sp_wc_fraud_link_fields filter.
+function sp_wc_fraud_link_fields() {
+	return( apply_filters( 'sp_wc_fraud_link_fields', array_values( array_diff( sp_wc_fraud_fields(), [ 'user_agent' ] ) ) ) );
+}
+
+// Combined mode: failures that share ANY linking value belong to one cluster;
+// the cluster's total failure count is what trips the block. When it trips,
+// every value seen across the cluster (all fields) is blocked.
+function sp_wc_fraud_record_combined( $order, $keys ) {
+	$now = time();
+	$period = sp_wc_fraud_period();
+	$threshold = sp_wc_fraud_threshold();
+	$cooldown = sp_wc_fraud_cooldown();
+
+	$log = get_transient( 'sp_fraud_log' );
+	$log = is_array( $log ) ? $log : [];
+	$log = array_values( array_filter( $log, function( $e ) use ( $now, $period ) { return( isset( $e[ 't' ] ) && $e[ 't' ] >= $now - $period ); } ) );
+	$log[] = [ 't' => $now, 'k' => $keys ];
+	if ( count( $log ) > 500 ) $log = array_slice( $log, -500 );
+	set_transient( 'sp_fraud_log', $log, max( $period, $cooldown ) );
+
+	$link_fields = sp_wc_fraud_link_fields();
+	$component = sp_wc_fraud_component( $log, count( $log ) - 1, $link_fields );
+	if ( count( $component ) >= $threshold ) {
+		$block = [];
+		foreach ( $component as $i ) foreach ( $log[ $i ][ 'k' ] as $k ) $block[ $k ] = 1;
+		foreach ( array_keys( $block ) as $k ) set_transient( sp_wc_fraud_block_key( $k ), $now, $cooldown );
+		do_action( 'sp_wc_fraud_blocked_combined', array_keys( $block ), $order, $component );
+	}
+}
+
+// Connected component (transitive) of a log entry, linking entries that share
+// any linking-field value.
+function sp_wc_fraud_component( $log, $start, $link_fields ) {
+	$link_keys = [];
+	foreach ( $log as $i => $entry ) {
+		$lk = [];
+		foreach ( $entry[ 'k' ] as $k ) {
+			$field = explode( ':', $k, 2 )[ 0 ];
+			if ( in_array( $field, $link_fields, true ) ) $lk[] = $k;
+		}
+		$link_keys[ $i ] = $lk;
+	}
+	$seen = [ $start => true ];
+	$stack = [ $start ];
+	$component = [];
+	while ( $stack ) {
+		$i = array_pop( $stack );
+		$component[] = $i;
+		foreach ( $log as $j => $entry ) {
+			if ( isset( $seen[ $j ] ) ) continue;
+			if ( array_intersect( $link_keys[ $i ], $link_keys[ $j ] ) ) {
+				$seen[ $j ] = true;
+				$stack[] = $j;
+			}
+		}
+	}
+	return( $component );
+}
+
+// A successful payment breaks the streak: clear failures + blocks for that
+// identity (in both modes) and drop linked entries from the combined log.
 add_action( 'woocommerce_payment_complete', 'sp_wc_fraud_clear_for_order' );
 add_action( 'woocommerce_order_status_completed', 'sp_wc_fraud_clear_for_order' );
 add_action( 'woocommerce_order_status_processing', 'sp_wc_fraud_clear_for_order' );
 function sp_wc_fraud_clear_for_order( $order_id ) {
 	$order = wc_get_order( $order_id );
 	if ( !$order ) return;
-	foreach ( sp_wc_fraud_order_keys( $order ) as $key ) {
+	$keys = sp_wc_fraud_order_keys( $order );
+	foreach ( $keys as $key ) {
 		delete_transient( sp_wc_fraud_bucket_key( $key ) );
 		delete_transient( sp_wc_fraud_block_key( $key ) );
+	}
+	$log = get_transient( 'sp_fraud_log' );
+	if ( is_array( $log ) && $keys ) {
+		$log = array_values( array_filter( $log, function( $e ) use ( $keys ) { return( !array_intersect( $e[ 'k' ], $keys ) ); } ) );
+		set_transient( 'sp_fraud_log', $log, max( sp_wc_fraud_period(), sp_wc_fraud_cooldown() ) );
 	}
 }
 
