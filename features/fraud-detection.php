@@ -341,15 +341,27 @@ function sp_fraud_clear( $values ) {
 	}
 }
 
-// Identity values for the current visitor. $overrides may carry posted email/phone.
+// Identity values for the current visitor: the posted checkout email/phone
+// ($overrides, may be arrays) PLUS the logged-in customer's account/profile.
 function sp_fraud_current_values( $overrides = [] ) {
+	$emails = isset( $overrides[ 'email' ] ) ? (array) $overrides[ 'email' ] : [];
+	$phones = isset( $overrides[ 'phone' ] ) ? (array) $overrides[ 'phone' ] : [];
+	if ( is_user_logged_in() ) {
+		$uid = get_current_user_id();
+		$emails[] = wp_get_current_user()->user_email;
+		$emails[] = get_user_meta( $uid, 'billing_email', true );
+		$phones[] = get_user_meta( $uid, 'billing_phone', true );
+		$phones[] = get_user_meta( $uid, 'shipping_phone', true );
+	}
 	$values = [
 		'ip' => sp_fraud_ip(),
 		'user_agent' => sp_fraud_user_agent(),
-		'email' => isset( $overrides[ 'email' ] ) ? $overrides[ 'email' ] : ( is_user_logged_in() ? wp_get_current_user()->user_email : '' ),
-		'phone' => isset( $overrides[ 'phone' ] ) ? $overrides[ 'phone' ] : ( is_user_logged_in() ? array_filter( [ get_user_meta( get_current_user_id(), 'billing_phone', true ), get_user_meta( get_current_user_id(), 'shipping_phone', true ) ] ) : '' ),
+		'email' => array_values( array_unique( array_filter( $emails ) ) ),
+		'phone' => array_values( array_unique( array_filter( $phones ) ) ),
 	];
-	return( apply_filters( 'sp_fraud_current_values', array_merge( $values, $overrides ) ) );
+	// Let other overrides (e.g. ip / user_agent from a custom integration) apply.
+	foreach ( $overrides as $key => $value ) if ( !in_array( $key, [ 'email', 'phone' ], true ) ) $values[ $key ] = $value;
+	return( apply_filters( 'sp_fraud_current_values', $values ) );
 }
 
 /* =========================================================================
@@ -364,6 +376,22 @@ function sp_fraud_wc_enabled() {
 }
 
 if ( function_exists( 'WC' ) ) {
+
+	// Email/phone the customer entered on the checkout form. During WooCommerce's
+	// update_order_review AJAX (which recalculates the gateways as fields change)
+	// the form is serialized into $_POST['post_data']; on final submit the fields
+	// are in $_POST directly.
+	function sp_fraud_wc_posted() {
+		$data = $_POST;
+		if ( isset( $_POST[ 'post_data' ] ) && is_string( $_POST[ 'post_data' ] ) ) {
+			parse_str( wp_unslash( $_POST[ 'post_data' ] ), $pd );
+			if ( is_array( $pd ) ) $data = array_merge( $pd, $data );
+		}
+		$posted = [ 'email' => [], 'phone' => [] ];
+		foreach ( [ 'billing_email', 'shipping_email' ] as $f ) if ( !empty( $data[ $f ] ) ) $posted[ 'email' ][] = sanitize_email( wp_unslash( $data[ $f ] ) );
+		foreach ( [ 'billing_phone', 'shipping_phone' ] as $f ) if ( !empty( $data[ $f ] ) ) $posted[ 'phone' ][] = sanitize_text_field( wp_unslash( $data[ $f ] ) );
+		return( $posted );
+	}
 
 	function sp_fraud_wc_order_values( $order ) {
 		$shipping_phone = method_exists( $order, 'get_shipping_phone' ) ? $order->get_shipping_phone() : $order->get_meta( '_shipping_phone' );
@@ -393,28 +421,22 @@ if ( function_exists( 'WC' ) ) {
 	}
 	unset( $sp_fraud_hook );
 
-	// Hide every payment method at checkout when blocked.
+	// Hide every payment method at checkout when blocked (considers the values
+	// typed into the checkout form as well as the logged-in customer and IP/UA).
 	add_filter( 'woocommerce_available_payment_gateways', function( $gateways ) {
 		if ( ( is_admin() && !wp_doing_ajax() ) || !sp_fraud_wc_enabled() ) return( $gateways );
-		return( sp_fraud_is_blocked( sp_fraud_current_values() ) ? [] : $gateways );
+		return( sp_fraud_is_blocked( sp_fraud_current_values( sp_fraud_wc_posted() ) ) ? [] : $gateways );
 	}, 999 );
 
 	// Replace the "no payment methods" text with the custom message when blocked.
 	add_filter( 'woocommerce_no_available_payment_methods_message', function( $message ) {
 		if ( !sp_fraud_wc_enabled() ) return( $message );
-		return( sp_fraud_is_blocked( sp_fraud_current_values() ) ? sp_fraud_message() : $message );
+		return( sp_fraud_is_blocked( sp_fraud_current_values( sp_fraud_wc_posted() ) ) ? sp_fraud_message() : $message );
 	} );
 
 	// Server-side guard: refuse to place the order when blocked.
 	add_action( 'woocommerce_checkout_process', function() {
 		if ( !sp_fraud_wc_enabled() ) return;
-		$posted = [];
-		$emails = [];
-		foreach ( [ 'billing_email', 'shipping_email' ] as $f ) if ( !empty( $_POST[ $f ] ) ) $emails[] = sanitize_email( wp_unslash( $_POST[ $f ] ) );
-		$phones = [];
-		foreach ( [ 'billing_phone', 'shipping_phone' ] as $f ) if ( !empty( $_POST[ $f ] ) ) $phones[] = sanitize_text_field( wp_unslash( $_POST[ $f ] ) );
-		if ( $emails ) $posted[ 'email' ] = $emails;
-		if ( $phones ) $posted[ 'phone' ] = $phones;
-		if ( sp_fraud_is_blocked( sp_fraud_current_values( $posted ) ) ) wc_add_notice( wp_kses_post( sp_fraud_message() ), 'error' );
+		if ( sp_fraud_is_blocked( sp_fraud_current_values( sp_fraud_wc_posted() ) ) ) wc_add_notice( wp_kses_post( sp_fraud_message() ), 'error' );
 	} );
 }
