@@ -47,7 +47,7 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 	];
 	$field_desc = __( 'How this field is used: Default (email/phone/IP cluster, user agent ignored), Cluster (linked with other clustered fields), Primary (counted on its own), or Disable (none) to ignore this field.', 'simple-payment' );
 	$settings[ 'fraud.field_email' ] = [ 'title' => __( 'Match by Email', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
-	$settings[ 'fraud.field_phone' ] = [ 'title' => __( 'Match by Billing Phone', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
+	$settings[ 'fraud.field_phone' ] = [ 'title' => __( 'Match by Phone', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
 	$settings[ 'fraud.field_ip' ] = [ 'title' => __( 'Match by IP Address', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
 	$modes_ua = array_merge( [ '' => __( 'Default (disabled)', 'simple-payment' ) ], array_slice( $modes, 1, null, true ) );
 	$settings[ 'fraud.field_user_agent' ] = [ 'title' => __( 'Match by User Agent', 'simple-payment' ), 'type' => 'select', 'options' => $modes_ua, 'section' => 'fraud_settings', 'description' => __( 'User agent (order attribution). Disabled by default - it is a broad signal that can over-block. Set to Cluster or Primary to use it.', 'simple-payment' ) ];
@@ -56,7 +56,7 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 	$settings[ 'fraud.period' ] = [ 'title' => __( 'Timeframe (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => DAY_IN_SECONDS, 'description' => __( 'How far back to count failed attempts. Default 86400 (24 hours).', 'simple-payment' ) ];
 	$settings[ 'fraud.cooldown' ] = [ 'title' => __( 'Cooldown / Block Duration (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => DAY_IN_SECONDS, 'description' => __( 'How long to block once the threshold is reached. Default 86400 (24 hours).', 'simple-payment' ) ];
 	$settings[ 'fraud.permanent_after' ] = [ 'title' => __( 'Permanent Block After', 'simple-payment' ), 'section' => 'fraud_settings', 'placeholder' => 0, 'description' => __( 'After an identity has been (temporarily) blocked this many times, move it to the permanent block list below. 0 disables permanent blocking. Example: 2.', 'simple-payment' ) ];
-	$settings[ 'sp_fraud_blocked' ] = [ 'title' => __( 'Permanent Blocks', 'simple-payment' ), 'type' => 'textarea', 'legacy' => true, 'section' => 'fraud_settings', 'description' => __( 'Permanently blocked identities, one cluster per line, comma-separated keys (e.g. email:bad@guy.com,ip:1.2.3.4,phone:5551234). Edit or remove lines to manage. Never expires.', 'simple-payment' ) ];
+	$settings[ 'sp_fraud_blocked' ] = [ 'title' => __( 'Permanent Blocks', 'simple-payment' ), 'type' => 'textarea', 'legacy' => true, 'section' => 'fraud_settings', 'description' => __( 'Permanently blocked identities - <strong>one identity per line</strong>. On each line list its data keys <strong>comma-separated</strong> as <code>field:value</code>; a visitor matching ANY key (on any line) is blocked. Never expires - edit or remove lines to manage.<br>Example (two blocked identities):<br><code>email:bad@guy.com,ip:1.2.3.4,phone:5551234</code><br><code>ip:203.0.113.9</code>', 'simple-payment' ) ];
 	$settings[ 'fraud.message' ] = [ 'title' => __( 'Blocked Message', 'simple-payment' ), 'type' => 'textarea', 'section' => 'fraud_settings', 'description' => __( 'Shown instead of the payment methods when blocked. HTML allowed.', 'simple-payment' ) ];
 	$settings[ 'fraud.excluded_roles' ] = [ 'title' => __( 'Excluded Roles', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => sprintf( __( 'Optional. Comma-separated role slugs to whitelist (never blocked). Available: %s', 'simple-payment' ), $roles ? implode( ', ', $roles ) : '-' ) ];
 	$settings[ 'fraud.exclude_registered' ] = [ 'title' => __( 'Exclude Registered Users', 'simple-payment' ), 'type' => 'check', 'section' => 'fraud_settings', 'description' => __( 'Never block logged-in (registered) users.', 'simple-payment' ) ];
@@ -147,15 +147,20 @@ function sp_fraud_normalize( $field, $value ) {
 	return( strtolower( $value ) );
 }
 
-// Build 'field:value' keys from a raw values map, limited to $fields (or all enabled).
+// Build 'field:value' keys from a raw values map, limited to $fields (or all
+// enabled). A field value may be a single value or an array of values (e.g.
+// billing + shipping phone) - each non-empty value produces its own key.
 function sp_fraud_keys( $values, $fields = null ) {
 	if ( $fields === null ) $fields = sp_fraud_fields();
 	$keys = [];
 	foreach ( $fields as $field ) {
-		$value = sp_fraud_normalize( $field, isset( $values[ $field ] ) ? $values[ $field ] : '' );
-		if ( $value !== '' ) $keys[] = $field . ':' . $value;
+		$raw = isset( $values[ $field ] ) ? $values[ $field ] : '';
+		foreach ( ( is_array( $raw ) ? $raw : [ $raw ] ) as $one ) {
+			$value = sp_fraud_normalize( $field, $one );
+			if ( $value !== '' ) $keys[] = $field . ':' . $value;
+		}
 	}
-	return( $keys );
+	return( array_values( array_unique( $keys ) ) );
 }
 
 function sp_fraud_bucket_key( $key ) { return( 'sp_fraud_f_' . md5( $key ) ); }
@@ -342,7 +347,7 @@ function sp_fraud_current_values( $overrides = [] ) {
 		'ip' => sp_fraud_ip(),
 		'user_agent' => sp_fraud_user_agent(),
 		'email' => isset( $overrides[ 'email' ] ) ? $overrides[ 'email' ] : ( is_user_logged_in() ? wp_get_current_user()->user_email : '' ),
-		'phone' => isset( $overrides[ 'phone' ] ) ? $overrides[ 'phone' ] : ( is_user_logged_in() ? get_user_meta( get_current_user_id(), 'billing_phone', true ) : '' ),
+		'phone' => isset( $overrides[ 'phone' ] ) ? $overrides[ 'phone' ] : ( is_user_logged_in() ? array_filter( [ get_user_meta( get_current_user_id(), 'billing_phone', true ), get_user_meta( get_current_user_id(), 'shipping_phone', true ) ] ) : '' ),
 	];
 	return( apply_filters( 'sp_fraud_current_values', array_merge( $values, $overrides ) ) );
 }
@@ -361,9 +366,11 @@ function sp_fraud_wc_enabled() {
 if ( function_exists( 'WC' ) ) {
 
 	function sp_fraud_wc_order_values( $order ) {
+		$shipping_phone = method_exists( $order, 'get_shipping_phone' ) ? $order->get_shipping_phone() : $order->get_meta( '_shipping_phone' );
 		return( [
-			'email' => $order->get_billing_email(),
-			'phone' => $order->get_billing_phone(),
+			// Look at both billing and shipping values for phone and email.
+			'email' => array_filter( [ $order->get_billing_email(), $order->get_meta( '_shipping_email' ) ] ),
+			'phone' => array_filter( [ $order->get_billing_phone(), $shipping_phone ] ),
 			'ip' => $order->get_customer_ip_address() ? : sp_fraud_ip(),
 			'user_agent' => $order->get_meta( '_wc_order_attribution_user_agent' ) ? : sp_fraud_user_agent(),
 		] );
@@ -402,8 +409,12 @@ if ( function_exists( 'WC' ) ) {
 	add_action( 'woocommerce_checkout_process', function() {
 		if ( !sp_fraud_wc_enabled() ) return;
 		$posted = [];
-		if ( isset( $_POST[ 'billing_email' ] ) ) $posted[ 'email' ] = sanitize_email( wp_unslash( $_POST[ 'billing_email' ] ) );
-		if ( isset( $_POST[ 'billing_phone' ] ) ) $posted[ 'phone' ] = sanitize_text_field( wp_unslash( $_POST[ 'billing_phone' ] ) );
+		$emails = [];
+		foreach ( [ 'billing_email', 'shipping_email' ] as $f ) if ( !empty( $_POST[ $f ] ) ) $emails[] = sanitize_email( wp_unslash( $_POST[ $f ] ) );
+		$phones = [];
+		foreach ( [ 'billing_phone', 'shipping_phone' ] as $f ) if ( !empty( $_POST[ $f ] ) ) $phones[] = sanitize_text_field( wp_unslash( $_POST[ $f ] ) );
+		if ( $emails ) $posted[ 'email' ] = $emails;
+		if ( $phones ) $posted[ 'phone' ] = $phones;
 		if ( sp_fraud_is_blocked( sp_fraud_current_values( $posted ) ) ) wc_add_notice( wp_kses_post( sp_fraud_message() ), 'error' );
 	} );
 }

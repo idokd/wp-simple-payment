@@ -410,6 +410,8 @@ class SimplePaymentAdmin {
 				$this->setting_text_fn($options['option'], $options['params']);
 				break;
 		}
+		if ( isset( $options[ 'params' ][ 'description' ] ) && $options[ 'params' ][ 'description' ] )
+			echo "<p class='description'>" . wp_kses_post( $options[ 'params' ][ 'description' ] ) . "</p>";
 	}
 
 
