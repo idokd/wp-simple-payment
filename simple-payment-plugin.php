@@ -157,9 +157,9 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 	 */
 	public static function features() {
 		return( apply_filters( 'sp_features', [
-			'woocommerce-fraud-detection' => [
-				'title' => __( 'WooCommerce Fraud Detection', 'simple-payment' ),
-				'description' => __( 'Block checkout for repeated failed orders from the same email or IP address, showing a custom message instead of the payment methods.', 'simple-payment' ),
+			'fraud-detection' => [
+				'title' => __( 'Fraud Detection', 'simple-payment' ),
+				'description' => __( 'Detect repeated failed payments from the same identity (email, phone, IP, user agent) and block further attempts. Integrates with WooCommerce and can be reused by other integrations.', 'simple-payment' ),
 			],
 		] ) );
 	}

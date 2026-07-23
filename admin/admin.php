@@ -446,9 +446,13 @@ class SimplePaymentAdmin {
 
 	function setting_check_fn( $key, $params = null ) {
 		$option = self::param( $key );
+		if ( $option === false && isset( $params[ 'default' ] ) ) $option = $params[ 'default' ];
 		$field = $this->option_name . $this->param_name( $key );
 
-		echo "<input " . ( $option ? ' checked="checked" ' : '' ) . " id='" . esc_attr( $key ) . "' value='true' name='" . esc_attr( $field ) . "' type='checkbox' />";
+		// Hidden companion input so an unchecked box submits a value ('0') instead
+		// of nothing - otherwise a default-on checkbox could never be turned off.
+		echo "<input type='hidden' name='" . esc_attr( $field ) . "' value='0' />";
+		echo "<input " . ( $option && $option !== '0' ? ' checked="checked" ' : '' ) . " id='" . esc_attr( $key ) . "' value='true' name='" . esc_attr( $field ) . "' type='checkbox' />";
 	}
 
 	function setting_textarea_fn( $key, $params = null ) {
