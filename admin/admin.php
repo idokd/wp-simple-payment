@@ -456,8 +456,8 @@ class SimplePaymentAdmin {
 	}
 
 	function setting_textarea_fn( $key, $params = null ) {
-		$option = self::param( $key );
-		$field = $this->option_name . $this->param_name( $key );
+		$option = isset( $params[ 'legacy' ] ) ? get_option( $key ) : self::param( $key );
+		$field = isset( $params[ 'legacy' ] ) ? $key : $this->option_name . $this->param_name( $key );
 		echo "<textarea id='" . esc_attr( $key ) . "' name='" . esc_attr( $field ) . "' rows='7' cols='50' type='textarea'>" . esc_html( $option ) . "</textarea>";
 	}
 

@@ -53,6 +53,8 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 	$settings[ 'fraud.threshold' ] = [ 'title' => __( 'Failed Attempts Threshold', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => __( 'Number of failed attempts (per cluster, or per value for Primary fields) within the timeframe that triggers a block. Default 3.', 'simple-payment' ) ];
 	$settings[ 'fraud.period' ] = [ 'title' => __( 'Timeframe (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => __( 'How far back to count failed attempts. Default 86400 (24 hours).', 'simple-payment' ) ];
 	$settings[ 'fraud.cooldown' ] = [ 'title' => __( 'Cooldown / Block Duration (seconds)', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => __( 'How long to block once the threshold is reached. Default 86400 (24 hours).', 'simple-payment' ) ];
+	$settings[ 'fraud.permanent_after' ] = [ 'title' => __( 'Permanent Block After', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => __( 'After an identity has been (temporarily) blocked this many times, move it to the permanent block list below. 0 disables permanent blocking. Example: 2.', 'simple-payment' ) ];
+	$settings[ 'sp_fraud_blocked' ] = [ 'title' => __( 'Permanent Blocks', 'simple-payment' ), 'type' => 'textarea', 'legacy' => true, 'section' => 'fraud_settings', 'description' => __( 'Permanently blocked identities, one cluster per line, comma-separated keys (e.g. email:bad@guy.com,ip:1.2.3.4,phone:5551234). Edit or remove lines to manage. Never expires.', 'simple-payment' ) ];
 	$settings[ 'fraud.message' ] = [ 'title' => __( 'Blocked Message', 'simple-payment' ), 'type' => 'textarea', 'section' => 'fraud_settings', 'description' => __( 'Shown instead of the payment methods when blocked. HTML allowed.', 'simple-payment' ) ];
 	$settings[ 'fraud.excluded_roles' ] = [ 'title' => __( 'Excluded Roles', 'simple-payment' ), 'section' => 'fraud_settings', 'description' => sprintf( __( 'Optional. Comma-separated role slugs to whitelist (never blocked). Available: %s', 'simple-payment' ), $roles ? implode( ', ', $roles ) : '-' ) ];
 	$settings[ 'fraud.exclude_registered' ] = [ 'title' => __( 'Exclude Registered Users', 'simple-payment' ), 'type' => 'check', 'section' => 'fraud_settings', 'description' => __( 'Never block logged-in (registered) users.', 'simple-payment' ) ];
@@ -60,6 +62,22 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 	$settings[ 'fraud.wc_enabled' ] = [ 'title' => __( 'Enable WooCommerce Fraud Detection', 'simple-payment' ), 'type' => 'check', 'default' => true, 'section' => 'fraud_settings', 'description' => __( 'Apply fraud detection to the WooCommerce checkout (failed orders, hide payment methods when blocked). On by default.', 'simple-payment' ) ];
 	return( $settings );
 } );
+
+// The permanent block list is a standalone option (get_option( 'sp_fraud_blocked' )),
+// editable via the textarea above and saved through the Settings API.
+add_action( 'admin_init', function() {
+	register_setting( 'sp', 'sp_fraud_blocked', [ 'type' => 'string', 'sanitize_callback' => 'sp_fraud_sanitize_blocked', 'default' => '' ] );
+} );
+
+function sp_fraud_sanitize_blocked( $value ) {
+	$lines = preg_split( '/\r\n|\r|\n/', (string) $value );
+	$out = [];
+	foreach ( $lines as $line ) {
+		$keys = array_values( array_unique( array_filter( array_map( 'trim', explode( ',', $line ) ) ) ) );
+		if ( $keys ) $out[] = implode( ',', $keys );
+	}
+	return( implode( "\n", $out ) );
+}
 
 /* -------------------------------------------------------------------------
  * Configuration helpers
@@ -77,6 +95,12 @@ function sp_fraud_int( $key, $default ) {
 function sp_fraud_threshold() { return( sp_fraud_int( 'threshold', 3 ) ); }
 function sp_fraud_period()    { return( sp_fraud_int( 'period', DAY_IN_SECONDS ) ); }
 function sp_fraud_cooldown()  { return( sp_fraud_int( 'cooldown', DAY_IN_SECONDS ) ); }
+
+// How many temporary blocks before an identity becomes permanent (0 = disabled).
+function sp_fraud_permanent_after() {
+	$value = sp_fraud_param( 'permanent_after' );
+	return( $value === false || $value === '' ? 0 : max( 0, intval( $value ) ) );
+}
 
 function sp_fraud_all_fields() { return( apply_filters( 'sp_fraud_all_fields', [ 'email', 'phone', 'ip', 'user_agent' ] ) ); }
 
@@ -148,6 +172,80 @@ function sp_fraud_is_whitelisted() {
 }
 
 /* -------------------------------------------------------------------------
+ * Permanent blocks (get_option( 'sp_fraud_blocked' ) - one cluster per line,
+ * comma-separated keys). Never expire.
+ * ---------------------------------------------------------------------- */
+
+// Permanent blocks as an array of groups (each group an array of keys).
+function sp_fraud_permanent_groups() {
+	$raw = (string) get_option( 'sp_fraud_blocked', '' );
+	$groups = [];
+	foreach ( preg_split( '/\r\n|\r|\n/', $raw ) as $line ) {
+		$keys = array_values( array_unique( array_filter( array_map( 'trim', explode( ',', $line ) ) ) ) );
+		if ( $keys ) $groups[] = $keys;
+	}
+	return( $groups );
+}
+
+function sp_fraud_permanent_save( $groups ) {
+	$lines = [];
+	foreach ( $groups as $keys ) if ( $keys ) $lines[] = implode( ',', $keys );
+	update_option( 'sp_fraud_blocked', implode( "\n", $lines ), false );
+}
+
+// Flattened set of all permanently blocked keys.
+function sp_fraud_permanent_keys() {
+	$set = [];
+	foreach ( sp_fraud_permanent_groups() as $group ) foreach ( $group as $key ) $set[ $key ] = 1;
+	return( $set );
+}
+
+// Add a permanently blocked cluster, merging with any existing group it shares a key with.
+function sp_fraud_permanent_add( $keys ) {
+	$keys = array_values( array_unique( array_filter( array_map( 'trim', $keys ) ) ) );
+	if ( !$keys ) return;
+	$merged = $keys;
+	$rest = [];
+	foreach ( sp_fraud_permanent_groups() as $group ) {
+		if ( array_intersect( $group, $merged ) ) $merged = array_values( array_unique( array_merge( $merged, $group ) ) );
+		else $rest[] = $group;
+	}
+	$rest[] = $merged;
+	sp_fraud_permanent_save( $rest );
+	do_action( 'sp_fraud_permanent_blocked', $merged );
+}
+
+function sp_fraud_is_permanently_blocked( $values ) {
+	$permanent = sp_fraud_permanent_keys();
+	if ( !$permanent ) return( false );
+	foreach ( sp_fraud_keys( $values ) as $key ) if ( isset( $permanent[ $key ] ) ) return( true );
+	return( false );
+}
+
+// Count how many times each key has been blocked (persistent, across cooldowns).
+function sp_fraud_block_counts() {
+	$counts = get_option( 'sp_fraud_block_counts' );
+	return( is_array( $counts ) ? $counts : [] );
+}
+
+// Set the temporary block for the given keys, count distinct block events, and
+// promote to a permanent block once the configured number of blocks is reached.
+function sp_fraud_note_block( $keys, $now, $cooldown ) {
+	$counts = sp_fraud_block_counts();
+	$permanent_after = sp_fraud_permanent_after();
+	$max = 0;
+	$changed = false;
+	foreach ( $keys as $key ) {
+		$was = (bool) get_transient( sp_fraud_block_key( $key ) );
+		set_transient( sp_fraud_block_key( $key ), $now, $cooldown );
+		if ( !$was ) { $counts[ $key ] = intval( isset( $counts[ $key ] ) ? $counts[ $key ] : 0 ) + 1; $changed = true; }
+		if ( intval( isset( $counts[ $key ] ) ? $counts[ $key ] : 0 ) > $max ) $max = intval( $counts[ $key ] );
+	}
+	if ( $changed ) update_option( 'sp_fraud_block_counts', $counts, false );
+	if ( $permanent_after && $max >= $permanent_after ) sp_fraud_permanent_add( $keys );
+}
+
+/* -------------------------------------------------------------------------
  * Core: record a failed attempt, test a visitor, clear on success.
  * These are integration-agnostic - pass a values map keyed by field name.
  * ---------------------------------------------------------------------- */
@@ -166,7 +264,7 @@ function sp_fraud_record( $values ) {
 		$fails = array_values( array_filter( $fails, function( $t ) use ( $now, $period ) { return( $t >= $now - $period ); } ) );
 		set_transient( sp_fraud_bucket_key( $key ), $fails, max( $period, $cooldown ) );
 		if ( count( $fails ) >= $threshold ) {
-			set_transient( sp_fraud_block_key( $key ), $now, $cooldown );
+			sp_fraud_note_block( [ $key ], $now, $cooldown );
 			do_action( 'sp_fraud_blocked', $key, $values, $fails );
 		}
 	}
@@ -185,7 +283,7 @@ function sp_fraud_record( $values ) {
 		if ( count( $component ) >= $threshold ) {
 			$block = [];
 			foreach ( $component as $i ) foreach ( $log[ $i ][ 'k' ] as $k ) $block[ $k ] = 1;
-			foreach ( array_keys( $block ) as $k ) set_transient( sp_fraud_block_key( $k ), $now, $cooldown );
+			sp_fraud_note_block( array_keys( $block ), $now, $cooldown );
 			do_action( 'sp_fraud_blocked_cluster', array_keys( $block ), $values, $component );
 		}
 	}
@@ -215,6 +313,7 @@ function sp_fraud_component( $log, $start ) {
 
 function sp_fraud_is_blocked( $values ) {
 	if ( sp_fraud_is_whitelisted() ) return( false );
+	if ( sp_fraud_is_permanently_blocked( $values ) ) return( true );
 	foreach ( sp_fraud_keys( $values ) as $key ) {
 		if ( get_transient( sp_fraud_block_key( $key ) ) ) return( true );
 	}
