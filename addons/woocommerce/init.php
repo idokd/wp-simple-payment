@@ -435,7 +435,7 @@ function sp_wc_gateway_init() {
             // TODO: consider using SPWP::redirect()
             $target = isset( $_REQUEST[ 'target' ] ) ? $_REQUEST[ 'target' ] : '';
             $targets = explode( ':', $target );
-            $target = $targets[ 0 ];
+            $target = sanitize_text_field( $targets[ 0 ] );
             $url = $this->get_return_url( $order );
             switch ( $target ) {
                 case '_top':
@@ -445,8 +445,7 @@ function sp_wc_gateway_init() {
                   echo '<html><head><script type="text/javascript"> parent.location.replace("' . $url . '"); </script></head><body></body</html>'; 
                   break;
                 case 'javascript':
-                  $script = $targets[ 1 ];
-                  echo '<html><head><script type="text/javascript"> ' . $script . ' </script></head><body></body</html>'; 
+                  echo '<html><head><script type="text/javascript"> ' . apply_filters( 'sp_javascript_redirect', null, $targets[ 1 ], $order, $payment ) . ' </script></head><body></body</html>'; 
                   break;
                 case '_blank':
                   break;
