@@ -28,6 +28,17 @@ define( 'SPWP_VERSION', get_file_data( __FILE__, [ 'Version' => 'Version' ], fal
 
 require_once( SPWP_PLUGIN_DIR . '/vendor/autoload.php' );
 
+// Autoload plugin-provided engines (e.g. engines/woocommerce.php) under the
+// SimplePayment\Engines namespace, so class_exists( 'SimplePayment\Engines\X' )
+// resolves them even when an engine name collides with a global class.
+spl_autoload_register( function( $class ) {
+	$prefix = 'SimplePayment\\Engines\\';
+	if ( strncmp( $class, $prefix, strlen( $prefix ) ) !== 0 ) return;
+	$name = substr( $class, strlen( $prefix ) );
+	$file = SPWP_PLUGIN_DIR . '/engines/' . strtolower( str_replace( '\\', '/', $name ) ) . '.php';
+	if ( is_file( $file ) ) require_once( $file );
+} );
+
 class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
 	const OP = 'op';
@@ -46,7 +57,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 	public static $table_name = 'sp_transactions';
 	public static $table_name_metadata = 'sp_transactions_metadata';
 	
-	public static $engines = [ 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'CreditGuard', 'Meshulam', 'YaadPay', 'Credit2000', 'Custom', 'Test' ];
+	public static $engines = [ 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'iCredit', 'CreditGuard', 'Meshulam', 'YaadPay', 'Credit2000', 'WooCommerce', 'Custom', 'Test' ];
 
 	public static $fields = [ 'payment_id', 'transaction_id', 'token', 'target', 'type', 'callback', 'display', 'concept', 'redirect_url', 'source', 'source_id', self::ENGINE, self::AMOUNT, self::PRODUCT, self::PRODUCT_CODE, self::PRODUCTS, self::METHOD, self::FULL_NAME, self::FIRST_NAME, self::LAST_NAME, self::PHONE, self::MOBILE, self::ADDRESS, self::ADDRESS2, self::EMAIL, self::COUNTRY, self::STATE, self::ZIPCODE, self::PAYMENTS, self::INSTALLMENTS, self::CARD_CVV, self::CARD_EXPIRY_MONTH, self::CARD_EXPIRY_YEAR, self::CARD_NUMBER, self::CURRENCY, self::COMMENT, self::CITY, self::COMPANY, self::TAX_ID, self::CARD_OWNER, self::CARD_OWNER_ID, self::LANGUAGE ];
 
@@ -133,7 +144,55 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 		
 		add_action( 'sp_validate_license', [ $this, 'validate_plugin_license' ] );
 		add_action( 'upgrader_process_complete', [ $this, 'validate_periodic_license' ] );
+
+		add_filter( 'sp_admin_settings', [ $this, 'feature_settings' ] );
+		$this->load_features();
+
 		do_action( 'sp_loaded' );
+	}
+
+	/**
+	 * Experimental features registry. Each entry is a slug => [ title, description ].
+	 * Enabling a feature loads features/{slug}.php, which registers its own settings.
+	 */
+	public static function features() {
+		return( apply_filters( 'sp_features', [
+			'fraud-detection' => [
+				'title' => __( 'Fraud Detection', 'simple-payment' ),
+				'description' => __( 'Detect repeated failed payments from the same identity (email, phone, IP, user agent) and block further attempts. Integrates with WooCommerce and can be reused by other integrations.', 'simple-payment' ),
+			],
+			'zapier' => [
+				'title' => __( 'Zapier', 'simple-payment' ),
+				'description' => __( 'Expose a Zapier endpoint so payments and updates can trigger Zaps.', 'simple-payment' ),
+			],
+		] ) );
+	}
+
+	/**
+	 * Load enabled experimental features from the features/ directory.
+	 */
+	public function load_features() {
+		foreach ( self::features() as $slug => $feature ) {
+			if ( !self::param( 'features.' . $slug ) ) continue;
+			$file = SPWP_PLUGIN_DIR . '/features/' . sanitize_file_name( $slug ) . '.php';
+			if ( file_exists( $file ) ) require_once( $file );
+		}
+		do_action( 'sp_features_loaded' );
+	}
+
+	/**
+	 * Register the on/off toggle for each experimental feature.
+	 */
+	public function feature_settings( $settings ) {
+		foreach ( self::features() as $slug => $feature ) {
+			$settings[ 'features.' . $slug ] = [
+				'title' => isset( $feature[ 'title' ] ) ? $feature[ 'title' ] : $slug,
+				'type' => 'check',
+				'section' => 'experimental_settings',
+				'description' => isset( $feature[ 'description' ] ) ? $feature[ 'description' ] : '',
+			];
+		}
+		return( $settings );
 	}
 
 	function validate_periodic_license() {
@@ -326,6 +385,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 			$parts = explode('-', get_bloginfo('language'));
 			$params[self::LANGUAGE] = $parts[0];
 		}
+		if (!isset($params[self::CURRENCY]) || !$params[self::CURRENCY]) $params[self::CURRENCY] = self::param('currency');
 		if (!isset($params['concept']) && isset($params[self::PRODUCT])) $params['concept'] = $params[self::PRODUCT];
 		if ($method) $params[self::METHOD] = $method;
 		if (isset($params[self::FULL_NAME]) && trim($params[self::FULL_NAME])) {
@@ -1052,7 +1112,6 @@ global $SPWP;
 $SPWP = SimplePaymentPlugin::instance();
 
 require_once( 'addons/gutenberg/init.php' );
-require_once( 'addons/zapier/init.php' );
 require_once( 'addons/woocommerce/init.php' );
 require_once( 'addons/woocommerce-subscriptions/init.php' );
 

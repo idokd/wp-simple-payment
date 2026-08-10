@@ -51,7 +51,10 @@ class SimplePayment {
             $this->validate_license( self::$license, null, $engine );
             if ( !$this->is_cli() && ( !isset( $_SERVER[ 'HTTPS' ] ) || !$_SERVER[ 'HTTPS' ] ) ) throw new Exception( 'HTTPS_REQUIRED_LIVE_TRANSACTIONS', 500 );
         }
-        $class = class_exists( $engine ) ? $engine : __NAMESPACE__ . '\\Engines\\' . $engine;
+        $namespaced = __NAMESPACE__ . '\\Engines\\' . $engine;
+        // Prefer the namespaced engine class, so an engine name that collides with a
+        // same-named global class (e.g. WooCommerce) still resolves to our engine.
+        $class = class_exists( $namespaced ) ? $namespaced : ( class_exists( $engine ) ? $engine : $namespaced );
         $settings = static::param( strtolower( isset( $class::$name ) ? $class::$name : $engine ) );
         foreach ( self::$params as $key => $value ) if ( !is_array( $value ) && !isset( $settings[ $key ] ) ) $settings[ $key ] = $value; 
         $this->engine = new $class( $settings, $this, $this->sandbox );
@@ -62,8 +65,13 @@ class SimplePayment {
         if ( !$engine ) {
             $engine = $this->engine;
             $class = get_class( $this->engine );
-        } else $class = class_exists( $engine ) ? $engine : __NAMESPACE__ . '\\Engines\\' . $engine;
-        return( in_array( $feature, $class::$supports ) || self::param( strtolower( $engine ) . '.' . $feature ) );
+        } else {
+            $namespaced = __NAMESPACE__ . '\\Engines\\' . $engine;
+            // Prefer the namespaced engine class over a same-named global class.
+            $class = class_exists( $namespaced ) ? $namespaced : ( class_exists( $engine ) ? $engine : $namespaced );
+        }
+        $supports = ( class_exists( $class ) && property_exists( $class, 'supports' ) ) ? $class::$supports : [];
+        return( in_array( $feature, $supports ) || self::param( strtolower( $engine ) . '.' . $feature ) );
     }
 
     public static function param( $key = null, $default = false ) {

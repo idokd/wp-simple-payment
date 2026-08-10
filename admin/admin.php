@@ -217,7 +217,7 @@ class SimplePaymentAdmin {
 
 		$tab = isset( $_GET[ 'tab' ] ) ? sanitize_text_field( $_GET[ 'tab' ] ) : 'sp';
 		$section = $tab;
-		$tabs = apply_filters( 'sp_admin_tabs', [ 'General', 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'Meshulam',  'YaadPay', 'iCredit', 'CreditGuard', 'Credit2000', 'License', 'Extensions', 'Shortcode', 'Instructions' ] );
+		$tabs = apply_filters( 'sp_admin_tabs', [ 'General', 'PayPal', 'Cardcom', 'iCount', 'PayMe', 'Meshulam',  'YaadPay', 'iCredit', 'CreditGuard', 'Credit2000', 'WooCommerce', 'License', 'Extensions', 'Experimental', 'Shortcode', 'Instructions' ] );
 ?>
 <div class="wrap">
 	<h1><?php _e( 'Simple Payment Settings', 'simple-payment' ); ?></h1>
@@ -272,7 +272,7 @@ class SimplePaymentAdmin {
 		require( SPWP_PLUGIN_DIR . '/admin/settings.php' );
 		$this->sections = apply_filters( 'sp_admin_sections', $sp_sections );
 		$sp_settings = apply_filters( 'sp_admin_settings', $sp_settings );
-		foreach ( $sp_sections as $key => $section ) {
+		foreach ( $this->sections as $key => $section ) {
 			add_settings_section(
 				$key,
 				$section[ 'title' ],
@@ -410,6 +410,8 @@ class SimplePaymentAdmin {
 				$this->setting_text_fn($options['option'], $options['params']);
 				break;
 		}
+		if ( isset( $options[ 'params' ][ 'description' ] ) && $options[ 'params' ][ 'description' ] )
+			echo "<p class='description'>" . wp_kses_post( $options[ 'params' ][ 'description' ] ) . "</p>";
 	}
 
 
@@ -441,19 +443,24 @@ class SimplePaymentAdmin {
 	function setting_text_fn( $key, $params = null ) {
 		$option = self::param( $key );
 		$field = $this->option_name . $this->param_name( $key );
-		echo "<input id='" . esc_attr( $key ) . "' name='" . esc_attr( $field ) . "' size='40' type='text' value='" . esc_attr( $option ) . "' />";
+		$placeholder = isset( $params[ 'placeholder' ] ) ? " placeholder='" . esc_attr( $params[ 'placeholder' ] ) . "'" : '';
+		echo "<input id='" . esc_attr( $key ) . "' name='" . esc_attr( $field ) . "' size='40' type='text' value='" . esc_attr( $option ) . "'" . $placeholder . " />";
 	}
 
 	function setting_check_fn( $key, $params = null ) {
 		$option = self::param( $key );
+		if ( $option === false && isset( $params[ 'default' ] ) ) $option = $params[ 'default' ];
 		$field = $this->option_name . $this->param_name( $key );
 
-		echo "<input " . ( $option ? ' checked="checked" ' : '' ) . " id='" . esc_attr( $key ) . "' value='true' name='" . esc_attr( $field ) . "' type='checkbox' />";
+		// Hidden companion input so an unchecked box submits a value ('0') instead
+		// of nothing - otherwise a default-on checkbox could never be turned off.
+		echo "<input type='hidden' name='" . esc_attr( $field ) . "' value='0' />";
+		echo "<input " . ( $option && $option !== '0' ? ' checked="checked" ' : '' ) . " id='" . esc_attr( $key ) . "' value='true' name='" . esc_attr( $field ) . "' type='checkbox' />";
 	}
 
 	function setting_textarea_fn( $key, $params = null ) {
-		$option = self::param( $key );
-		$field = $this->option_name . $this->param_name( $key );
+		$option = isset( $params[ 'legacy' ] ) ? get_option( $key ) : self::param( $key );
+		$field = isset( $params[ 'legacy' ] ) ? $key : $this->option_name . $this->param_name( $key );
 		echo "<textarea id='" . esc_attr( $key ) . "' name='" . esc_attr( $field ) . "' rows='7' cols='50' type='textarea'>" . esc_html( $option ) . "</textarea>";
 	}
 

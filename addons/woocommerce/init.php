@@ -207,6 +207,12 @@ function sp_wc_gateway_init() {
             return( false );
         }
 
+        public function is_available() {
+            // Do not offer the gateway at checkout unless it is enabled in WooCommerce.
+            if ( 'yes' !== $this->enabled ) return( false );
+            return( parent::is_available() );
+        }
+
         function wc_get_account_saved_payment_methods_list_item( $item, $payment_token ) {
 			if ( 'simplepayment' !== strtolower( $payment_token->get_type() ) ) {
 				return( $item );
@@ -852,7 +858,7 @@ function sp_wc_gateway_init() {
          */
 		public function selected_payment_gateways( $available_gateways ) {
 			$is_checkout_pay_page = is_checkout_pay_page();
-			if ( $is_checkout_pay_page ) {
+			if ( $is_checkout_pay_page && isset( $available_gateways[ $this->id ] ) ) {
 				$gateway = $available_gateways[ $this->id ];
 				$gateway->order_button_text = apply_filters( 'sp_wc_order_button_text', __( 'Pay for order', 'simple-payment' ), $is_checkout_pay_page );
 				if ( ! empty( WC()->session->selected_token_id ) ) {
@@ -911,6 +917,345 @@ function sp_wc_gateway_init() {
     </div>
     <?php } ?>
     */
-  } 
+  }
 
 }
+
+/* ============================================================================
+ * Companion (incoming orders) handling.
+ *
+ * When THIS WooCommerce store is the third party that RECEIVES purchases as
+ * orders, created via the WooCommerce REST API by a Simple Payment "WooCommerce"
+ * engine running on another (source) website, this companion:
+ *   1. exposes / validates / keeps the sp_* meta data sent with the order,
+ *   2. on a successful payment, optionally skips "processing" and sets the order
+ *      directly to "completed" (when the setting is enabled),
+ *   3. redirects the customer back to the originating site once the order is
+ *      paid correctly (breaking out of the iframe / popup).
+ * ==========================================================================*/
+
+// The meta keys the engine sends along with the remote order.
+function sp_wc_incoming_meta_keys() {
+    return( apply_filters( 'sp_wc_incoming_meta_keys', [
+        'sp_return_url', 'sp_success_url', 'sp_cancel_url', 'sp_error_url',
+        'sp_status_url', 'sp_payment_id', 'sp_source', 'sp_product', 'sp_product_code',
+    ] ) );
+}
+
+function sp_wc_incoming_enabled() {
+    return( (bool) SimplePaymentPlugin::param( 'wc_incoming.enabled' ) );
+}
+
+function sp_wc_incoming_autocomplete_enabled() {
+    return( (bool) SimplePaymentPlugin::param( 'wc_incoming.autocomplete' ) );
+}
+
+function sp_wc_incoming_redirect_enabled() {
+    return( (bool) SimplePaymentPlugin::param( 'wc_incoming.redirect' ) );
+}
+
+// Whether a given order originated from a Simple Payment "WooCommerce" engine.
+function sp_wc_incoming_is( $order ) {
+    if ( !$order || !is_a( $order, 'WC_Order' ) ) return( false );
+    if ( 'yes' === $order->get_meta( '_sp_incoming' ) ) return( true );
+    return( (bool) ( $order->get_meta( 'sp_source' ) || $order->get_meta( 'sp_payment_id' )
+        || $order->get_meta( 'sp_return_url' ) || $order->get_meta( 'sp_success_url' ) ) );
+}
+
+function sp_wc_incoming_is_url_key( $key ) {
+    return( '_url' === substr( $key, -4 ) );
+}
+
+// Resolve a meta value from an incoming REST request (sp_ key, plain key or meta_data).
+function sp_wc_incoming_request_value( $request, $key ) {
+    if ( isset( $request[ $key ] ) && '' !== $request[ $key ] ) return( $request[ $key ] );
+    $plain = preg_replace( '/^sp_/', '', $key );
+    if ( $plain !== $key && isset( $request[ $plain ] ) && '' !== $request[ $plain ] ) return( $request[ $plain ] );
+    $meta = isset( $request[ 'meta_data' ] ) ? $request[ 'meta_data' ] : null;
+    if ( is_array( $meta ) ) {
+        foreach ( $meta as $m ) {
+            $mk = is_array( $m ) ? ( $m[ 'key' ] ?? null ) : ( is_object( $m ) ? ( $m->key ?? null ) : null );
+            $mv = is_array( $m ) ? ( $m[ 'value' ] ?? null ) : ( is_object( $m ) ? ( $m->value ?? null ) : null );
+            if ( $mk === $key && null !== $mv && '' !== $mv ) return( $mv );
+        }
+    }
+    return( null );
+}
+
+function sp_wc_incoming_sanitize( $key, $value ) {
+    return( sp_wc_incoming_is_url_key( $key ) ? esc_url_raw( $value ) : sanitize_text_field( $value ) );
+}
+
+// 1a. Register the sp_* order meta so it is exposed and sanitized on the REST API.
+add_action( 'init', function() {
+    if ( !sp_wc_incoming_enabled() || !post_type_exists( 'shop_order' ) || !function_exists( 'register_post_meta' ) ) return;
+    foreach ( sp_wc_incoming_meta_keys() as $key ) {
+        register_post_meta( 'shop_order', $key, [
+            'type' => 'string',
+            'single' => true,
+            'show_in_rest' => true,
+            'sanitize_callback' => sp_wc_incoming_is_url_key( $key ) ? 'esc_url_raw' : 'sanitize_text_field',
+            'auth_callback' => function() { return( current_user_can( 'edit_shop_orders' ) ); },
+        ] );
+    }
+}, 20 );
+
+// 1b. Receive, validate and keep the sp_* values when an order is created via REST.
+add_action( 'woocommerce_rest_insert_shop_order_object', 'sp_wc_incoming_rest_insert', 10, 3 );
+function sp_wc_incoming_rest_insert( $order, $request, $creating ) {
+    if ( !sp_wc_incoming_enabled() || !is_a( $order, 'WC_Order' ) ) return;
+    $found = false;
+    foreach ( sp_wc_incoming_meta_keys() as $key ) {
+        // Prefer a value already stored by WooCommerce (sent as meta_data), then the request.
+        $value = $order->get_meta( $key );
+        if ( '' === $value || null === $value ) $value = sp_wc_incoming_request_value( $request, $key );
+        if ( null === $value || '' === $value ) continue;
+        $value = sp_wc_incoming_sanitize( $key, $value );
+        if ( '' === $value ) continue;
+        $order->update_meta_data( $key, $value );
+        $found = true;
+    }
+    if ( $found ) {
+        $order->update_meta_data( '_sp_incoming', 'yes' );
+        // The source site cannot know which gateways exist here, so assign a
+        // payment method the companion actually has (or let the customer choose).
+        sp_wc_incoming_assign_payment_method( $order );
+        $order->save();
+        do_action( 'sp_wc_incoming_order_created', $order, $request );
+    }
+}
+
+// Registered payment gateways on this (companion) site.
+function sp_wc_incoming_gateways() {
+    $list = [];
+    if ( !function_exists( 'WC' ) || !WC()->payment_gateways() ) return( $list );
+    foreach ( WC()->payment_gateways()->payment_gateways() as $gateway ) {
+        $list[ $gateway->id ] = $gateway;
+    }
+    return( $list );
+}
+
+// Assign the gateway chosen for incoming orders (or normalise an unknown one).
+function sp_wc_incoming_assign_payment_method( $order ) {
+    $gateways = sp_wc_incoming_gateways();
+    $chosen = SimplePaymentPlugin::param( 'wc_incoming.payment_method' );
+    $chosen = apply_filters( 'sp_wc_incoming_payment_method', $chosen, $order, $gateways );
+    if ( $chosen && isset( $gateways[ $chosen ] ) ) {
+        // set_payment_method() with a gateway object sets both the id and title.
+        $order->set_payment_method( $gateways[ $chosen ] );
+        return;
+    }
+    // No explicit choice: if the source sent a method this site does not have,
+    // clear it so the remote payment page cleanly lets the customer choose.
+    $current = $order->get_payment_method();
+    if ( $current && !isset( $gateways[ $current ] ) ) {
+        $order->set_payment_method( '' );
+        $order->set_payment_method_title( '' );
+    }
+}
+
+// 2. On a successful payment, skip "processing" and go directly to "completed".
+add_filter( 'woocommerce_payment_complete_order_status', function( $status, $order_id, $order = null ) {
+    if ( !sp_wc_incoming_enabled() || !sp_wc_incoming_autocomplete_enabled() ) return( $status );
+    $order = $order ? : wc_get_order( $order_id );
+    if ( sp_wc_incoming_is( $order ) ) return( 'completed' );
+    return( $status );
+}, 20, 3 );
+
+// 2b. Fallback: complete orders that reached "processing" without the filter above.
+add_action( 'woocommerce_order_status_processing', function( $order_id, $order = null ) {
+    if ( !sp_wc_incoming_enabled() || !sp_wc_incoming_autocomplete_enabled() ) return;
+    $order = $order ? : wc_get_order( $order_id );
+    if ( sp_wc_incoming_is( $order ) ) $order->update_status( 'completed', __( 'Auto completed by Simple Payment companion.', 'simple-payment' ) );
+}, 20, 2 );
+
+// Log a companion diagnostic line (WooCommerce > Status > Logs, source sp-companion).
+// Enabled when WP_DEBUG is on, or via the sp_wc_incoming_debug filter.
+function sp_wc_incoming_log( $message ) {
+    if ( !apply_filters( 'sp_wc_incoming_debug', defined( 'WP_DEBUG' ) && WP_DEBUG ) ) return;
+    if ( function_exists( 'wc_get_logger' ) ) wc_get_logger()->info( $message, [ 'source' => 'sp-companion' ] );
+    else error_log( '[sp-companion] ' . $message );
+}
+
+// The url to send the customer back to, based on the order outcome. Reaching the
+// order-received page means the order was placed, so we always return a url:
+// success/return when paid or pending, cancel/error only for those statuses.
+function sp_wc_incoming_return_url( $order ) {
+    if ( $order->has_status( 'cancelled' ) ) {
+        $url = $order->get_meta( 'sp_cancel_url' ) ? : $order->get_meta( 'sp_return_url' );
+    } elseif ( $order->has_status( 'failed' ) ) {
+        $url = $order->get_meta( 'sp_error_url' ) ? : $order->get_meta( 'sp_return_url' );
+    } elseif ( $order->is_paid() ) {
+        $url = $order->get_meta( 'sp_success_url' ) ? : $order->get_meta( 'sp_return_url' );
+    } else {
+        // pending / on-hold: return the customer neutrally; the source verifies later.
+        $url = $order->get_meta( 'sp_return_url' ) ? : $order->get_meta( 'sp_success_url' );
+    }
+    return( apply_filters( 'sp_wc_incoming_redirect_url', $url, $order ) );
+}
+
+// Resolve the order shown on the current order-received page (query var or key).
+function sp_wc_incoming_received_order() {
+    if ( !function_exists( 'is_order_received_page' ) || !is_order_received_page() ) return( false );
+    global $wp;
+    $order_id = absint( isset( $wp->query_vars[ 'order-received' ] ) ? $wp->query_vars[ 'order-received' ] : 0 );
+    $key = isset( $_GET[ 'key' ] ) ? wc_clean( wp_unslash( $_GET[ 'key' ] ) ) : '';
+    if ( !$order_id && $key && function_exists( 'wc_get_order_id_by_order_key' ) ) $order_id = wc_get_order_id_by_order_key( $key );
+    if ( !$order_id ) return( false );
+    $order = wc_get_order( $order_id );
+    if ( !$order ) return( false );
+    // Validate the order key when present, so we only redirect the genuine buyer.
+    if ( $key && !hash_equals( $order->get_order_key(), $key ) ) return( false );
+    return( $order );
+}
+
+// 3. Redirect the customer back to the originating site once the order is paid.
+// Primary: template_redirect (clean server redirect before output).
+add_action( 'template_redirect', 'sp_wc_incoming_maybe_redirect', 20 );
+function sp_wc_incoming_maybe_redirect() {
+    if ( is_admin() ) return;
+    if ( !sp_wc_incoming_enabled() ) return;
+    if ( !sp_wc_incoming_redirect_enabled() ) return;
+    $order = sp_wc_incoming_received_order();
+    if ( !$order ) return; // not an order-received page
+    sp_wc_incoming_maybe_redirect_order( $order, 'template_redirect' );
+}
+
+// Fallback: some themes / gateways reach the thank-you page without matching the
+// order-received query var at template_redirect. woocommerce_thankyou always
+// fires there with the order id (redirect happens via JS since output started).
+add_action( 'woocommerce_thankyou', 'sp_wc_incoming_thankyou_redirect', 1 );
+function sp_wc_incoming_thankyou_redirect( $order_id ) {
+    if ( is_admin() ) return;
+    if ( !sp_wc_incoming_enabled() || !sp_wc_incoming_redirect_enabled() ) return;
+    $order = wc_get_order( $order_id );
+    if ( !$order ) return;
+    sp_wc_incoming_maybe_redirect_order( $order, 'thankyou' );
+}
+
+// Shared decision + logging for the return redirect.
+function sp_wc_incoming_maybe_redirect_order( $order, $where ) {
+    $id = $order->get_id();
+    if ( !sp_wc_incoming_is( $order ) ) {
+        sp_wc_incoming_log( "$where: order $id is not an incoming Simple Payment order (no sp_* meta) - not redirecting" );
+        return;
+    }
+    $url = sp_wc_incoming_return_url( $order );
+    if ( !$url ) {
+        sp_wc_incoming_log( "$where: order $id (status={$order->get_status()}) has no sp_success_url / sp_return_url meta - not redirecting" );
+        return;
+    }
+    sp_wc_incoming_log( "$where: order $id (status={$order->get_status()}) redirecting to $url" );
+    sp_wc_incoming_break_out( $url );
+}
+
+// Redirect the customer back to the source site. Navigates the current window
+// only (does not force window.top), so an iframe / popup stays in control of
+// its own frame and the source callback decides any further target.
+function sp_wc_incoming_break_out( $url ) {
+    $url = esc_url_raw( $url );
+    if ( !$url ) return;
+    $url = apply_filters( 'sp_wc_incoming_break_out_url', $url );
+    // Use a client-side redirect (meta refresh + JS) rather than wp_redirect: it
+    // works cross-domain regardless of security plugins that filter wp_redirect,
+    // and navigates the current window only.
+    if ( !headers_sent() ) nocache_headers();
+    $json = wp_json_encode( $url );
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8">';
+    echo '<meta http-equiv="refresh" content="0;url=' . esc_attr( $url ) . '">';
+    echo '<title>' . esc_html__( 'Redirecting…', 'simple-payment' ) . '</title>';
+    echo '<script type="text/javascript">window.location.replace(' . $json . ');</script>';
+    echo '</head><body><a href="' . esc_url( $url ) . '">' . esc_html__( 'Continue', 'simple-payment' ) . '</a></body></html>';
+    exit;
+}
+
+// 4. Suppress WooCommerce emails for incoming (outsourced) orders when configured.
+// WooCommerce order emails, split by audience.
+function sp_wc_incoming_customer_email_ids() {
+    return( apply_filters( 'sp_wc_incoming_customer_email_ids', [
+        'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order',
+        'customer_refunded_order', 'customer_invoice', 'customer_note',
+    ] ) );
+}
+function sp_wc_incoming_admin_email_ids() {
+    return( apply_filters( 'sp_wc_incoming_admin_email_ids', [
+        'new_order', 'cancelled_order', 'failed_order',
+    ] ) );
+}
+
+// Gate each email via woocommerce_email_enabled_{id}; the order is passed in, so
+// only orders that originated from the source site are affected.
+foreach ( sp_wc_incoming_customer_email_ids() as $sp_wc_email_id ) {
+    add_filter( 'woocommerce_email_enabled_' . $sp_wc_email_id, function( $enabled, $object ) {
+        return( sp_wc_incoming_filter_email( $enabled, $object, 'customer' ) );
+    }, 100, 2 );
+}
+foreach ( sp_wc_incoming_admin_email_ids() as $sp_wc_email_id ) {
+    add_filter( 'woocommerce_email_enabled_' . $sp_wc_email_id, function( $enabled, $object ) {
+        return( sp_wc_incoming_filter_email( $enabled, $object, 'admin' ) );
+    }, 100, 2 );
+}
+unset( $sp_wc_email_id );
+
+function sp_wc_incoming_filter_email( $enabled, $object, $audience ) {
+    if ( !$enabled || !sp_wc_incoming_enabled() ) return( $enabled );
+    if ( !is_a( $object, 'WC_Order' ) || !sp_wc_incoming_is( $object ) ) return( $enabled );
+    $flag = 'admin' === $audience ? 'wc_incoming.disable_admin_emails' : 'wc_incoming.disable_customer_emails';
+    return( SimplePaymentPlugin::param( $flag ) ? false : $enabled );
+}
+
+// Companion settings, shown on the WooCommerce tab of the Simple Payment settings.
+add_filter( 'sp_admin_sections', function( $sections ) {
+    $sections[ 'wc_incoming_settings' ] = [
+        'title' => __( 'WooCommerce Incoming Orders (Companion)', 'simple-payment' ),
+        'description' => __( 'When this store receives purchases as orders from a remote Simple Payment "WooCommerce" engine, configure how paid orders are completed and how the customer is returned to the originating site.', 'simple-payment' ),
+        'section' => 'woocommerce'
+    ];
+    return( $sections );
+} );
+
+add_filter( 'sp_admin_settings', function( $settings ) {
+    $settings[ 'wc_incoming.enabled' ] = [
+        'title' => __( 'Enable Companion Handling', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Receive and keep the sp_* parameters sent with REST orders and act on them.', 'simple-payment' )
+    ];
+    $settings[ 'wc_incoming.autocomplete' ] = [
+        'title' => __( 'Auto Complete Paid Orders', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'On successful payment, skip Processing and set the order directly to Completed.', 'simple-payment' )
+    ];
+    $settings[ 'wc_incoming.redirect' ] = [
+        'title' => __( 'Redirect Back After Payment', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Once the order is paid, return the customer to the originating site (success / return url).', 'simple-payment' )
+    ];
+    $options = [ '' => __( 'Let the customer choose on the payment page', 'simple-payment' ) ];
+    foreach ( sp_wc_incoming_gateways() as $id => $gateway ) {
+        $title = $gateway->get_method_title() ? : $gateway->get_title();
+        $options[ $id ] = ( $title ? $title : $id ) . ' (' . $id . ')';
+    }
+    $settings[ 'wc_incoming.payment_method' ] = [
+        'title' => __( 'Incoming Orders Payment Method', 'simple-payment' ),
+        'type' => 'select',
+        'options' => $options,
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Gateway to assign to orders received from the source site (which cannot know this store\'s gateways). Leave on "Let the customer choose" to present the available gateways on the payment page.', 'simple-payment' )
+    ];
+    $settings[ 'wc_incoming.disable_customer_emails' ] = [
+        'title' => __( 'Disable Customer Emails', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Do not send WooCommerce customer emails for orders received from the source site (outsourced payment requests).', 'simple-payment' )
+    ];
+    $settings[ 'wc_incoming.disable_admin_emails' ] = [
+        'title' => __( 'Disable Admin Emails', 'simple-payment' ),
+        'type' => 'check',
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Do not send WooCommerce admin / store emails (new order, cancelled, failed) for orders received from the source site.', 'simple-payment' )
+    ];
+    return( $settings );
+} );
