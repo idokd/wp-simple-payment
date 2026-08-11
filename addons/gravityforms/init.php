@@ -550,8 +550,7 @@ class GFSimplePayment extends GFPaymentAddOn {
 						  echo '<html><head><script type="text/javascript"> parent.location.replace("'.$url.'"); </script></head><body></body</html>'; 
 						  break;
 						case 'javascript':
-						  $script = $targets[1];
-						  echo '<html><head><script type="text/javascript"> '.$script.' </script></head><body></body</html>'; 
+						  echo '<html><head><script type="text/javascript"> ' . apply_filters( 'sp_javascript_redirect', null, $targets[ 1 ] ) . ' </script></head><body></body</html>'; 
 						  break;
 						case '_blank':
 						  break;

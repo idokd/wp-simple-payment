@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.5.1
+ * Version: 2.5.2
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -1074,7 +1074,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 
 	public static function redirect( $url, $target = '', $return = false ) {
 		$targets = explode( ':', $target ? $target : '' );
-		$target = $targets[ 0 ];
+		$target = sanitize_text_field( $targets[ 0 ] );
 		$redirect = '';
 		$url = self::sanitize_redirect( $url );
 		switch ( $target ) {
@@ -1085,8 +1085,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 				$redirect = '<html><head><script type="text/javascript"> parent.location.replace("' . $url . '"); </script></head><body></body</html>'; 
 				break;
 			case 'javascript':
-				$script = $targets[ 1 ];
-				$redirect = '<html><head><script type="text/javascript"> ' . $script . ' </script></head><body></body</html>'; 
+				$redirect = '<html><head><script type="text/javascript"> ' . apply_filters( 'sp_javascript_redirect', null,  $targets[ 1 ] ) . ' </script></head><body></body</html>'; 
 				break;
 			case '_blank':
 				$redirect = '<html><head><script type="text/javascript"> var win = window.open("' . $url . '", "_blank"); win.focus(); </script></head><body></body</html>'; 
