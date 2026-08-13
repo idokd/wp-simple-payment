@@ -46,6 +46,7 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 		'none' => __( 'Disable (none)', 'simple-payment' ),
 	];
 	$field_desc = __( 'How this field is used: Default (email/phone/IP cluster, user agent ignored), Cluster (linked with other clustered fields), Primary (counted on its own), or Disable (none) to ignore this field.', 'simple-payment' );
+	$settings[ 'fraud.blocks_view' ] = [ 'title' => __( 'Detected Blocks', 'simple-payment' ), 'type' => 'display', 'section' => 'fraud_settings', 'description' => sp_fraud_blocks_html() ];
 	$settings[ 'fraud.field_email' ] = [ 'title' => __( 'Match by Email', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
 	$settings[ 'fraud.field_phone' ] = [ 'title' => __( 'Match by Phone', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
 	$settings[ 'fraud.field_ip' ] = [ 'title' => __( 'Match by IP Address', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
@@ -263,27 +264,73 @@ function sp_fraud_is_permanently_blocked( $values ) {
 	return( false );
 }
 
-// Count how many times each key has been blocked (persistent, across cooldowns).
-function sp_fraud_block_counts() {
-	$counts = get_option( 'sp_fraud_block_counts' );
-	return( is_array( $counts ) ? $counts : [] );
+// Readable registry of auto-created blocks: key => [ count, first, last, until ].
+// Persists across cooldowns so it can be listed in the admin and drives the
+// permanent-block promotion.
+function sp_fraud_blocks() {
+	$blocks = get_option( 'sp_fraud_blocks' );
+	return( is_array( $blocks ) ? $blocks : [] );
 }
 
-// Set the temporary block for the given keys, count distinct block events, and
+// Set the temporary block for the given keys, record the block event, and
 // promote to a permanent block once the configured number of blocks is reached.
 function sp_fraud_note_block( $keys, $now, $cooldown ) {
-	$counts = sp_fraud_block_counts();
+	$blocks = sp_fraud_blocks();
 	$permanent_after = sp_fraud_permanent_after();
 	$max = 0;
-	$changed = false;
 	foreach ( $keys as $key ) {
 		$was = (bool) get_transient( sp_fraud_block_key( $key ) );
 		set_transient( sp_fraud_block_key( $key ), $now, $cooldown );
-		if ( !$was ) { $counts[ $key ] = intval( isset( $counts[ $key ] ) ? $counts[ $key ] : 0 ) + 1; $changed = true; }
-		if ( intval( isset( $counts[ $key ] ) ? $counts[ $key ] : 0 ) > $max ) $max = intval( $counts[ $key ] );
+		$entry = isset( $blocks[ $key ] ) ? $blocks[ $key ] : [ 'count' => 0, 'first' => $now ];
+		if ( !$was ) $entry[ 'count' ] = intval( $entry[ 'count' ] ) + 1; // count distinct block events
+		$entry[ 'last' ] = $now;
+		$entry[ 'until' ] = $now + $cooldown;
+		$blocks[ $key ] = $entry;
+		if ( $entry[ 'count' ] > $max ) $max = $entry[ 'count' ];
 	}
-	if ( $changed ) update_option( 'sp_fraud_block_counts', $counts, false );
+	update_option( 'sp_fraud_blocks', sp_fraud_prune_blocks( $blocks, $now ), false );
 	if ( $permanent_after && $max >= $permanent_after ) sp_fraud_permanent_add( $keys );
+}
+
+// Drop long-expired (non-permanent) entries and cap the registry size.
+function sp_fraud_prune_blocks( $blocks, $now ) {
+	$retention = (int) apply_filters( 'sp_fraud_blocks_retention', 30 * DAY_IN_SECONDS );
+	$permanent = sp_fraud_permanent_keys();
+	foreach ( $blocks as $key => $entry ) {
+		if ( isset( $permanent[ $key ] ) ) continue;
+		$until = isset( $entry[ 'until' ] ) ? $entry[ 'until' ] : 0;
+		if ( $until && $until < $now - $retention ) unset( $blocks[ $key ] );
+	}
+	if ( count( $blocks ) > 1000 ) {
+		uasort( $blocks, function( $a, $b ) { return( ( isset( $b[ 'last' ] ) ? $b[ 'last' ] : 0 ) <=> ( isset( $a[ 'last' ] ) ? $a[ 'last' ] : 0 ) ); } );
+		$blocks = array_slice( $blocks, 0, 1000, true );
+	}
+	return( $blocks );
+}
+
+// Render the detected-blocks table for the settings screen.
+function sp_fraud_blocks_html() {
+	$blocks = sp_fraud_blocks();
+	$permanent = sp_fraud_permanent_keys();
+	if ( !$blocks && !$permanent ) return( '<em>' . esc_html__( 'No blocks recorded yet.', 'simple-payment' ) . '</em>' );
+	$now = time();
+	uasort( $blocks, function( $a, $b ) { return( ( isset( $b[ 'last' ] ) ? $b[ 'last' ] : 0 ) <=> ( isset( $a[ 'last' ] ) ? $a[ 'last' ] : 0 ) ); } );
+	$rows = '';
+	foreach ( $blocks as $key => $entry ) {
+		$count = isset( $entry[ 'count' ] ) ? intval( $entry[ 'count' ] ) : 0;
+		$last = isset( $entry[ 'last' ] ) ? intval( $entry[ 'last' ] ) : 0;
+		$until = isset( $entry[ 'until' ] ) ? intval( $entry[ 'until' ] ) : 0;
+		if ( isset( $permanent[ $key ] ) ) $status = '<strong>' . esc_html__( 'Permanent', 'simple-payment' ) . '</strong>';
+		elseif ( $until > $now ) $status = esc_html__( 'Active', 'simple-payment' ) . ' &middot; ' . esc_html( sprintf( __( '%s left', 'simple-payment' ), human_time_diff( $now, $until ) ) );
+		else $status = esc_html__( 'Expired', 'simple-payment' );
+		$rows .= '<tr><td><code>' . esc_html( $key ) . '</code></td><td>' . $count . '</td><td>' . ( $last ? esc_html( date_i18n( 'Y-m-d H:i', $last ) ) : '-' ) . '</td><td>' . $status . '</td></tr>';
+	}
+	// Permanent entries that were added manually (not in the auto registry).
+	foreach ( array_keys( $permanent ) as $key ) {
+		if ( isset( $blocks[ $key ] ) ) continue;
+		$rows .= '<tr><td><code>' . esc_html( $key ) . '</code></td><td>-</td><td>-</td><td><strong>' . esc_html__( 'Permanent', 'simple-payment' ) . '</strong></td></tr>';
+	}
+	return( '<table class="widefat striped" style="max-width:760px"><thead><tr><th>' . esc_html__( 'Identity', 'simple-payment' ) . '</th><th>' . esc_html__( 'Blocks', 'simple-payment' ) . '</th><th>' . esc_html__( 'Last block', 'simple-payment' ) . '</th><th>' . esc_html__( 'Status', 'simple-payment' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>' );
 }
 
 /* -------------------------------------------------------------------------
@@ -363,10 +410,14 @@ function sp_fraud_is_blocked( $values ) {
 
 function sp_fraud_clear( $values ) {
 	$keys = sp_fraud_keys( $values );
+	$blocks = sp_fraud_blocks();
+	$changed = false;
 	foreach ( $keys as $key ) {
 		delete_transient( sp_fraud_bucket_key( $key ) );
 		delete_transient( sp_fraud_block_key( $key ) );
+		if ( isset( $blocks[ $key ] ) ) { unset( $blocks[ $key ] ); $changed = true; } // success breaks the streak
 	}
+	if ( $changed ) update_option( 'sp_fraud_blocks', $blocks, false );
 	$log = get_transient( 'sp_fraud_log' );
 	if ( is_array( $log ) && $keys ) {
 		$log = array_values( array_filter( $log, function( $e ) use ( $keys ) { return( !array_intersect( $e[ 'k' ], $keys ) ); } ) );

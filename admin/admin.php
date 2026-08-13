@@ -405,13 +405,19 @@ class SimplePaymentAdmin {
 			case 'random':
 				$this->setting_random_fn($options['option'], $options['params']);
 				break;
+			case 'display':
+				break; // description-only field (no input)
 			case 'string':
 			default:
 				$this->setting_text_fn($options['option'], $options['params']);
 				break;
 		}
-		if ( isset( $options[ 'params' ][ 'description' ] ) && $options[ 'params' ][ 'description' ] )
-			echo "<p class='description'>" . wp_kses_post( $options[ 'params' ][ 'description' ] ) . "</p>";
+		if ( isset( $options[ 'params' ][ 'description' ] ) && $options[ 'params' ][ 'description' ] ) {
+			if ( isset( $options[ 'params' ][ 'type' ] ) && $options[ 'params' ][ 'type' ] === 'display' )
+				echo "<div class='description'>" . $options[ 'params' ][ 'description' ] . "</div>"; // trusted markup, dynamic parts pre-escaped
+			else
+				echo "<p class='description'>" . wp_kses_post( $options[ 'params' ][ 'description' ] ) . "</p>";
+		}
 	}
 
 
