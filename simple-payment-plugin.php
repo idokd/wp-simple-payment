@@ -611,15 +611,22 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 		return( get_transient( 'sp-msg-' . $key ) );
 	}
 
-	function payment_refund($payment_id, $params) {
+	function payment_refund($payment_id, $params = []) {
+		$transaction_id = null;
 		try {
-			$payment = $this->fetch($payment_id);
-			if (!$payment) return(false);
-			$this->setEngine($payment['engine']);
+			$payment = $payment_id ? $this->fetch($payment_id) : false;
+			// Allow a token-based refund with no originating transaction, as long as the
+			// caller supplies the engine and a saved token to credit (e.g. WooCommerce).
+			if (!$payment && empty($params['token'])) return(false);
+			$this->setEngine($payment ? $payment['engine'] : $params['engine']);
 			$params['payments'] = 'refund';
-			$params['payment_id'] = $payment_id;
+			if ($payment_id) $params['payment_id'] = $payment_id;
 			$payment_id  = $this->register($params);
-			$confirmation_code = $this->refund(array_merge($payment, $params)) ? $params['payment_id'] : false;
+			$params['payment_id'] = $payment_id;
+			$refund_params = array_merge($payment ? : [], $params);
+			// The engine charge path expects the token as a JSON string; register() kept the array form.
+			if (isset($refund_params['token']) && is_array($refund_params['token'])) $refund_params['token'] = json_encode($refund_params['token']);
+			$confirmation_code = $this->refund($refund_params) ? $payment_id : false;
 			if ($confirmation_code) {
 				self::update($payment_id  ? $payment_id : $transaction_id, [
 					'status' => self::TRANSACTION_SUCCESS,
@@ -630,7 +637,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 			}
 		} catch (Exception $e) {
 			$data = [];
-			$data[ 'status' ] = elf::TRANSACTION_FAILED;
+			$data[ 'status' ] = self::TRANSACTION_FAILED;
 			$data[ 'error_code' ] = $e->getCode();
 			$data[ 'error_description' ] = substr($e->getMessage(), 0, 250);
 			$data[ 'transaction_id' ] = $this->engine->transaction;

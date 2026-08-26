@@ -252,18 +252,22 @@ class Cardcom extends Engine {
   public function pre_process($params) {
     $post = [];
     $post[ 'APILevel' ] = $this->api[ 'version' ];
+    $is_refund = $this->param( 'refund' ) || ( isset( $params[ 'refund' ] ) && $params[ 'refund' ] );
+
     if ( !$this->sandbox ) {
       $post[ 'TerminalNumber' ] = $this->param_part( $params );
       $post[ 'UserName' ] = $this->param_part( $params, 'username' );
       // $this->password = $this->param_part($params, 'password' );
-      // $post[ 'Password' ] = $this->password;
+      // A live refund ( RefundDeal ) must be authorized with the terminal password.
+      if ( $is_refund ) $post[ 'Password' ] = $this->password;
     } else {
       $post[ 'TerminalNumber' ] = $this->terminal;
       $post[ 'UserName' ] = $this->username;
       $post[ 'Password' ] = $this->password;
     }
 
-    $operation = $this->param( 'operation' );
+    // A refund ( RefundDeal ) must run as a plain Charge ( operation 1 ); operation 2 ( Charge & Token ) does not support crediting.
+    $operation = $is_refund ? 1 : $this->param( 'operation' );
 
     // TODO: maybe add flag to determine this feature?
     if ( $operation == 2 && !$params[ 'amount' ] ) $operation = 3;
@@ -345,8 +349,8 @@ class Cardcom extends Engine {
     if ( $operation != 3 && !isset( $post[ 'InvoiceHead.CustName' ]) && isset( $params[ 'full_name' ]) && $params[ 'full_name' ]) $post[ 'InvoiceHead.CustName' ] = $params[ 'full_name' ];
     if ( $operation != 3 ) $post = array_merge( $post, $this->document( array_merge( $params, [ 'language' => $language, 'currency' => $currency ] ) ));
 
-    if ( $this->param( 'refund' ) || ( isset( $params[ 'refund' ] ) && $params[ 'refund' ] ) ) {
-      $post[ 'RefundDeal' ] = $this->param( 'refund' ) ? $this->param( 'refund' ) : $params[ 'refund' ];
+    if ( $is_refund ) {
+      $post[ 'RefundDeal' ] = ( $this->param( 'refund' ) ? $this->param( 'refund' ) : $params[ 'refund' ] ) ? 'true' : 'false';
     }
     
     // TODO: Analyze how to use those parameters
@@ -550,7 +554,7 @@ class Cardcom extends Engine {
 // UniqAsmachta
 
 
-    if ($refund) $post[ 'TokenToCharge.RefundInsteadOfCharge' ] = $refund;
+    if ($refund) $post[ 'TokenToCharge.RefundInsteadOfCharge' ] = 'true';
     if ($params[ 'payments' ] == 'monthly' ) $post[ 'TokenToCharge.IsAutoRecurringPayment' ] = 'true';
 
     if ( !$refund  &&isset($params[ 'approval_number' ]) && $params[ 'approval_number' ]) $post[ 'TokenToCharge.ApprovalNumber' ] = $params[ 'approval_number' ];
