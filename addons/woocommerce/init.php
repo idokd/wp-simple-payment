@@ -64,6 +64,24 @@ function sp_wc_save_token( $transaction, $transaction_id = null, $params = [], $
 }
 add_action( 'sp_creditcard_token', 'sp_wc_save_token' );
 
+/**
+ * Validate that a Simple Payment transaction genuinely belongs to and pays for a
+ * given WooCommerce order: it must be a woocommerce-sourced payment for this exact
+ * order, approved (success + confirmation code), and match the order total.
+ * Used to gate completing an order from the public gateway callback.
+ */
+function sp_wc_validate_order_payment( $order, $payment ) {
+    if ( !$order || !is_array( $payment ) ) return( false );
+    $valid = ( isset( $payment[ 'source' ] ) && $payment[ 'source' ] === 'woocommerce' )
+        && ( isset( $payment[ 'source_id' ] ) && absint( $payment[ 'source_id' ] ) === $order->get_id() )
+        && !empty( $payment[ 'confirmation_code' ] )
+        && ( !isset( $payment[ 'status' ] ) || $payment[ 'status' ] === SimplePaymentPlugin::TRANSACTION_SUCCESS );
+    if ( $valid && isset( $payment[ 'amount' ] ) && $payment[ 'amount' ] !== '' ) {
+        $epsilon = (float) apply_filters( 'sp_wc_amount_epsilon', 0.01, $order, $payment );
+        if ( abs( (float) $payment[ 'amount' ] - (float) $order->get_total() ) > $epsilon ) $valid = false;
+    }
+    return( (bool) apply_filters( 'sp_wc_validate_order_payment', $valid, $order, $payment ) );
+}
 
 add_action( 'plugins_loaded', 'sp_wc_gateway_init', 11 );
 
@@ -390,37 +408,44 @@ function sp_wc_gateway_init() {
         }
 
         public function gateway_response( $order_id = null, $redirect = true ) {
-            if ( !$order_id ) {
-                $order_key = $_REQUEST[ 'key' ];
-                $order_id = $_REQUEST[ 'order-pay' ];
-                if ( !$order_id ) {
+            // When invoked without an order id we are on the public API endpoint
+            // (?wc-api=wc_simplepayment_gateway); require a valid order key.
+            $verify_key = ( null === $order_id );
+            if ( $verify_key ) $order_id = isset( $_REQUEST[ 'order-pay' ] ) ? absint( $_REQUEST[ 'order-pay' ] ) : 0;
+            if ( !$order_id ) return;
+            if ( !$order = wc_get_order( $order_id ) ) return;
+
+            if ( $verify_key ) {
+                $key = isset( $_REQUEST[ 'key' ] ) ? wc_clean( wp_unslash( $_REQUEST[ 'key' ] ) ) : '';
+                if ( !$key || !hash_equals( (string) $order->get_order_key(), $key ) ) {
+                    status_header( 403 );
                     return;
                 }
             }
-            if ( !$order_id ) return;
-            $order = wc_get_order( $order_id );
-            // TODO: Maybe here check if the payment was approved
-            if ( !$order = wc_get_order( $order_id ) ) return;
 
             $payment_id = $_REQUEST[ SimplePaymentPlugin::PAYMENT_ID ] ?? false; // get payment id
             if ( !$payment_id ) {
                 $last_payment = get_transient( 'sp-payment-last' );
                 $payment_id = $last_payment[ SimplePaymentPlugin::PAYMENT_ID ] ?? false;
             }
-            if ( !empty( $payment_id ) && $order->get_customer_id() ) {
+
+            $payment = $payment_id ? SimplePaymentPlugin::instance()->fetch( $payment_id ) : null;
+            // The transaction must genuinely belong to and pay for this order.
+            $valid = sp_wc_validate_order_payment( $order, $payment );
+
+            if ( !empty( $payment_id ) && $valid && $order->get_customer_id() ) {
 				sp_wc_save_token( $payment_id, null, null, $order->get_customer_id() );
             }
 
-            $payment = SimplePaymentPlugin::instance()->fetch( $payment_id );
             $order->update_meta_data( '_sp_transaction_id', $payment_id );
-            $order->update_meta_data( '_sp_confirmation_code', $payment[ 'confirmation_code' ] );
-            $order->update_meta_data( '_sp_transaction_code', $payment[ 'transaction_id' ] );
 
-            // TODO: validate if it was success??
-            if ( $payment[ 'confirmation_code' ] ) {
+            if ( $valid ) {
+                $order->update_meta_data( '_sp_confirmation_code', $payment[ 'confirmation_code' ] );
+                $order->update_meta_data( '_sp_transaction_code', $payment[ 'transaction_id' ] );
                 $order->payment_complete( $payment_id );
             } else {
-                $order->add_order_note( sprintf( __( 'Payment failed.', 'simple-payment' ), $payment_id ) );
+                $order->save();
+                $order->add_order_note( sprintf( __( 'Simple Payment: could not validate payment for transaction %s; order not completed.', 'simple-payment' ), $payment_id ) );
             }
             if ( !$redirect ) {
                 return;
