@@ -894,11 +894,88 @@ function sp_wc_gateway_init() {
 
         public function process_refund( $order_id, $amount = null, $reason = '' ) {
             $order = wc_get_order( $order_id );
+            if ( ! $order ) return( false );
+            // Prefer crediting a saved token when one is available for this order/customer.
+            if ( apply_filters( 'sp_wc_refund_prefer_token', true, $order, $amount, $reason ) ) {
+                if ( $refund = $this->refund_via_token( $order, $amount, $reason ) ) return( $refund );
+            }
             $params = [];
             $params[ SimplePaymentPlugin::PRODUCT ] = get_the_title( $order->get_id() );
             $params[ SimplePaymentPlugin::AMOUNT ] = $amount;
             // TODO: need to raise exception when fails
             return( SimplePaymentPlugin::instance()->payment_refund( $order->get_transaction_id(), $params ) );
+        }
+
+        /**
+         * Issue a refund by crediting a saved payment token.
+         *
+         * Looks for a token stored against the order first, then falls back to the
+         * customer's default token. When one is found, a refund transaction for $amount
+         * is issued to that token — building a fresh refund purchase from the base order's
+         * data (billing, customer, product), similar to the Gravity Forms refund flow but
+         * sourced from an existing order.
+         *
+         * @param  int|WC_Order $order_id Order id or object.
+         * @param  float|null   $amount   Amount to refund; defaults to the order total.
+         * @param  string       $reason   Optional refund reason.
+         * @return int|false              The refund transaction id on success, false otherwise.
+         */
+        public function refund_via_token( $order_id, $amount = null, $reason = '' ) {
+            $order = is_a( $order_id, 'WC_Order' ) ? $order_id : wc_get_order( $order_id );
+            if ( ! $order ) return( false );
+            $order_id = $order->get_id();
+
+            // Resolve a saved token: the order's own token first, then the customer's default token.
+            $tokens = array_filter( array_merge(
+                (array) WC_Payment_Tokens::get_order_tokens( $order_id ),
+                ( $order->get_customer_id() ? [ WC_Payment_Tokens::get_customer_default_token( $order->get_customer_id() ) ] : [] )
+            ) );
+            $tokens = apply_filters( 'sp_wc_refund_tokens', $tokens, $order, $amount, $reason );
+            if ( ! count( $tokens ) ) return( false );
+            $wc_token = array_shift( $tokens );
+            $wc_token = is_object( $wc_token ) ? $wc_token : WC_Payment_Tokens::get( $wc_token );
+            if ( ! $wc_token ) return( false );
+
+            // Build the refund purchase from the base order (billing, customer, product).
+            $params = self::params( [], $order->get_data() );
+            $params[ 'source' ]    = 'woocommerce';
+            $params[ 'source_id' ] = $order_id;
+            $params[ SimplePaymentPlugin::AMOUNT ]  = null === $amount ? $order->get_total() : $amount;
+            $params[ SimplePaymentPlugin::PRODUCT ] = get_the_title( $order_id );
+            if ( $reason ) $params[ SimplePaymentPlugin::COMMENT ] = $reason;
+
+            // The saved token to credit.
+            $token = [
+                'token'                                => $wc_token->get_token(),
+                SimplePaymentPlugin::CARD_OWNER        => $wc_token->get_owner_name(),
+                SimplePaymentPlugin::CARD_EXPIRY_MONTH => $wc_token->get_expiry_month(),
+                SimplePaymentPlugin::CARD_EXPIRY_YEAR  => $wc_token->get_expiry_year(),
+                SimplePaymentPlugin::CARD_OWNER_ID     => $wc_token->get_owner_id(),
+                SimplePaymentPlugin::CARD_NUMBER       => $wc_token->get_last4(),
+                SimplePaymentPlugin::CARD_CVV          => $wc_token->get_cvv(),
+            ];
+            $engine = $wc_token->get_engine() ? : ( $this->get_option( 'engine' ) ? : null );
+            if ( $engine ) {
+                $token[ 'engine' ]   = $engine;
+                $params[ 'engine' ]  = $engine;
+            }
+            $params[ 'token' ]  = $token;
+            $params[ 'refund' ] = true;
+
+            $params = apply_filters( 'sp_wc_refund_token_args', $params, $order, $amount, $reason );
+
+            // Issue the token refund transaction (no originating transaction required).
+            $refund = SimplePaymentPlugin::instance()->payment_refund( null, $params );
+            if ( $refund ) {
+                $order->add_order_note( sprintf(
+                    __( 'Refund of %1$s issued to saved token [ SP ID: %2$s ]%3$s', 'simple-payment' ),
+                    wc_price( $params[ SimplePaymentPlugin::AMOUNT ], [ 'currency' => $order->get_currency() ] ),
+                    $refund,
+                    $reason ? ' - ' . $reason : ''
+                ) );
+                $order->save();
+            }
+            return( $refund );
         }
 
 		/**

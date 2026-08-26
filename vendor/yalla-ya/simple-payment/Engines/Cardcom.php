@@ -554,7 +554,7 @@ class Cardcom extends Engine {
 // UniqAsmachta
 
 
-    if ($refund) $post[ 'TokenToCharge.RefundInsteadOfCharge' ] = $refund;
+    if ($refund) $post[ 'TokenToCharge.RefundInsteadOfCharge' ] = 'true';
     if ($params[ 'payments' ] == 'monthly' ) $post[ 'TokenToCharge.IsAutoRecurringPayment' ] = 'true';
 
     if ( !$refund  &&isset($params[ 'approval_number' ]) && $params[ 'approval_number' ]) $post[ 'TokenToCharge.ApprovalNumber' ] = $params[ 'approval_number' ];
