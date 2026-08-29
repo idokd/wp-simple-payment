@@ -410,8 +410,10 @@ function sp_wc_gateway_init() {
         public function gateway_response( $order_id = null, $redirect = true ) {
             // When invoked without an order id we are on the public API endpoint
             // (?wc-api=wc_simplepayment_gateway); require a valid order key.
-            $verify_key = ( null === $order_id );
-            if ( $verify_key ) $order_id = isset( $_REQUEST[ 'order-pay' ] ) ? absint( $_REQUEST[ 'order-pay' ] ) : 0;
+            if ( !$order_id ) {
+				$verify_key = true;
+				$order_id = isset( $_REQUEST[ 'order-pay' ] ) ? absint( $_REQUEST[ 'order-pay' ] ) : 0;
+			}
             if ( !$order_id ) return;
             if ( !$order = wc_get_order( $order_id ) ) return;
 
