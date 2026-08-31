@@ -390,8 +390,9 @@ function sp_wc_gateway_init() {
             $order = wc_get_order( $order_id );
             $params = self::params( $order->get_data() );
 
-            $url = get_post_meta( (int) $order_id, 'sp_provider_url', true );
-            wc_delete_order_item_meta( (int) $order_id, 'sp_provider_url' );
+            $url = $order->get_meta( 'sp_provider_url' );
+            $order->delete_meta_data( 'sp_provider_url' );
+            $order->save();
 
             $settings = $this->get_option( 'settings' ) ? json_decode( $this->get_option( 'settings' ), true, 512, JSON_OBJECT_AS_ARRAY ) : [];
             if ( $settings ) $params = array_merge( $settings, $params );
@@ -778,8 +779,8 @@ function sp_wc_gateway_init() {
                 if ( isset( $params[ 'engine' ] ) && $params[ 'engine' ] ) $engine  = $params[ 'engine' ];
                 $url = $external = $this->SPWP->payment( $params, $engine );
                 if ( !is_bool( $url ) ) {
-                    // && !add_post_meta((int) $order_id, 'sp_provider_url', $url, true) 
-                    update_post_meta( (int) $order_id, 'sp_provider_url', $url );
+                    $order->update_meta_data( 'sp_provider_url', $url );
+                    $order->save();
                  }
 
                 if ( !$this->has_fields && in_array( $this->get_option( 'display' ), [ 'iframe', 'modal' ] ) ) {
@@ -902,7 +903,7 @@ function sp_wc_gateway_init() {
                 if ( $refund = $this->refund_via_token( $order, $amount, $reason ) ) return( $refund );
             }
             $params = [];
-            $params[ SimplePaymentPlugin::PRODUCT ] = get_the_title( $order->get_id() );
+            $params[ SimplePaymentPlugin::PRODUCT ] = sprintf( __( 'Order %s', 'simple-payment' ), $order->get_order_number() );
             $params[ SimplePaymentPlugin::AMOUNT ] = $amount;
             // TODO: need to raise exception when fails
             return( SimplePaymentPlugin::instance()->payment_refund( $order->get_transaction_id(), $params ) );
@@ -943,7 +944,7 @@ function sp_wc_gateway_init() {
             $params[ 'source' ]    = 'woocommerce';
             $params[ 'source_id' ] = $order_id;
             $params[ SimplePaymentPlugin::AMOUNT ]  = null === $amount ? $order->get_total() : $amount;
-            $params[ SimplePaymentPlugin::PRODUCT ] = get_the_title( $order_id );
+            $params[ SimplePaymentPlugin::PRODUCT ] = sprintf( __( 'Order %s', 'simple-payment' ), $order->get_order_number() );
             if ( $reason ) $params[ SimplePaymentPlugin::COMMENT ] = $reason;
 
             // The saved token to credit.
