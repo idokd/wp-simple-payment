@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Simple Payment 2.5.4\n"
+"Project-Id-Version: Simple Payment 2.5.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/simple-payment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-09T17:56:05+00:00\n"
+"POT-Creation-Date: 2026-09-09T17:56:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: simple-payment\n"
@@ -19,8 +19,8 @@ msgstr ""
 #: addons/admin-columns-pro/classes/Service/ColumnGroup.php:20
 #: addons/admin-columns-pro/classes/Service/ListScreens.php:19
 #: addons/elementor/widget.php:31
-#: addons/woocommerce/init.php:162
-#: addons/woocommerce/init.php:296
+#: addons/woocommerce/init.php:171
+#: addons/woocommerce/init.php:305
 #: addons/wpjobboard/config.php:8
 #: admin/admin.php:182
 #: admin/admin.php:183
@@ -79,13 +79,13 @@ msgid "Basic"
 msgstr ""
 
 #: addons/elementor/widget.php:97
-#: addons/woocommerce/init.php:345
+#: addons/woocommerce/init.php:354
 #: addons/wpjobboard/config.php:34
 msgid "Product"
 msgstr ""
 
 #: addons/elementor/widget.php:103
-#: admin/transaction-list-table.php:238
+#: admin/transaction-list-table.php:256
 msgid "Amount"
 msgstr ""
 
@@ -112,7 +112,7 @@ msgstr ""
 #: addons/elementor/widget.php:147
 #: addons/gravityforms/init.php:189
 #: addons/gravityforms/init.php:397
-#: addons/woocommerce/init.php:369
+#: addons/woocommerce/init.php:378
 #: addons/wpjobboard/config.php:47
 msgid "Template"
 msgstr ""
@@ -198,10 +198,10 @@ msgstr ""
 #: addons/elementor/widget.php:204
 #: addons/gravityforms/init.php:144
 #: addons/gravityforms/init.php:335
-#: addons/woocommerce/init.php:314
+#: addons/woocommerce/init.php:323
 #: addons/wpjobboard/config.php:12
 #: admin/settings.php:121
-#: admin/transaction-list-table.php:239
+#: admin/transaction-list-table.php:257
 #: settings.php:120
 msgid "Engine"
 msgstr ""
@@ -213,8 +213,8 @@ msgstr ""
 #: addons/elementor/widget.php:221
 #: addons/gravityforms/init.php:177
 #: addons/gravityforms/init.php:370
-#: addons/woocommerce/init.php:270
-#: addons/woocommerce/init.php:361
+#: addons/woocommerce/init.php:279
+#: addons/woocommerce/init.php:370
 #: addons/wpjobboard/config.php:41
 #: templates/form-bootstrap-basic-id.php:75
 #: templates/form-bootstrap-basic.php:82
@@ -244,7 +244,7 @@ msgstr ""
 
 #: addons/gravityforms/init.php:146
 #: addons/gravityforms/init.php:338
-#: addons/woocommerce/init.php:316
+#: addons/woocommerce/init.php:325
 msgid "Select Payment Gateway"
 msgstr ""
 
@@ -257,16 +257,16 @@ msgstr ""
 #: addons/gravityforms/init.php:154
 #: addons/gravityforms/init.php:344
 #: addons/gravityforms/init.php:347
-#: addons/woocommerce/init.php:328
-#: addons/woocommerce/init.php:330
+#: addons/woocommerce/init.php:337
+#: addons/woocommerce/init.php:339
 #: addons/wpjobboard/config.php:23
 msgid "Display Method"
 msgstr ""
 
 #: addons/gravityforms/init.php:154
 #: addons/gravityforms/init.php:347
-#: addons/woocommerce/init.php:317
-#: addons/woocommerce/init.php:331
+#: addons/woocommerce/init.php:326
+#: addons/woocommerce/init.php:340
 #: addons/wpjobboard/config.php:13
 #: addons/wpjobboard/config.php:24
 msgid "If none selected it will use Simple Payment default."
@@ -285,7 +285,7 @@ msgstr ""
 
 #: addons/gravityforms/init.php:179
 #: addons/gravityforms/init.php:373
-#: addons/woocommerce/init.php:363
+#: addons/woocommerce/init.php:372
 msgid "Enable Insallments"
 msgstr ""
 
@@ -296,14 +296,14 @@ msgstr ""
 
 #: addons/gravityforms/init.php:192
 #: addons/gravityforms/init.php:401
-#: addons/woocommerce/init.php:371
+#: addons/woocommerce/init.php:380
 #: addons/wpjobboard/config.php:48
 msgid "Custom checkout template form"
 msgstr ""
 
 #: addons/gravityforms/init.php:192
 #: addons/gravityforms/init.php:401
-#: addons/woocommerce/init.php:372
+#: addons/woocommerce/init.php:381
 msgid "If you wish to use a custom form template."
 msgstr ""
 
@@ -321,21 +321,21 @@ msgstr ""
 
 #: addons/gravityforms/init.php:208
 #: addons/gravityforms/init.php:405
-#: addons/woocommerce/init.php:377
+#: addons/woocommerce/init.php:386
 #: addons/wpjobboard/config.php:53
 msgid "Settings"
 msgstr ""
 
 #: addons/gravityforms/init.php:211
 #: addons/gravityforms/init.php:409
-#: addons/woocommerce/init.php:379
+#: addons/woocommerce/init.php:388
 #: addons/wpjobboard/config.php:54
 msgid "Custom & advanced checkout settings"
 msgstr ""
 
 #: addons/gravityforms/init.php:211
 #: addons/gravityforms/init.php:409
-#: addons/woocommerce/init.php:380
+#: addons/woocommerce/init.php:389
 msgid "Use if carefully"
 msgstr ""
 
@@ -459,40 +459,40 @@ msgid "Subscription Created"
 msgstr ""
 
 #: addons/gravityforms/init.php:1380
-#: addons/woocommerce/init.php:254
+#: addons/woocommerce/init.php:263
 #: templates/form-woocommerce.php:65
 msgid "Card Owner ID"
 msgstr ""
 
-#: addons/woocommerce/init.php:20
+#: addons/woocommerce/init.php:29
 msgid "Configure"
 msgstr ""
 
-#: addons/woocommerce/init.php:99
+#: addons/woocommerce/init.php:108
 msgid "Important consult payment status before processing."
 msgstr ""
 
-#: addons/woocommerce/init.php:102
+#: addons/woocommerce/init.php:111
 msgid "Payment failed, redirecting user to checkout."
 msgstr ""
 
-#: addons/woocommerce/init.php:120
+#: addons/woocommerce/init.php:129
 msgid "Simple Payment ID:"
 msgstr ""
 
-#: addons/woocommerce/init.php:123
+#: addons/woocommerce/init.php:132
 msgid "Confirmation Code:"
 msgstr ""
 
-#: addons/woocommerce/init.php:163
+#: addons/woocommerce/init.php:172
 msgid "Allows integration of Simple Payment gateways into woocommerce"
 msgstr ""
 
-#: addons/woocommerce/init.php:174
+#: addons/woocommerce/init.php:183
 msgid "new payment method"
 msgstr ""
 
-#: addons/woocommerce/init.php:249
+#: addons/woocommerce/init.php:258
 #: templates/form-bootstrap-basic-id.php:30
 #: templates/form-bootstrap-basic.php:34
 #: templates/form-bootstrap.php:147
@@ -503,196 +503,201 @@ msgstr ""
 msgid "Name on card"
 msgstr ""
 
-#: addons/woocommerce/init.php:287
+#: addons/woocommerce/init.php:296
 msgid "Enable/Disable"
 msgstr ""
 
-#: addons/woocommerce/init.php:289
+#: addons/woocommerce/init.php:298
 msgid "Enable Simple Payment"
 msgstr ""
 
-#: addons/woocommerce/init.php:293
+#: addons/woocommerce/init.php:302
 msgid "Title"
 msgstr ""
 
-#: addons/woocommerce/init.php:295
+#: addons/woocommerce/init.php:304
 msgid "This controls the title for the payment method the customer sees during checkout."
 msgstr ""
 
-#: addons/woocommerce/init.php:300
+#: addons/woocommerce/init.php:309
 msgid "Description"
 msgstr ""
 
-#: addons/woocommerce/init.php:302
+#: addons/woocommerce/init.php:311
 msgid "Payment method description that the customer will see on your checkout."
 msgstr ""
 
-#: addons/woocommerce/init.php:303
+#: addons/woocommerce/init.php:312
 msgid "Please remit payment to Store Name upon pickup or delivery."
 msgstr ""
 
-#: addons/woocommerce/init.php:307
+#: addons/woocommerce/init.php:316
 msgid "Instructions"
 msgstr ""
 
-#: addons/woocommerce/init.php:309
+#: addons/woocommerce/init.php:318
 msgid "Instructions that will be added to the thank you page and emails."
 msgstr ""
 
-#: addons/woocommerce/init.php:337
+#: addons/woocommerce/init.php:346
 msgid "Show in Checkout"
 msgstr ""
 
-#: addons/woocommerce/init.php:339
+#: addons/woocommerce/init.php:348
 msgid "Show in Modal or IFRAME in Checkout page, instead of Order Review"
 msgstr ""
 
-#: addons/woocommerce/init.php:341
+#: addons/woocommerce/init.php:350
 msgid "For Modal & IFRAME Only, If none selected it will use Simple Payment default."
 msgstr ""
 
-#: addons/woocommerce/init.php:347
+#: addons/woocommerce/init.php:356
 msgid "Custom product name to use in Simple Payment"
 msgstr ""
 
-#: addons/woocommerce/init.php:348
+#: addons/woocommerce/init.php:357
 msgid "Simple Payment globalize the purchase to single product on the Payment Gateway."
 msgstr ""
 
-#: addons/woocommerce/init.php:349
+#: addons/woocommerce/init.php:358
 msgid "WooCommerce Order %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:353
+#: addons/woocommerce/init.php:362
 msgid "Single Item Orders"
 msgstr ""
 
-#: addons/woocommerce/init.php:355
+#: addons/woocommerce/init.php:364
 msgid "Single Item Order use as Product Name"
 msgstr ""
 
-#: addons/woocommerce/init.php:357
+#: addons/woocommerce/init.php:366
 msgid "When order has a single item use item name as product name"
 msgstr ""
 
-#: addons/woocommerce/init.php:365
+#: addons/woocommerce/init.php:374
 #: addons/wpjobboard/config.php:42
 msgid "Enable installments on checkout page"
 msgstr ""
 
-#: addons/woocommerce/init.php:450
+#: addons/woocommerce/init.php:460
 msgid "Simple Payment: could not validate payment for transaction %s; order not completed."
 msgstr ""
 
-#: addons/woocommerce/init.php:603
+#: addons/woocommerce/init.php:613
 msgid "Payment error: %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:641
+#: addons/woocommerce/init.php:651
 msgid "Add payment method error: %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:808
+#: addons/woocommerce/init.php:818
 msgid "Payment error [ SP ID: %s ]: %s"
 msgstr ""
 
-#: addons/woocommerce/init.php:837
+#: addons/woocommerce/init.php:847
 msgid "Payment error[ SP ID: %s ]: unkown."
 msgstr ""
 
-#: addons/woocommerce/init.php:889
+#: addons/woocommerce/init.php:899
 msgid "Pay for order"
 msgstr ""
 
-#: addons/woocommerce/init.php:973
+#: addons/woocommerce/init.php:915
+#: addons/woocommerce/init.php:956
+msgid "Order %s"
+msgstr ""
+
+#: addons/woocommerce/init.php:983
 msgid "Refund of %1$s issued to saved token [ SP ID: %2$s ]%3$s"
 msgstr ""
 
-#: addons/woocommerce/init.php:991
+#: addons/woocommerce/init.php:1001
 msgid "Visa"
 msgstr ""
 
-#: addons/woocommerce/init.php:992
+#: addons/woocommerce/init.php:1002
 msgid "Mastercard"
 msgstr ""
 
-#: addons/woocommerce/init.php:993
+#: addons/woocommerce/init.php:1003
 msgid "American Express"
 msgstr ""
 
-#: addons/woocommerce/init.php:1172
+#: addons/woocommerce/init.php:1182
 msgid "Auto completed by Simple Payment companion."
 msgstr ""
 
-#: addons/woocommerce/init.php:1269
+#: addons/woocommerce/init.php:1279
 msgid "Redirecting…"
 msgstr ""
 
-#: addons/woocommerce/init.php:1271
+#: addons/woocommerce/init.php:1281
 msgid "Continue"
 msgstr ""
 
-#: addons/woocommerce/init.php:1313
+#: addons/woocommerce/init.php:1323
 msgid "WooCommerce Incoming Orders (Companion)"
 msgstr ""
 
-#: addons/woocommerce/init.php:1314
+#: addons/woocommerce/init.php:1324
 msgid "When this store receives purchases as orders from a remote Simple Payment \"WooCommerce\" engine, configure how paid orders are completed and how the customer is returned to the originating site."
 msgstr ""
 
-#: addons/woocommerce/init.php:1322
+#: addons/woocommerce/init.php:1332
 msgid "Enable Companion Handling"
 msgstr ""
 
-#: addons/woocommerce/init.php:1325
+#: addons/woocommerce/init.php:1335
 msgid "Receive and keep the sp_* parameters sent with REST orders and act on them."
 msgstr ""
 
-#: addons/woocommerce/init.php:1328
+#: addons/woocommerce/init.php:1338
 msgid "Auto Complete Paid Orders"
 msgstr ""
 
-#: addons/woocommerce/init.php:1331
+#: addons/woocommerce/init.php:1341
 msgid "On successful payment, skip Processing and set the order directly to Completed."
 msgstr ""
 
-#: addons/woocommerce/init.php:1334
+#: addons/woocommerce/init.php:1344
 msgid "Redirect Back After Payment"
 msgstr ""
 
-#: addons/woocommerce/init.php:1337
+#: addons/woocommerce/init.php:1347
 msgid "Once the order is paid, return the customer to the originating site (success / return url)."
 msgstr ""
 
-#: addons/woocommerce/init.php:1339
+#: addons/woocommerce/init.php:1349
 msgid "Let the customer choose on the payment page"
 msgstr ""
 
-#: addons/woocommerce/init.php:1345
+#: addons/woocommerce/init.php:1355
 msgid "Incoming Orders Payment Method"
 msgstr ""
 
-#: addons/woocommerce/init.php:1349
+#: addons/woocommerce/init.php:1359
 msgid "Gateway to assign to orders received from the source site (which cannot know this store's gateways). Leave on \"Let the customer choose\" to present the available gateways on the payment page."
 msgstr ""
 
-#: addons/woocommerce/init.php:1352
+#: addons/woocommerce/init.php:1362
 msgid "Disable Customer Emails"
 msgstr ""
 
-#: addons/woocommerce/init.php:1355
+#: addons/woocommerce/init.php:1365
 msgid "Do not send WooCommerce customer emails for orders received from the source site (outsourced payment requests)."
 msgstr ""
 
-#: addons/woocommerce/init.php:1358
+#: addons/woocommerce/init.php:1368
 msgid "Disable Admin Emails"
 msgstr ""
 
-#: addons/woocommerce/init.php:1361
+#: addons/woocommerce/init.php:1371
 msgid "Do not send WooCommerce admin / store emails (new order, cancelled, failed) for orders received from the source site."
 msgstr ""
 
-#: addons/woocommerce/metabox.php:61
+#: addons/woocommerce/metabox.php:67
 msgid "Simple Payment Transaction Data"
 msgstr ""
 
@@ -800,7 +805,7 @@ msgstr ""
 
 #: admin/admin.php:190
 #: admin/admin.php:191
-#: admin/transaction-list-table.php:241
+#: admin/transaction-list-table.php:259
 msgid "Payments"
 msgstr ""
 
@@ -1265,7 +1270,7 @@ msgid "Live"
 msgstr ""
 
 #: admin/settings.php:127
-#: admin/transaction-list-table.php:251
+#: admin/transaction-list-table.php:269
 #: settings.php:126
 msgid "Sandbox"
 msgstr ""
@@ -1446,8 +1451,8 @@ msgid "Disabled"
 msgstr ""
 
 #: admin/settings.php:182
-#: admin/transaction-list-table.php:157
-#: admin/transaction-list-table.php:178
+#: admin/transaction-list-table.php:175
+#: admin/transaction-list-table.php:196
 #: settings.php:177
 msgid "Archive"
 msgstr ""
@@ -2093,7 +2098,7 @@ msgid "Pending"
 msgstr ""
 
 #: admin/transaction-list-table.php:36
-#: admin/transaction-list-table.php:253
+#: admin/transaction-list-table.php:271
 msgid "Created"
 msgstr ""
 
@@ -2101,86 +2106,86 @@ msgstr ""
 msgid "Archived"
 msgstr ""
 
-#: admin/transaction-list-table.php:60
+#: admin/transaction-list-table.php:72
 msgid "All Engines"
 msgstr ""
 
-#: admin/transaction-list-table.php:69
+#: admin/transaction-list-table.php:81
 msgid "Filter"
 msgstr ""
 
-#: admin/transaction-list-table.php:134
+#: admin/transaction-list-table.php:152
 msgid "No transactions avaliable."
 msgstr ""
 
-#: admin/transaction-list-table.php:147
-#: admin/transaction-list-table.php:173
+#: admin/transaction-list-table.php:165
+#: admin/transaction-list-table.php:191
 msgid "Unarchive"
 msgstr ""
 
-#: admin/transaction-list-table.php:162
-#: admin/transaction-list-table.php:177
+#: admin/transaction-list-table.php:180
+#: admin/transaction-list-table.php:195
 msgid "Verify"
 msgstr ""
 
-#: admin/transaction-list-table.php:165
+#: admin/transaction-list-table.php:183
 msgid "Details"
 msgstr ""
 
-#: admin/transaction-list-table.php:236
+#: admin/transaction-list-table.php:254
 msgid "ID"
 msgstr ""
 
-#: admin/transaction-list-table.php:237
+#: admin/transaction-list-table.php:255
 msgid "Concept"
 msgstr ""
 
-#: admin/transaction-list-table.php:240
+#: admin/transaction-list-table.php:258
 #: features/fraud-detection.php:333
 msgid "Status"
 msgstr ""
 
-#: admin/transaction-list-table.php:242
+#: admin/transaction-list-table.php:260
 msgid "Transaction ID"
 msgstr ""
 
-#: admin/transaction-list-table.php:243
+#: admin/transaction-list-table.php:261
 msgid "Confirmation Code"
 msgstr ""
 
-#: admin/transaction-list-table.php:244
+#: admin/transaction-list-table.php:262
 msgid "User"
 msgstr ""
 
-#: admin/transaction-list-table.php:245
+#: admin/transaction-list-table.php:263
 msgid "URL"
 msgstr ""
 
-#: admin/transaction-list-table.php:246
+#: admin/transaction-list-table.php:264
 msgid "Parameters"
 msgstr ""
 
-#: admin/transaction-list-table.php:247
+#: admin/transaction-list-table.php:265
 msgid "IP Address"
 msgstr ""
 
-#: admin/transaction-list-table.php:248
+#: admin/transaction-list-table.php:266
 msgid "User Agent"
 msgstr ""
 
-#: admin/transaction-list-table.php:249
+#: admin/transaction-list-table.php:267
 msgid "Error"
 msgstr ""
 
-#: admin/transaction-list-table.php:250
+#: admin/transaction-list-table.php:268
 msgid "Token"
 msgstr ""
 
-#: admin/transaction-list-table.php:252
+#: admin/transaction-list-table.php:270
 msgid "Modified"
 msgstr ""
 
-#: admin/transaction-list-table.php:281
+#: admin/transaction-list-table.php:299
 msgid "Verification result for %s:<br />%s"
 msgstr ""
 
@@ -2194,7 +2199,7 @@ msgid "Search"
 msgstr ""
 
 #: features/fraud-detection.php:33
-#: simple-payment-plugin.php:161
+#: simple-payment-plugin.php:167
 msgid "Fraud Detection"
 msgstr ""
 
@@ -2360,7 +2365,7 @@ msgid "Last block"
 msgstr ""
 
 #: features/zapier.php:20
-#: simple-payment-plugin.php:165
+#: simple-payment-plugin.php:171
 msgid "Zapier"
 msgstr ""
 
@@ -2392,35 +2397,35 @@ msgstr ""
 msgid "API KEY Invalid"
 msgstr ""
 
-#: simple-payment-plugin.php:162
+#: simple-payment-plugin.php:168
 msgid "Detect repeated failed payments from the same identity (email, phone, IP, user agent) and block further attempts. Integrates with WooCommerce and can be reused by other integrations."
 msgstr ""
 
-#: simple-payment-plugin.php:166
+#: simple-payment-plugin.php:172
 msgid "Expose a Zapier endpoint so payments and updates can trigger Zaps."
 msgstr ""
 
-#: simple-payment-plugin.php:205
+#: simple-payment-plugin.php:211
 msgid "Simple Payment License Error: %s"
 msgstr ""
 
-#: simple-payment-plugin.php:205
+#: simple-payment-plugin.php:211
 msgid "License error, or no license."
 msgstr ""
 
-#: simple-payment-plugin.php:251
+#: simple-payment-plugin.php:257
 msgid "Every %s Minutes"
 msgstr ""
 
-#: simple-payment-plugin.php:670
+#: simple-payment-plugin.php:700
 msgid "Error payment recharge"
 msgstr ""
 
-#: simple-payment-plugin.php:903
+#: simple-payment-plugin.php:933
 msgid "Couldn't register transaction: %s"
 msgstr ""
 
-#: simple-payment-plugin.php:926
+#: simple-payment-plugin.php:956
 msgid "Couldn't update transaction: %s"
 msgstr ""
 
