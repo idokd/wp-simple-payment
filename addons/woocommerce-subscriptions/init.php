@@ -19,7 +19,7 @@ add_action( 'woocommerce_scheduled_subscription_payment_simple-payment', functio
     if ( $status[ 'result' ] == 'success' ) {
 
         $order_id = $order->get_id();
-        $transaction_id = get_post_meta( $order_id, '_sp_transaction_id'. true );
+        $transaction_id = $order->get_meta( '_sp_transaction_id' );
 		// Also store it on the subscriptions being purchased or paid for in the order
 		if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
 			$subscriptions = wcs_get_subscriptions_for_order( $order_id );

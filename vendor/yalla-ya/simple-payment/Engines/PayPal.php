@@ -52,9 +52,7 @@ class PayPal extends Engine {
   public function post_process($params) {
     //&paymentId=PAYID-LWNTCSI09697453H2945450G&token=EC-8A964303H1112514L&PayerID=DA5RML92QXCAE
 
-    $this->transaction = $_REQUEST['paymentId'];
-    //$token = $_REQUEST['token'];
-    //$payer = $_REQUEST['PayerID'];
+    $this->transaction = isset( $_REQUEST['paymentId'] ) ? $_REQUEST['paymentId'] : ( isset( $params['transaction_id'] ) ? $params['transaction_id'] : null );
     $this->save([
       'transaction_id' => $this->transaction,
       'url' => '',
@@ -63,7 +61,21 @@ class PayPal extends Engine {
       'request' => json_encode($params),
       'response' => json_encode($_REQUEST)
     ]);
-    return(true);
+    // Fail closed: confirm with PayPal that the payment is actually approved before
+    // accepting it. A forged callback (or engine=PayPal spoof) must not complete an order.
+    if ( !$this->transaction || !$this->context ) return( false );
+    $payment = Payment::get( $this->transaction, $this->context );
+    if ( !$payment || $payment->getState() != 'approved' ) return( false );
+    // When the order amount / currency are known, they must match what PayPal captured.
+    if ( isset( $params['amount'] ) && $params['amount'] !== '' ) {
+      $transactions = $payment->getTransactions();
+      $amount = ( $transactions && isset( $transactions[0] ) ) ? $transactions[0]->getAmount() : null;
+      if ( !$amount ) return( false );
+      if ( abs( (float) $amount->getTotal() - (float) $params['amount'] ) > 0.01 ) return( false );
+      $currency = isset( $params['currency'] ) && $params['currency'] ? $params['currency'] : null;
+      if ( $currency && strcasecmp( (string) $amount->getCurrency(), (string) $currency ) !== 0 ) return( false );
+    }
+    return( true );
   }
 
   public function process($params) {

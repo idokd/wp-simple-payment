@@ -61,9 +61,10 @@ abstract class Engine {
   }
 
   public function status( $params ) {
-    // Process the statuc callback, for example
-    // Return FALSE if transaction failed
-    return( true );
+    // Process the status callback, for example
+    // Fail closed: an engine must implement its own server-side verification to
+    // report a payment as complete.
+    return( false );
   }
 
   public function verify( $params ) {
@@ -80,7 +81,9 @@ abstract class Engine {
 
   public function post_process($params) {
     // Process the result of the transactions save
-    return(true);
+    // Fail closed: an engine must implement its own server-side verification to
+    // report a payment as complete.
+    return(false);
   }
 
   public function pre_process($params) {

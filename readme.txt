@@ -123,6 +123,13 @@ I hope it is useful for you and look forward to reading your reviews! 😉 Thank
 
 == Changelog ==
 
+= 2.5.5 =
+* Security: the payment callback now binds each transaction to the engine that created it (read from the stored record, not the request) and only completes a transaction that is still pending, blocking attempts to force a weaker gateway's verification (e.g. engine=PayPal) or to complete/replay another transaction
+* Security: payment engines now fail closed - PayPal confirms the payment is approved (and the amount/currency match) with PayPal before completing, Credit2000 and iCount verify server-side instead of trusting the callback, the mock Test engine can no longer be selected from a request on a live site, engine names are validated against the supported list, and the base engine no longer reports success by default
+* Security: fixed reflected XSS on the Payments admin screen (the date-range filter values are now escaped and validated, and sorting is restricted to known columns)
+* Security: fixed stored XSS via the [simple_payment] shortcode / form "target" attribute (now escaped on output)
+* WooCommerce: declared compatibility with High-Performance Order Storage (HPOS / custom order tables) and the Cart & Checkout Blocks, so the plugin is no longer listed as incompatible with current WooCommerce features. Order data (provider url, transaction id, refund concept) is now read and written through the order object (CRUD), keeping WooCommerce and WooCommerce Subscriptions working on the latest versions with HPOS enabled
+
 = 2.5.1 =
 * Added WooCommerce payment engine: create the purchase as an order on a third party WooCommerce website via its REST API, and open the returned redirect url in an iframe / popup for payment
 * Added WooCommerce companion handling for the receiving store: exposes / validates / keeps the sp_* order parameters on the REST API, can auto complete paid orders (skipping processing), and redirects the customer back to the originating site once the order is paid
