@@ -45,6 +45,18 @@ class Transaction_List extends leewillis77\WpListTableExportable\WpListTableExpo
       self::$views_rendered = true;
   }
 
+  /**
+   * Return a request value only when it is a valid Y-m-d date, otherwise ''.
+   * Used to keep the date filters from reflecting arbitrary text into the page
+   * or the SQL query.
+   */
+  protected static function date_param( $key ) {
+      if ( empty( $_REQUEST[ $key ] ) ) return( '' );
+      $value = sanitize_text_field( wp_unslash( $_REQUEST[ $key ] ) );
+      $date = DateTime::createFromFormat( 'Y-m-d', $value );
+      return( $date && $date->format( 'Y-m-d' ) === $value ? $value : '' );
+  }
+
   function extra_tablenav( $which ) {
       if ( self::$details ) return;
       global $wpdb;
@@ -65,7 +77,7 @@ class Transaction_List extends leewillis77\WpListTableExportable\WpListTableExpo
               }
               echo "</select>";
           }
-          echo '<label for="from-date">Date Range:</label><input type="date" name="created_from" id="from-date" value="' . ( isset( $_REQUEST[ 'created_from' ] ) ? sanitize_text_field( $_REQUEST[ 'created_from' ] ) : '' ) . '" /><input type="date" name="created_to" id="to-date" value="' . ( isset( $_REQUEST[ 'created_to' ] ) ? sanitize_text_field( $_REQUEST[ 'created_to' ] ) : '' ) . '" />';
+          echo '<label for="from-date">Date Range:</label><input type="date" name="created_from" id="from-date" value="' . esc_attr( self::date_param( 'created_from' ) ) . '" /><input type="date" name="created_to" id="to-date" value="' . esc_attr( self::date_param( 'created_to' ) ) . '" />';
           echo '<input type="submit" name="filter_action" id="transaction-query-submit" class="button" value="' . __( 'Filter', 'simple-payment' ) . '">';
           echo '</div>';
         }
@@ -101,19 +113,25 @@ class Transaction_List extends leewillis77\WpListTableExportable\WpListTableExpo
       $where[] = "`transaction_id` LIKE '%" .esc_sql( $_REQUEST[ 's' ] ) . "%' OR `concept` LIKE '%" . esc_sql( $_REQUEST[ 's' ] ) . "%'";
     }
 
-    if ( ! empty( $_REQUEST[ 'created_from' ] ) ) {
-      $where[] = "`created` >= '" . esc_sql( $_REQUEST[ 'created_from' ] ) . " 00:00:00'";
+    if ( $created_from = self::date_param( 'created_from' ) ) {
+      $where[] = "`created` >= '" . esc_sql( $created_from ) . " 00:00:00'";
     }
-    if ( ! empty( $_REQUEST['created_to' ] ) ) {
-      $where[] = "`created` <= '".esc_sql( $_REQUEST[ 'created_to' ] ) . " 23:59:59'";
+    if ( $created_to = self::date_param( 'created_to' ) ) {
+      $where[] = "`created` <= '" . esc_sql( $created_to ) . " 23:59:59'";
     }
     if ( count( $where ) > 0 ) $sql .=  ' WHERE ' . implode( ' AND ', $where );
     if ( $count ) {
       return( $wpdb->get_var( $sql ) );
     }
     if ( ! empty( $_REQUEST[ 'orderby' ] ) || isset( $orderby ) ) {
-      $sql .= ' ORDER BY ' . ( isset( $_REQUEST[ 'orderby' ] ) && ! empty( $_REQUEST[ 'orderby' ] ) ? esc_sql ( $_REQUEST[ 'orderby' ] ) : $orderby ) ;
-      $sql .= isset( $_REQUEST[ 'order' ] ) && !empty( $_REQUEST[ 'order' ] ) ? ' ' . esc_sql( $_REQUEST[ 'order' ] ) : ' '. $order;
+      // Only allow ordering by a known, sortable column (identifier positions are
+      // not protected by esc_sql), and a real direction.
+      $allowed = [ 'id', 'concept', 'amount', 'engine', 'status', 'url', 'transaction_id', 'confirmation_code', 'user_id', 'error_code', 'parameters', 'ip_address', 'sandbox', 'modified', 'created' ];
+      $requested = ! empty( $_REQUEST[ 'orderby' ] ) ? sanitize_key( wp_unslash( $_REQUEST[ 'orderby' ] ) ) : $orderby;
+      $orderby = in_array( $requested, $allowed, true ) ? $requested : ( in_array( $orderby, $allowed, true ) ? $orderby : 'id' );
+      $direction = ! empty( $_REQUEST[ 'order' ] ) ? strtoupper( sanitize_key( wp_unslash( $_REQUEST[ 'order' ] ) ) ) : strtoupper( (string) $order );
+      $direction = ( $direction === 'ASC' || $direction === 'DESC' ) ? $direction : 'DESC';
+      $sql .= ' ORDER BY `' . $orderby . '` ' . $direction;
     }
     if ( $per_page > 0 ) {
       $sql .= " LIMIT $per_page";

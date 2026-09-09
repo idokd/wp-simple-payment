@@ -172,7 +172,10 @@ class iCount extends Engine {
         return( true );
       }
       $doctype = $this->param( 'doc_type' );
-      if ( !$doctype || $doctype == 'none' ) return( true );
+      // Verify the payment with iCount independently of the document-type setting: when
+      // no invoice document is created we must still confirm the transaction server-side
+      // rather than trusting the (forgeable) callback.
+      if ( !$doctype || $doctype == 'none' ) return( (bool) $this->verify( $params ) );
       // Process the result of the transactions save
 
       $post = $this->basics( $params, false );

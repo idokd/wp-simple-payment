@@ -69,7 +69,9 @@ class Credit2000 extends Engine {
       return($token['returnCode'] == 0);
     }
     if (isset($params['confirmationNumber']) && $params['confirmationNumber']) $this->confirmation_code = $params['confirmationNumber'];
-    return(true);
+    // Fail closed: without the gateway 'params' token we cannot verify the payment, so
+    // do not accept the callback as a completed payment.
+    return(false);
   }
 
   public function pre_process($params) {

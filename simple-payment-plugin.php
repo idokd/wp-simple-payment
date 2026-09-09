@@ -97,6 +97,12 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 	}
 
 	public function setEngine( $engine ) {
+		// Only allow known engines to be instantiated from a (possibly request-derived) name.
+		$allowed = apply_filters( 'sp_supported_engines', self::$engines );
+		if ( !in_array( $engine, $allowed, true ) ) throw new Exception( 'ENGINE_NOT_SUPPORTED', 400 );
+		// The Test engine is a mock that always reports success; never let it be selected
+		// on a live site unless it is the explicitly configured engine.
+		if ( strcasecmp( $engine, 'Test' ) === 0 && $this->param( 'mode' ) == 'live' && strcasecmp( (string) $this->param( 'engine' ), 'Test' ) !== 0 ) throw new Exception( 'ENGINE_NOT_ALLOWED', 403 );
 		if ( $this->param( 'mode' ) == 'live' ) {
 			$this->sandbox = false;
 		}
@@ -334,6 +340,13 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 	function status( $params = [] ) {
 		$params = apply_filters( 'sp_payment_status_filter', $params, $this->engine );
 		$data = isset( $params[ 'payment_id' ] ) ? $this->fetch( $params[ 'payment_id' ] ) : [];
+		// When we can identify the transaction, bind to the engine that created it and only
+		// advance a still-open one (prevents engine spoofing and replaying a resolved one).
+		if ( $data ) {
+			if ( !empty( $data[ 'engine' ] ) && $this->engine && strcasecmp( (string) $this->engine::$name, (string) $data[ 'engine' ] ) !== 0 ) throw new Exception( 'ENGINE_MISMATCH', 403 );
+			if ( isset( $data[ 'status' ] ) && $data[ 'status' ] === self::TRANSACTION_SUCCESS ) return( true );
+			if ( isset( $data[ 'status' ] ) && !in_array( $data[ 'status' ], [ self::TRANSACTION_NEW, self::TRANSACTION_PENDING ], true ) ) throw new Exception( 'TRANSACTION_NOT_PENDING', 409 );
+		}
 		$status = false;
 		if ( $code = parent::status( array_merge( $data, $params ) ) ) {
 			$params[ 'confirmation_code' ] = $code;
@@ -352,7 +365,24 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 	}
 
 	function post_process( $params = [], $engine = null ) {
+		// Resolve the transaction being completed and bind to the engine that actually
+		// created it. Never trust a request-supplied engine: otherwise a caller could
+		// force a weaker gateway's verification (e.g. engine=PayPal) to run against a
+		// transaction created with a different engine and mark it paid.
+		$payment_id = !empty( $params[ 'payment_id' ] ) ? $params[ 'payment_id' ] : ( $this->payment_id ? : null );
+		$record = $payment_id ? $this->fetch( $payment_id ) : null;
+		if ( $record && !empty( $record[ 'engine' ] ) ) {
+			if ( $engine && strcasecmp( (string) $engine, (string) $record[ 'engine' ] ) !== 0 ) throw new Exception( 'ENGINE_MISMATCH', 403 );
+			$engine = $record[ 'engine' ];
+			$this->payment_id = $record[ 'id' ];
+		}
 		$this->setEngine( $engine ? : $this->param( 'engine' ) );
+		// Only complete a transaction we can identify and that is still open. This blocks
+		// completing an unknown/other customer's transaction and replaying an already
+		// resolved one (the ids are sequential, so ownership must be enforced here).
+		if ( !$record ) return( false );
+		if ( $record[ 'status' ] === self::TRANSACTION_SUCCESS ) return( true );
+		if ( !in_array( $record[ 'status' ], [ self::TRANSACTION_NEW, self::TRANSACTION_PENDING ], true ) ) throw new Exception( 'TRANSACTION_NOT_PENDING', 409 );
 		$params = apply_filters( 'sp_payment_post_process_filter', $params, $this->engine );
 		if ( parent::post_process( $params ) ) {
 			$args = [
@@ -841,7 +871,7 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 				if ( !isset( $params[ 'callback' ] ) ) $params[ 'callback' ] = $this->callback;
 				if ( $target ) $params[ 'callback' ] .= ( strpos( $params[ 'callback' ], '?' ) ? '&' : '?' ) . http_build_query( [ 'target' => $params[ 'target' ] ] );
 				$this->settings( $params );
-				return( sprintf( '<a class="btn" href="%1$s"' . ( $target ? ' target="' . $target . '"' : '' ) . '>%2$s</a>',
+				return( sprintf( '<a class="btn" href="%1$s"' . ( $target ? ' target="' . esc_attr( $target ) . '"' : '' ) . '>%2$s</a>',
 								$url . '?' . http_build_query( $params ),
 								esc_html( $title ? $title : 'Buy' ) ) );
 				break;
