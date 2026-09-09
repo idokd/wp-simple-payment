@@ -15,6 +15,15 @@ function sp_wc_add_to_gateways( $gateways) {
 }
 add_filter( 'woocommerce_payment_gateways', 'sp_wc_add_to_gateways' );
 
+// Declare compatibility with modern WooCommerce features so the plugin is not listed
+// as incompatible: HPOS ( custom order tables ) and the Cart & Checkout Blocks.
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( '\\Automattic\\WooCommerce\\Utilities\\FeaturesUtil' ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', SPWP_PLUGIN_FILE, true );
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', SPWP_PLUGIN_FILE, true );
+	}
+} );
+
 function sp_wc_gateway_plugin_links( $links ) {
 	$plugin_links = array(
 		'<a href="' . admin_url( 'options-general.php?page=sp' ) . '">' . __( 'Configure', 'simple-payment' ) . '</a>'

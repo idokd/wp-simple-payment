@@ -1147,15 +1147,6 @@ require_once( SPWP_PLUGIN_DIR . '/db/simple-payment-database.php' );
 global $SPWP;
 $SPWP = SimplePaymentPlugin::instance();
 
-// Declare compatibility with modern WooCommerce features so the plugin is not listed
-// as incompatible: HPOS ( custom order tables ) and the Cart & Checkout Blocks.
-add_action( 'before_woocommerce_init', function() {
-	if ( class_exists( '\\Automattic\\WooCommerce\\Utilities\\FeaturesUtil' ) ) {
-		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', SPWP_PLUGIN_FILE, true );
-		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', SPWP_PLUGIN_FILE, true );
-	}
-} );
-
 require_once( 'addons/gutenberg/init.php' );
 require_once( 'addons/woocommerce/init.php' );
 require_once( 'addons/woocommerce-subscriptions/init.php' );
