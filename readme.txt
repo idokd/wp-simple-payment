@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.4
+Stable tag: 2.5.5
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,13 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.5 =
+* Security: the payment callback now binds each transaction to the engine that created it (read from the stored record, not the request) and only completes a transaction that is still pending, blocking attempts to force a weaker gateway's verification (e.g. engine=PayPal) or to complete/replay another transaction
+* Security: payment engines now fail closed - PayPal confirms the payment is approved (and the amount/currency match) with PayPal before completing, Credit2000 and iCount verify server-side instead of trusting the callback, the mock Test engine can no longer be selected from a request on a live site, engine names are validated against the supported list, and the base engine no longer reports success by default
+* Security: fixed reflected XSS on the Payments admin screen (the date-range filter values are now escaped and validated, and sorting is restricted to known columns)
+* Security: fixed stored XSS via the [simple_payment] shortcode / form "target" attribute (now escaped on output)
+* WooCommerce: declared compatibility with High-Performance Order Storage (HPOS / custom order tables) and the Cart & Checkout Blocks, so the plugin is no longer listed as incompatible with current WooCommerce features. Order data (provider url, transaction id, refund concept) is now read and written through the order object (CRUD), keeping WooCommerce and WooCommerce Subscriptions working on the latest versions with HPOS enabled
 
 = 2.5.1 =
 * Added WooCommerce payment engine: create the purchase as an order on a third party WooCommerce website via its REST API, and open the returned redirect url in an iframe / popup for payment
