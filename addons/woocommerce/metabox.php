@@ -53,13 +53,18 @@ class WC_SimplePayment_Metabox {
 	 * @return void
 	 */
 	public function add_meta_boxes() {
-		global $post;
 		$screen = get_current_screen();
 		$screen_id = $screen ? $screen->id : '';
-		
-		if ( 'shop_order' === $screen_id && ( self::$transactions = get_post_meta( $post->ID, '_transaction_data' ) ) ) {
-			add_meta_box( 'simple-payment-transaction-data', __( 'Simple Payment Transaction Data', 'simple-payment' ), [ $this, 'transaction_data' ], 'shop_order', 'advanced', 'default' );
-		}
+
+		// HPOS uses the wc-orders admin screen; the classic editor uses the shop_order post type.
+		$order_screen = function_exists( 'wc_get_page_screen_id' ) ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
+		if ( ! in_array( $screen_id, [ 'shop_order', $order_screen ], true ) ) return;
+
+		$order_id = isset( $_GET[ 'id' ] ) ? absint( $_GET[ 'id' ] ) : ( isset( $_GET[ 'post' ] ) ? absint( $_GET[ 'post' ] ) : 0 );
+		$order = $order_id ? wc_get_order( $order_id ) : false;
+		if ( ! $order || ! ( self::$transactions = $order->get_meta( '_transaction_data' ) ) ) return;
+
+		add_meta_box( 'simple-payment-transaction-data', __( 'Simple Payment Transaction Data', 'simple-payment' ), [ $this, 'transaction_data' ], $order_screen, 'advanced', 'default' );
 	}
 	
 	/**
