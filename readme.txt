@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.6
+Stable tag: 2.5.7
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,11 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.7 =
+* Security: hardened the payment-completion callbacks against a payment bypass - the callback now binds each transaction to the engine that created it (read from the stored record, not the request) and only completes a still-pending transaction, and the payment engines verify server-side and fail closed (PayPal confirms the payment is approved with a matching amount/currency; Credit2000 and iCount verify server-side; the mock Test engine can no longer be selected from a request on a live site; engine names are validated against the supported list)
+* Security: fixed reflected XSS on the Payments admin screen (date-range filter values escaped and validated, sorting restricted to known columns) and stored XSS via the [simple_payment] shortcode / form "target" attribute
+* WooCommerce: declared compatibility with High-Performance Order Storage (HPOS / custom order tables) and the Cart & Checkout Blocks, and access order data through the order object (CRUD)
 
 = 2.5.5 =
 * Security: the payment callback now binds each transaction to the engine that created it (read from the stored record, not the request) and only completes a transaction that is still pending, blocking attempts to force a weaker gateway's verification (e.g. engine=PayPal) or to complete/replay another transaction
