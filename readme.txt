@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.10
+Stable tag: 2.5.11
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,9 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.11 =
+* WooCommerce companion: also suppress the customer-facing failed / cancelled order emails (customer_failed_order, customer_cancelled_order) and the Point of Sale customer emails (customer_pos_completed_order, customer_pos_refunded_order) for incoming orders when "Disable Customer Emails" is on. WooCommerce added the customer failed-order email in a recent version, so it was still sent even though the admin failed-order email was already blocked
 
 = 2.5.10 =
 * WooCommerce companion: incoming orders are now recorded in the currency they were placed in on the source site (from the sp_source_currency meta), instead of this store's currency - so a 500 MXN order no longer reads / is paid as 500 USD. Filterable via sp_wc_incoming_set_currency; only applied when the code is a valid WooCommerce currency

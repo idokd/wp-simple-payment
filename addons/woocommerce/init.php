@@ -1330,6 +1330,11 @@ function sp_wc_incoming_customer_email_ids() {
     return( apply_filters( 'sp_wc_incoming_customer_email_ids', [
         'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order',
         'customer_refunded_order', 'customer_invoice', 'customer_note',
+        // WooCommerce added a customer-facing failed / cancelled order email in a recent
+        // version (the admin failed_order was blocked but this customer copy still sent),
+        // plus the Point of Sale customer emails.
+        'customer_failed_order', 'customer_cancelled_order',
+        'customer_pos_completed_order', 'customer_pos_refunded_order',
     ] ) );
 }
 function sp_wc_incoming_admin_email_ids() {
