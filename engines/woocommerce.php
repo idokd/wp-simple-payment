@@ -123,6 +123,10 @@ class WooCommerce extends Engine {
       'sp_source' => site_url(),
       'sp_product' => $concept,
       'sp_product_code' => isset( $params[ SimplePayment::PRODUCT_CODE ] ) ? $params[ SimplePayment::PRODUCT_CODE ] : null,
+      // The purchase as placed on the source site (before any currency conversion),
+      // so the remote store knows the original order amount / currency.
+      'sp_source_currency' => isset( $params[ 'source_currency' ] ) ? $params[ 'source_currency' ] : $currency,
+      'sp_source_amount' => isset( $params[ 'source_amount' ] ) && $params[ 'source_amount' ] !== null ? (string) $params[ 'source_amount' ] : (string) $amount,
     ] );
     foreach ( $meta as $key => $value ) {
       if ( $value === null || $value === '' ) continue;
