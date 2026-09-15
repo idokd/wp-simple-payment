@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.7
+Stable tag: 2.5.8
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,11 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.8 =
+* Fraud Detection: the WooCommerce checkout guards are now registered on plugins_loaded, so temporary and permanent blocks are actually applied - the feature file loads before WooCommerce, so the previous load-time function_exists( 'WC' ) check was always false and no block was ever enforced at checkout
+* Fraud Detection: new Simple Payment adapter ("Enable Simple Payment Fraud Detection", on by default) - every payment processed by the plugin itself (payment form / popup, WooCommerce gateway including pay-for-order links, GravityForms...) is refused at pre-process when the payer's email / phone / IP is blocked; failed payments count towards a block and a genuinely successful one clears it. Until now only the WooCommerce checkout form was checked, so a blocked email could still pay an existing order through its payment link
+* Fraud Detection: added an "Open blocked / pending list" debug view - shows active/permanent blocks together with identities still accumulating towards a block, to trace and debug detection
 
 = 2.5.7 =
 * Security: hardened the payment-completion callbacks against a payment bypass - the callback now binds each transaction to the engine that created it (read from the stored record, not the request) and only completes a still-pending transaction, and the payment engines verify server-side and fail closed (PayPal confirms the payment is approved with a matching amount/currency; Credit2000 and iCount verify server-side; the mock Test engine can no longer be selected from a request on a live site; engine names are validated against the supported list)

@@ -46,7 +46,7 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 		'none' => __( 'Disable (none)', 'simple-payment' ),
 	];
 	$field_desc = __( 'How this field is used: Default (email/phone/IP cluster, user agent ignored), Cluster (linked with other clustered fields), Primary (counted on its own), or Disable (none) to ignore this field.', 'simple-payment' );
-	$settings[ 'fraud.blocks_view' ] = [ 'title' => __( 'Detected Blocks', 'simple-payment' ), 'type' => 'display', 'section' => 'fraud_settings', 'description' => sp_fraud_blocks_html() ];
+	$settings[ 'fraud.blocks_view' ] = [ 'title' => __( 'Detected Blocks', 'simple-payment' ), 'type' => 'display', 'section' => 'fraud_settings', 'description' => '<p><a href="' . esc_url( admin_url( 'admin-post.php?action=sp_fraud_debug' ) ) . '" target="_blank" class="button">' . esc_html__( 'Open blocked / pending list', 'simple-payment' ) . '</a></p>' . sp_fraud_blocks_html() ];
 	$settings[ 'fraud.field_email' ] = [ 'title' => __( 'Match by Email', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
 	$settings[ 'fraud.field_phone' ] = [ 'title' => __( 'Match by Phone', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
 	$settings[ 'fraud.field_ip' ] = [ 'title' => __( 'Match by IP Address', 'simple-payment' ), 'type' => 'select', 'options' => $modes, 'section' => 'fraud_settings', 'description' => $field_desc ];
@@ -63,6 +63,7 @@ add_filter( 'sp_admin_settings', function( $settings ) {
 	$settings[ 'fraud.exclude_registered' ] = [ 'title' => __( 'Exclude Registered Users', 'simple-payment' ), 'type' => 'check', 'section' => 'fraud_settings', 'description' => __( 'Never block any logged-in (registered) user, regardless of role.', 'simple-payment' ) ];
 
 	$settings[ 'fraud.wc_enabled' ] = [ 'title' => __( 'Enable WooCommerce Fraud Detection', 'simple-payment' ), 'type' => 'check', 'default' => true, 'section' => 'fraud_settings', 'description' => __( 'Apply fraud detection to the WooCommerce checkout (failed orders, hide payment methods when blocked). On by default.', 'simple-payment' ) ];
+	$settings[ 'fraud.sp_enabled' ] = [ 'title' => __( 'Enable Simple Payment Fraud Detection', 'simple-payment' ), 'type' => 'check', 'default' => true, 'section' => 'fraud_settings', 'description' => __( 'Apply fraud detection to every payment processed by Simple Payment itself - the payment form / popup, the WooCommerce gateway (including pay-for-order links), GravityForms... A blocked payer is refused before the payment engine is contacted, failed payments count towards a block and a successful payment clears it. On by default.', 'simple-payment' ) ];
 	return( $settings );
 } );
 
@@ -333,6 +334,66 @@ function sp_fraud_blocks_html() {
 	return( '<table class="widefat striped" style="max-width:760px"><thead><tr><th>' . esc_html__( 'Identity', 'simple-payment' ) . '</th><th>' . esc_html__( 'Blocks', 'simple-payment' ) . '</th><th>' . esc_html__( 'Last block', 'simple-payment' ) . '</th><th>' . esc_html__( 'Status', 'simple-payment' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>' );
 }
 
+// Identities currently accumulating failures but not yet blocked, derived from
+// the clustered-failure log (real keys + timestamps). Lets you trace and debug
+// who is on the way to a block before it triggers.
+function sp_fraud_pending() {
+	$log = get_transient( 'sp_fraud_log' );
+	if ( !is_array( $log ) || !$log ) return( [] );
+	$now = time();
+	$period = sp_fraud_period();
+	$threshold = sp_fraud_threshold();
+	$log = array_values( array_filter( $log, function( $e ) use ( $now, $period ) { return( isset( $e[ 't' ], $e[ 'k' ] ) && is_array( $e[ 'k' ] ) && $e[ 't' ] >= $now - $period ); } ) );
+	$pending = [];
+	$seen = [];
+	foreach ( $log as $i => $entry ) {
+		if ( isset( $seen[ $i ] ) ) continue;
+		$component = sp_fraud_component( $log, $i );
+		$keys = [];
+		$last = 0;
+		foreach ( $component as $j ) {
+			$seen[ $j ] = true;
+			foreach ( $log[ $j ][ 'k' ] as $k ) $keys[ $k ] = 1;
+			if ( $log[ $j ][ 't' ] > $last ) $last = $log[ $j ][ 't' ];
+		}
+		$keys = array_keys( $keys );
+		// Skip clusters that already reached a block (they show in Detected Blocks).
+		$blocked = false;
+		foreach ( $keys as $k ) if ( get_transient( sp_fraud_block_key( $k ) ) ) { $blocked = true; break; }
+		if ( $blocked ) continue;
+		$pending[] = [ 'keys' => $keys, 'count' => count( $component ), 'threshold' => $threshold, 'last' => $last ];
+	}
+	usort( $pending, function( $a, $b ) { return( $b[ 'last' ] <=> $a[ 'last' ] ); } );
+	return( $pending );
+}
+
+// Render the pending (accumulating) table.
+function sp_fraud_pending_html() {
+	$pending = sp_fraud_pending();
+	if ( !$pending ) return( '<em>' . esc_html__( 'Nothing accumulating right now.', 'simple-payment' ) . '</em>' );
+	$rows = '';
+	foreach ( $pending as $p ) {
+		$rows .= '<tr><td><code>' . esc_html( implode( ', ', $p[ 'keys' ] ) ) . '</code></td><td>' . intval( $p[ 'count' ] ) . ' / ' . intval( $p[ 'threshold' ] ) . '</td><td>' . ( $p[ 'last' ] ? esc_html( date_i18n( 'Y-m-d H:i', $p[ 'last' ] ) ) : '-' ) . '</td></tr>';
+	}
+	return( '<table class="widefat striped" style="max-width:760px"><thead><tr><th>' . esc_html__( 'Identity (cluster)', 'simple-payment' ) . '</th><th>' . esc_html__( 'Fails / threshold', 'simple-payment' ) . '</th><th>' . esc_html__( 'Last attempt', 'simple-payment' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>' );
+}
+
+// Standalone debug view (opened from the settings link): blocked + pending.
+add_action( 'admin_post_sp_fraud_debug', 'sp_fraud_debug_page' );
+function sp_fraud_debug_page() {
+	if ( !current_user_can( 'manage_options' ) ) wp_die( esc_html__( 'Insufficient permissions.', 'simple-payment' ) );
+	$title = esc_html__( 'Fraud Detection - blocked & pending', 'simple-payment' );
+	echo '<!doctype html><html><head><meta charset="utf-8"><title>' . $title . '</title>';
+	echo '<style>body{margin:2em;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d2327} h1{font-size:1.4em} h2{font-size:1.1em;margin-top:1.5em} table{border-collapse:collapse;margin:.5em 0 1.5em;width:100%;max-width:760px} th,td{border:1px solid #c3c4c7;padding:6px 10px;text-align:left;font-size:13px} th{background:#f6f7f7} code{background:#f0f0f1;padding:1px 4px}</style></head><body>';
+	echo '<h1>' . $title . '</h1>';
+	echo '<p>' . esc_html( sprintf( __( 'Threshold: %1$d failed attempts within %2$s; a block then lasts %3$s.', 'simple-payment' ), sp_fraud_threshold(), human_time_diff( 0, sp_fraud_period() ), human_time_diff( 0, sp_fraud_cooldown() ) ) ) . '</p>';
+	echo '<h2>' . esc_html__( 'Blocked', 'simple-payment' ) . '</h2>' . sp_fraud_blocks_html();
+	echo '<h2>' . esc_html__( 'Pending (accumulating towards a block)', 'simple-payment' ) . '</h2>' . sp_fraud_pending_html();
+	echo '<p><em>' . esc_html__( 'Pending is derived from the clustered-failure log (the default mode). Failures on a field set to "Primary" are counted separately and appear here only once they become a block.', 'simple-payment' ) . '</em></p>';
+	echo '</body></html>';
+	exit;
+}
+
 /* -------------------------------------------------------------------------
  * Core: record a failed attempt, test a visitor, clear on success.
  * These are integration-agnostic - pass a values map keyed by field name.
@@ -463,7 +524,12 @@ function sp_fraud_wc_enabled() {
 	return( $value !== '0' && $value !== '' && (bool) $value );
 }
 
-if ( function_exists( 'WC' ) ) {
+// The WooCommerce hooks are registered on plugins_loaded (priority 20), not at
+// file load: this feature file is required before woocommerce.php, so a
+// function_exists( 'WC' ) check at load time is always false and the checkout
+// guards (including permanent blocks) were never registered.
+function sp_fraud_wc_register() {
+	if ( !function_exists( 'WC' ) ) return;
 
 	// Email/phone the customer entered on the checkout form. During WooCommerce's
 	// update_order_review AJAX (which recalculates the gateways as fields change)
@@ -528,3 +594,99 @@ if ( function_exists( 'WC' ) ) {
 		if ( sp_fraud_is_blocked( sp_fraud_current_values( sp_fraud_wc_posted() ) ) ) wc_add_notice( wp_kses_post( sp_fraud_message() ), 'error' );
 	} );
 }
+add_action( 'plugins_loaded', 'sp_fraud_wc_register', 20 );
+
+/* =========================================================================
+ * Simple Payment adapter - guards every payment that goes through the plugin
+ * itself (payment form / popup, WooCommerce gateway incl. pay-for-order links,
+ * GravityForms...), gated by the "Enable Simple Payment Fraud Detection"
+ * toggle. The WooCommerce adapter only sees the checkout form; a blocked payer
+ * opening an existing order's payment link never posts a billing email there.
+ * ====================================================================== */
+
+function sp_fraud_sp_enabled() {
+	$value = sp_fraud_param( 'sp_enabled' );
+	if ( $value === false ) return( true ); // default on
+	return( $value !== '0' && $value !== '' && (bool) $value );
+}
+
+// Identity values of a payment from its params (form fields / gateway params /
+// stored transaction parameters), merged with the logged-in customer + IP/UA.
+function sp_fraud_sp_values( $params ) {
+	$params = is_array( $params ) ? $params : [];
+	$emails = [];
+	$phones = [];
+	foreach ( [ SimplePaymentPlugin::EMAIL, 'billing_email', 'shipping_email' ] as $f ) if ( !empty( $params[ $f ] ) && is_string( $params[ $f ] ) ) $emails[] = sanitize_email( $params[ $f ] );
+	foreach ( [ SimplePaymentPlugin::PHONE, SimplePaymentPlugin::MOBILE, 'billing_phone', 'shipping_phone' ] as $f ) if ( !empty( $params[ $f ] ) && is_string( $params[ $f ] ) ) $phones[] = sanitize_text_field( $params[ $f ] );
+	$overrides = [ 'email' => $emails, 'phone' => $phones ];
+	if ( !empty( $params[ 'ip_address' ] ) && is_string( $params[ 'ip_address' ] ) ) $overrides[ 'ip' ] = $params[ 'ip_address' ];
+	if ( !empty( $params[ 'user_agent' ] ) && is_string( $params[ 'user_agent' ] ) ) $overrides[ 'user_agent' ] = $params[ 'user_agent' ];
+	return( sp_fraud_current_values( $overrides ) );
+}
+
+// Payments of WooCommerce orders are already recorded / cleared by the
+// WooCommerce adapter (the order is marked failed / paid) - do not count twice.
+function sp_fraud_sp_is_woocommerce( $params ) {
+	return( is_array( $params ) && isset( $params[ 'source' ] ) && $params[ 'source' ] === 'woocommerce' && sp_fraud_wc_enabled() );
+}
+
+// Identity values of a stored transaction (by payment id): its parameters hold
+// the form fields, the row holds ip / user agent.
+function sp_fraud_sp_transaction_values( $payment_id ) {
+	if ( !$payment_id || !class_exists( 'SimplePaymentPlugin' ) ) return( null );
+	$payment = SimplePaymentPlugin::instance()->fetch( $payment_id );
+	if ( !is_array( $payment ) || !$payment ) return( null );
+	$params = isset( $payment[ 'parameters' ] ) && is_string( $payment[ 'parameters' ] ) ? json_decode( $payment[ 'parameters' ], true ) : [];
+	$params = is_array( $params ) ? $params : [];
+	foreach ( [ 'ip_address', 'user_agent' ] as $f ) if ( !empty( $payment[ $f ] ) ) $params[ $f ] = $payment[ $f ];
+	return( $params );
+}
+
+// Refuse the payment before the engine is contacted when the payer is blocked.
+// Throwing here is caught by SimplePaymentPlugin::payment(), which logs the
+// failed transaction and re-throws to the caller: the WooCommerce gateway
+// returns it as the checkout error; the form / popup is redirected to the
+// callback url with the error message.
+add_filter( 'sp_payment_pre_process_filter', function( $params, $engine ) {
+	if ( !sp_fraud_sp_enabled() ) return( $params );
+	if ( sp_fraud_is_blocked( sp_fraud_sp_values( $params ) ) ) {
+		do_action( 'sp_fraud_sp_refused', $params, $engine );
+		throw new Exception( wp_strip_all_tags( sp_fraud_message() ), 403 );
+	}
+	return( $params );
+}, 1, 2 );
+
+// A failed payment (declined card / error callback) counts towards a block.
+add_action( 'sp_payment_error', function( $url, $request ) {
+	if ( !sp_fraud_sp_enabled() ) return;
+	$request = is_array( $request ) ? $request : [];
+	// Our own refusal above also ends up here - it is not a failed attempt.
+	if ( isset( $request[ 'status' ] ) && intval( $request[ 'status' ] ) === 403 ) return;
+	// Redirect gateways return our id under their own field, not payment_id, but
+	// the callback has already resolved it onto the instance before firing this.
+	$payment_id = !empty( $request[ SimplePaymentPlugin::PAYMENT_ID ] ) ? $request[ SimplePaymentPlugin::PAYMENT_ID ] : SimplePaymentPlugin::instance()->payment_id;
+	$params = sp_fraud_sp_transaction_values( $payment_id );
+	if ( $params === null ) $params = $request;
+	if ( sp_fraud_sp_is_woocommerce( $params ) ) return;
+	$values = sp_fraud_sp_values( $params );
+	if ( empty( $values[ 'email' ] ) && empty( $values[ 'phone' ] ) ) return;
+	sp_fraud_record( $values );
+}, 10, 2 );
+
+// A successful payment breaks the streak - but the success callback fires even
+// when verification failed, so only clear when the stored transaction is
+// genuinely marked successful (otherwise a blocked payer could clear their own
+// block by hitting the success callback url).
+add_action( 'sp_payment_success', function( $params ) {
+	if ( !sp_fraud_sp_enabled() || !class_exists( 'SimplePaymentPlugin' ) ) return;
+	$params = is_array( $params ) ? $params : [];
+	$payment_id = !empty( $params[ SimplePaymentPlugin::PAYMENT_ID ] ) ? $params[ SimplePaymentPlugin::PAYMENT_ID ] : SimplePaymentPlugin::instance()->payment_id;
+	if ( !$payment_id ) return;
+	$payment = SimplePaymentPlugin::instance()->fetch( $payment_id );
+	if ( !is_array( $payment ) || !isset( $payment[ 'status' ] ) || $payment[ 'status' ] !== SimplePaymentPlugin::TRANSACTION_SUCCESS ) return;
+	$stored = sp_fraud_sp_transaction_values( $payment_id );
+	if ( $stored !== null ) $params = array_merge( $stored, $params );
+	// Merged params now carry 'source' - skip WooCommerce (cleared by its adapter).
+	if ( sp_fraud_sp_is_woocommerce( $params ) ) return;
+	sp_fraud_clear( sp_fraud_sp_values( $params ) );
+} );
