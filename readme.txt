@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.8
+Stable tag: 2.5.9
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,11 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.9 =
+* WooCommerce gateway: pass the order's currency along with its total. It was never mapped, so payments fell back to the global Simple Payment currency setting - e.g. a 500 MXN order was created / charged as 500 USD on a remote WooCommerce store
+* WooCommerce engine / companion: the purchase's original amount and currency (as placed on the source site, before any conversion filter) are sent as sp_source_currency / sp_source_amount meta on the remote order and kept by the companion
+* WooCommerce companion: skip WooCommerce's guest email verification on the pay for order / order received pages for incoming orders opened with their order key (new "Skip Email Verification" setting, enabled by default). WooCommerce only waives that check for 10 minutes after the order is created, so a re-opened payment link (or a return after a failed attempt) asked the customer to type the billing email the source site sent before showing any gateway
 
 = 2.5.8 =
 * Fraud Detection: the WooCommerce checkout guards are now registered on plugins_loaded, so temporary and permanent blocks are actually applied - the feature file loads before WooCommerce, so the previous load-time function_exists( 'WC' ) check was always false and no block was ever enforced at checkout

@@ -675,6 +675,10 @@ function sp_wc_gateway_init() {
             if ( isset( $data[ 'billing' ] ) ) $params = array_merge( $params, $data[ 'billing' ] );
             if ( !isset( $data[ SimplePaymentPlugin::PRODUCT ] ) ) $params[ SimplePaymentPlugin::PRODUCT ] = $gateway->product( $data );
             if ( isset( $data[ 'total' ] ) ) $params[ SimplePaymentPlugin::AMOUNT ] = $data[ 'total' ];
+            // The order's own currency must travel with its total - otherwise the core
+            // falls back to the global Simple Payment currency setting (e.g. USD) and
+            // engines such as WooCommerce (remote store) charge the MXN total as USD.
+            if ( isset( $data[ 'currency' ] ) && $data[ 'currency' ] ) $params[ SimplePaymentPlugin::CURRENCY ] = $data[ 'currency' ];
             if ( isset( $data[ 'company' ] ) ) $params[ SimplePaymentPlugin::TAX_ID ] = $data[ 'company' ];
             if ( isset( $data[ 'postcode' ] ) ) $params[ SimplePaymentPlugin::ZIPCODE ] = $data[ 'postcode' ];
             if ( isset( $data[ 'address_1' ] ) ) $params[ SimplePaymentPlugin::ADDRESS ] = $data[ 'address_1' ];
@@ -1052,6 +1056,7 @@ function sp_wc_incoming_meta_keys() {
     return( apply_filters( 'sp_wc_incoming_meta_keys', [
         'sp_return_url', 'sp_success_url', 'sp_cancel_url', 'sp_error_url',
         'sp_status_url', 'sp_payment_id', 'sp_source', 'sp_product', 'sp_product_code',
+        'sp_source_currency', 'sp_source_amount',
     ] ) );
 }
 
@@ -1065,6 +1070,13 @@ function sp_wc_incoming_autocomplete_enabled() {
 
 function sp_wc_incoming_redirect_enabled() {
     return( (bool) SimplePaymentPlugin::param( 'wc_incoming.redirect' ) );
+}
+
+// Default on: an unsaved setting (false / '') means enabled, a saved '0' disables it.
+function sp_wc_incoming_skip_verification_enabled() {
+    $value = SimplePaymentPlugin::param( 'wc_incoming.skip_email_verification' );
+    if ( false === $value || null === $value || '' === $value ) return( true );
+    return( (bool) $value && '0' !== $value );
 }
 
 // Whether a given order originated from a Simple Payment "WooCommerce" engine.
@@ -1282,6 +1294,26 @@ function sp_wc_incoming_break_out( $url ) {
     exit;
 }
 
+// 3b. Skip WooCommerce's guest email verification on the pay for order / order
+// received pages for incoming orders opened with the order key. WooCommerce only
+// waives that check for 10 minutes after the order is created (or while the
+// customer's session already holds the billing email); afterwards the customer is
+// asked to type the billing email the SOURCE site sent along - which they may not
+// recognise - before any gateway is shown, so a re-opened payment link (or a
+// return after a failed attempt) dead-ends. The order key in the link is the same
+// secret WooCommerce relies on to grant pay_for_order access, so require it here.
+add_filter( 'woocommerce_order_email_verification_required', 'sp_wc_incoming_skip_email_verification', 10, 3 );
+function sp_wc_incoming_skip_email_verification( $required, $order, $context = 'view' ) {
+    if ( !$required ) return( $required );
+    if ( !sp_wc_incoming_enabled() || !sp_wc_incoming_skip_verification_enabled() ) return( $required );
+    if ( !in_array( $context, [ 'order-pay', 'order-received' ], true ) ) return( $required );
+    if ( !sp_wc_incoming_is( $order ) ) return( $required );
+    $key = isset( $_GET[ 'key' ] ) ? wc_clean( wp_unslash( $_GET[ 'key' ] ) ) : '';
+    if ( !$key || !hash_equals( $order->get_order_key(), $key ) ) return( $required );
+    sp_wc_incoming_log( "$context: order {$order->get_id()} reached with its order key - skipping email verification" );
+    return( false );
+}
+
 // 4. Suppress WooCommerce emails for incoming (outsourced) orders when configured.
 // WooCommerce order emails, split by audience.
 function sp_wc_incoming_customer_email_ids() {
@@ -1345,6 +1377,13 @@ add_filter( 'sp_admin_settings', function( $settings ) {
         'type' => 'check',
         'section' => 'wc_incoming_settings',
         'description' => __( 'Once the order is paid, return the customer to the originating site (success / return url).', 'simple-payment' )
+    ];
+    $settings[ 'wc_incoming.skip_email_verification' ] = [
+        'title' => __( 'Skip Email Verification', 'simple-payment' ),
+        'type' => 'check',
+        'default' => true,
+        'section' => 'wc_incoming_settings',
+        'description' => __( 'Do not ask customers of incoming orders to verify their email address on the pay for order / order received pages when the link carries the order key. WooCommerce asks for it 10 minutes after the order is created, which blocks re-opened payment links (default: enabled).', 'simple-payment' )
     ];
     $options = [ '' => __( 'Let the customer choose on the payment page', 'simple-payment' ) ];
     foreach ( sp_wc_incoming_gateways() as $id => $gateway ) {

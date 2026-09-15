@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.5.8
+ * Version: 2.5.9
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -416,6 +416,10 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 			$params[self::LANGUAGE] = $parts[0];
 		}
 		if (!isset($params[self::CURRENCY]) || !$params[self::CURRENCY]) $params[self::CURRENCY] = self::param('currency');
+		// Keep the purchase's original amount / currency, before any conversion applied
+		// by sp_payment_pre_process_filter, so engines can report them (e.g. as remote order meta).
+		$params[ 'source_amount' ] = $params[ self::AMOUNT ];
+		$params[ 'source_currency' ] = $params[ self::CURRENCY ];
 		if (!isset($params['concept']) && isset($params[self::PRODUCT])) $params['concept'] = $params[self::PRODUCT];
 		if ($method) $params[self::METHOD] = $method;
 		if (isset($params[self::FULL_NAME]) && trim($params[self::FULL_NAME])) {
