@@ -1142,6 +1142,16 @@ function sp_wc_incoming_rest_insert( $order, $request, $creating ) {
     }
     if ( $found ) {
         $order->update_meta_data( '_sp_incoming', 'yes' );
+        // Record the order in the currency it was placed in on the source site (its
+        // total already IS the source amount); otherwise it shows in this store's
+        // currency - e.g. a 500 MXN order would read as 500 USD.
+        $source_currency = strtoupper( (string) $order->get_meta( 'sp_source_currency' ) );
+        if ( $source_currency && function_exists( 'get_woocommerce_currencies' ) && array_key_exists( $source_currency, get_woocommerce_currencies() )
+            && $source_currency !== $order->get_currency()
+            && apply_filters( 'sp_wc_incoming_set_currency', true, $source_currency, $order ) ) {
+            $order->set_currency( $source_currency );
+            sp_wc_incoming_log( "order {$order->get_id()}: currency set to {$source_currency} from source" );
+        }
         // The source site cannot know which gateways exist here, so assign a
         // payment method the companion actually has (or let the customer choose).
         sp_wc_incoming_assign_payment_method( $order );
