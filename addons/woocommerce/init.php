@@ -1343,19 +1343,34 @@ function sp_wc_incoming_admin_email_ids() {
     ] ) );
 }
 
-// Gate each email via woocommerce_email_enabled_{id}; the order is passed in, so
-// only orders that originated from the source site are affected.
-foreach ( sp_wc_incoming_customer_email_ids() as $sp_wc_email_id ) {
-    add_filter( 'woocommerce_email_enabled_' . $sp_wc_email_id, function( $enabled, $object ) {
-        return( sp_wc_incoming_filter_email( $enabled, $object, 'customer' ) );
-    }, 100, 2 );
+// Classify a WooCommerce email as 'customer' or 'admin'. Prefix-based so new WC
+// email types are covered without an explicit list: every customer_* email (and any
+// email flagged customer-facing) is a customer email, everything else is treated as
+// an admin / store email. The explicit id lists above still act as overrides.
+function sp_wc_incoming_email_audience( $email ) {
+    $id = is_object( $email ) && !empty( $email->id ) ? $email->id : (string) $email;
+    if ( in_array( $id, sp_wc_incoming_admin_email_ids(), true ) ) return( 'admin' );
+    if ( in_array( $id, sp_wc_incoming_customer_email_ids(), true ) ) return( 'customer' );
+    if ( 0 === strpos( $id, 'customer_' ) || ( is_object( $email ) && !empty( $email->customer_email ) ) ) return( 'customer' );
+    return( 'admin' );
 }
-foreach ( sp_wc_incoming_admin_email_ids() as $sp_wc_email_id ) {
-    add_filter( 'woocommerce_email_enabled_' . $sp_wc_email_id, function( $enabled, $object ) {
-        return( sp_wc_incoming_filter_email( $enabled, $object, 'admin' ) );
-    }, 100, 2 );
+
+// Gate every WooCommerce email via woocommerce_email_enabled_{id}. Registered once
+// the mailer is ready (its full email list is then known), so email types added in
+// future WooCommerce versions are covered automatically. The order is passed to the
+// filter, so sp_wc_incoming_filter_email() only suppresses emails that carry an
+// incoming order - non-order emails (password resets, stock alerts...) are untouched.
+add_action( 'woocommerce_email', 'sp_wc_incoming_register_email_filters', 100 );
+function sp_wc_incoming_register_email_filters( $wc_emails ) {
+    if ( !is_a( $wc_emails, 'WC_Emails' ) ) return;
+    foreach ( $wc_emails->get_emails() as $email ) {
+        if ( !is_object( $email ) || empty( $email->id ) ) continue;
+        $audience = sp_wc_incoming_email_audience( $email );
+        add_filter( 'woocommerce_email_enabled_' . $email->id, function( $enabled, $object ) use ( $audience ) {
+            return( sp_wc_incoming_filter_email( $enabled, $object, $audience ) );
+        }, 100, 2 );
+    }
 }
-unset( $sp_wc_email_id );
 
 function sp_wc_incoming_filter_email( $enabled, $object, $audience ) {
     if ( !$enabled || !sp_wc_incoming_enabled() ) return( $enabled );
