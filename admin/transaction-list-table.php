@@ -219,7 +219,11 @@ class Transaction_List extends leewillis77\WpListTableExportable\WpListTableExpo
         if (!$type) $type = is_string($value) && strpos($value, '<?xml') === 0 ? 'xml' : $type;
         $id = 'tbox-'.$column_name.'-'.$item['id'];
         $href = "#TB_inline?&width=600&height=550&inlineId=".$id;
-        $value = '<a href="'.$href.'" title="'.$column_name.'" class="thickbox">'.substr( htmlentities( $value ), 0, 30 ).'...</a><div id="'.$id.'" style="display:none;"><pre class="'.$type.'">'.htmlentities( $value ).'</pre></div>';
+        $value = '<a href="'.esc_attr( $href ).'" title="'.esc_attr( $column_name ).'" class="thickbox">'.substr( htmlentities( $value ), 0, 30 ).'...</a><div id="'.esc_attr( $id ).'" style="display:none;"><pre class="'.esc_attr( $type ).'">'.htmlentities( $value ).'</pre></div>';
+    } else {
+        // Escape short values too - stored transaction fields (user agent, concept...)
+        // are attacker-controlled and were previously rendered raw into the admin table.
+        $value = esc_html( (string) $value );
     }
     return( apply_filters( 'sp_list_table_column_value', $value, $column_name, $item, $this ) );
   }

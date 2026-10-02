@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.12
+Stable tag: 2.5.13
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,10 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.13 =
+* Security: fixed a stored XSS on the Payments admin screen - transaction fields shown in the list (e.g. user agent) were rendered unescaped when 40 characters or shorter, so an attacker-supplied value could run script in an administrator's browser. All values are now escaped
+* Security: the payment success action is now fired only when the payment is actually verified/completed (post_process returns true), and the transaction's source / source_id / engine / amount are taken from the stored record rather than the request - preventing a request from completing or retargeting an unpaid payment (e.g. a Gravity Forms entry)
 
 = 2.5.12 =
 * WooCommerce companion: email suppression for incoming orders is now prefix-based - the enabled filter is registered for every WooCommerce email once the mailer loads (customer_* treated as customer, everything else as admin/store), so email types added in future WooCommerce versions are covered automatically without maintaining an explicit list. Only emails that carry an incoming order are suppressed; unrelated emails (password resets, stock alerts) are untouched
