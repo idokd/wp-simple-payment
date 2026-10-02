@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.13
+Stable tag: 2.5.14
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,10 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.14 =
+* Security: the Gravity Forms IPN endpoint (page=gf_simplepayment_ipn) no longer completes a payment just because the entry has an active feed - it now requires a matching Simple Payment transaction that is recorded as successful for that entry and amount, so the public endpoint cannot mark an unpaid entry paid
+* Cardcom: fixed an undefined variable in verify() that broke server-side transaction verification in live mode (it referenced the wrong variable for the terminal/username), so pending Cardcom transactions can be verified again
 
 = 2.5.13 =
 * Security: fixed a stored XSS on the Payments admin screen - transaction fields shown in the list (e.g. user agent) were rendered unescaped when 40 characters or shorter, so an attacker-supplied value could run script in an administrator's browser. All values are now escaped
