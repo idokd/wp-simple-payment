@@ -205,11 +205,16 @@ class CreditGuard extends Engine {
       }
       $expiration = $params[ 'cardExp' ];
     } else {
-      $status = isset( $params[ 'status' ] ) && intval( $params[ 'status' ] ) == 0;
-      $token = $params[ 'cardId' ];
-      $expiration = $params[ 'cardExpiration' ];
+      // Direct mode: confirm server-side (inquireTransactions via verify()) rather
+      // than trusting the request status / authNumber.
+      if ( isset( $params[ 'tranId' ] ) && $params[ 'tranId' ] ) $this->transaction = $params[ 'tranId' ];
+      $status = (bool) $this->verify();
+      $token = isset( $params[ 'cardId' ] ) ? $params[ 'cardId' ] : null;
+      $expiration = isset( $params[ 'cardExpiration' ] ) ? $params[ 'cardExpiration' ] : null;
     }
-    $this->confirmation_code = $params[ 'authNumber' ];
+    // Prefer the confirmation code verify() obtained from CreditGuard; fall back to
+    // the response value only if the server lookup did not provide one.
+    if ( empty( $this->confirmation_code ) ) $this->confirmation_code = isset( $params[ 'authNumber' ] ) ? $params[ 'authNumber' ] : null;
     $args = [
       'transaction_id' => $this->transaction,
       'url' => 'post_process',
