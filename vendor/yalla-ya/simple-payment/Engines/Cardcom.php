@@ -212,22 +212,26 @@ class Cardcom extends Engine {
   }
 
   public function post_process($params) {
-    $this->transaction = isset( $_REQUEST[ 'lowprofilecode' ] ) ? $_REQUEST[ 'lowprofilecode' ] : $params[ 'transaction_id' ];
+    $this->transaction = isset( $_REQUEST[ 'lowprofilecode' ] ) ? sanitize_text_field( $_REQUEST[ 'lowprofilecode' ] ) : ( isset( $params[ 'transaction_id' ] ) ? $params[ 'transaction_id' ] : null );
     $response = $_REQUEST;
     $this->save([
       'transaction_id' => $this->transaction,
       'url' => ':post_process',
-      'status' => isset($response[ 'ResponseCode' ]) ? $response[ 'ResponseCode' ] : $response[ 'response_code' ],
+      'status' => isset($response[ 'ResponseCode' ]) ? $response[ 'ResponseCode' ] : ( isset( $response[ 'response_code' ] ) ? $response[ 'response_code' ] : null ),
       'description' => isset($response[ 'Description' ]) ? $response[ 'Description' ] : null,
       'request' => json_encode($params),
       'response' => json_encode($response)
     ]);
-    if ($params[ 'Operation' ] == 2 && isset($params[ 'payments' ]) && $params[ 'payments' ] == "monthly") {
+    if ( isset( $params[ 'Operation' ] ) && $params[ 'Operation' ] == 2 && isset($params[ 'payments' ]) && $params[ 'payments' ] == "monthly") {
       if ($this->param( 'recurr_at' ) == 'post' && $this->param( 'reurring' ) == 'provider' ) return($this->recur_by_provider($params) );
     }
-    // TODO: update confirmation code con status
-    //$this->confirmation_code = $response[ 'confirmation_code' ];
-    return( $_REQUEST[ 'ResponeCode' ] == 0 );
+    // Fail closed: confirm the deal with Cardcom server-side (indicator API, via
+    // verify()) using the stored lowprofilecode, rather than trusting the redirect's
+    // response code (which was request-supplied, and the key was misspelled so an
+    // unset value passed). verify() throws / returns false unless Cardcom reports
+    // the deal approved.
+    if ( !$this->transaction ) return( false );
+    return( (bool) $this->verify( array_merge( is_array( $params ) ? $params : [], [ 'transaction_id' => $this->transaction ] ) ) );
   }
 
   protected function param_part( $params, $name = 'terminal' ) {
