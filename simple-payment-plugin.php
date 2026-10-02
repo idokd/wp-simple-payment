@@ -3,7 +3,7 @@
  * Plugin Name: Simple Payment
  * Plugin URI: https://simple-payment.yalla-ya.com
  * Description: Simple Payment enables integration with multiple payment gateways, and customize multiple payment forms.
- * Version: 2.5.12
+ * Version: 2.5.13
  * Author: Ido Kobelkowsky / yalla ya!
  * Author URI: https://github.com/idokd
  * License: GPLv2
@@ -531,10 +531,18 @@ class SimplePaymentPlugin extends SimplePayment\SimplePayment {
 					parse_str( parse_url( $url, PHP_URL_QUERY ), $vars );
 					if ( isset( $vars[ 'target' ] ) && $vars[ 'target' ] ) $target = $vars[ 'target' ];
 					try {
-						if ( isset( $_REQUEST[ self::PAYMENT_ID ] ) && $_REQUEST[ self::PAYMENT_ID ] ) $params = array_merge( $this->fetch( $_REQUEST[ self::PAYMENT_ID ] ), $_REQUEST );
-						else $params = $_REQUEST;
-						$this->post_process( $params, $engine );
-						do_action( 'sp_payment_success', $params );
+						if ( isset( $_REQUEST[ self::PAYMENT_ID ] ) && $_REQUEST[ self::PAYMENT_ID ] ) {
+							$record = $this->fetch( $_REQUEST[ self::PAYMENT_ID ] );
+							$params = array_merge( is_array( $record ) ? $record : [], $_REQUEST );
+							// Identity / binding fields must come from the stored transaction, never
+							// from the request, so a caller cannot retarget the completion (e.g. point
+							// source_id at another Gravity Forms entry or WooCommerce order).
+							if ( is_array( $record ) ) foreach ( [ 'source', 'source_id', self::ENGINE, self::AMOUNT ] as $sp_f ) if ( isset( $record[ $sp_f ] ) ) $params[ $sp_f ] = $record[ $sp_f ];
+						} else $params = $_REQUEST;
+						// Only treat the payment as successful - and fire the success action that
+						// integrations (Gravity Forms, etc.) act on - when post_process actually
+						// verified and completed it.
+						if ( $this->post_process( $params, $engine ) ) do_action( 'sp_payment_success', $params );
 					} catch ( Exception $e ) {
 						$status[ self::OP ] = self::OPERATION_ERROR;
 						if ( trim( $e->getCode() ) ) $status[ 'status' ] = trim( $e->getCode() );
