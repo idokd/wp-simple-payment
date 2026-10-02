@@ -114,23 +114,26 @@ class PayMe extends Engine {
   }
 
   public function post_process( $params ) {
-    $this->transaction = $_REQUEST[ 'payme_sale_id' ];
+    // Bind to the sale id stored for THIS transaction (pre_process recorded it as the
+    // transaction_id), not the payme_sale_id in the request - otherwise a caller could
+    // point verification at an unrelated successful sale.
+    $sale_id = isset( $params[ 'transaction_id' ] ) && $params[ 'transaction_id' ] ? $params[ 'transaction_id' ] : ( isset( $_REQUEST[ 'payme_sale_id' ] ) ? sanitize_text_field( $_REQUEST[ 'payme_sale_id' ] ) : null );
+    $this->transaction = $sale_id;
     $response = $_REQUEST;
 
     $this->save( [
       'transaction_id' => $this->transaction,
       'url' => ':post_process',
-      'status' => isset( $response[ 'status_code' ] ) && $response[ 'status_code' ] != 0 ? $response[ 'status_error_code' ] : $response[ 'status_code' ],
+      'status' => isset( $response[ 'status_code' ] ) && $response[ 'status_code' ] != 0 ? ( isset( $response[ 'status_error_code' ] ) ? $response[ 'status_error_code' ] : null ) : ( isset( $response[ 'status_code' ] ) ? $response[ 'status_code' ] : null ),
       'description' => isset( $response[ 'status_error_details' ] ) ? $response[ 'status_error_details' ] : null,
       'request' => json_encode( $params ),
       'response' => json_encode( $response )
     ] );
-    $this->confirmation_code = $params[ 'payme_transaction_auth_number' ];
-    // TODO: if subscription do subscription
-    //if ($params['Operation'] == 2 && isset($params['payments']) && $params['payments'] == "monthly") {
-    //  if ($this->param('recurr_at') == 'post' && $this->param('reurring') == 'provider') return($this->recur_by_provider($params));
-    //}
-    return( ( isset( $params[ 'status_code' ] ) && $params[ 'status_code' ] === 0 ) || ( isset( $params[ 'status' ] ) && $params[ 'status' ] === 'success' ) );
+    if ( !$sale_id ) return( false );
+    // Fail closed: confirm with PayMe (get-transactions) that the sale actually
+    // succeeded (transaction_error_code 20000) instead of trusting the request
+    // status / auth number. verify() sets the confirmation code from the API response.
+    return( (bool) $this->verify( [ 'transaction_id' => $sale_id ] ) );
   }
 
   public function pre_process($params) {
