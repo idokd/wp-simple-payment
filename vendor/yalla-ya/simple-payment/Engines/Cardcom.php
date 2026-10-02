@@ -67,8 +67,8 @@ class Cardcom extends Engine {
     $this->transaction = $transaction[ 'transaction_id' ];
     $post = [];
     if ( !$this->sandbox ) {
-      $post[ 'terminalnumber' ] = $this->param_part( $params );
-      $post[ 'username' ] = $this->param_part( $params, 'username' );
+      $post[ 'terminalnumber' ] = $this->param_part( $transaction );
+      $post[ 'username' ] = $this->param_part( $transaction, 'username' );
     } else {
       $post[ 'terminalnumber' ] = $this->terminal;
       $post[ 'username' ] = $this->username;

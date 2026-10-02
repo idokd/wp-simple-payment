@@ -1036,6 +1036,15 @@ class GFSimplePayment extends GFPaymentAddOn {
 		}
 		$this->log_debug( __METHOD__ . "(): Form {$entry['form_id']} is properly configured." );
 
+		// The IPN endpoint is public, so completing a payment just because the entry
+		// has an active feed would let anyone mark any entry paid. Require a matching
+		// Simple Payment transaction that is server-verified as successful for this
+		// entry and amount before completing.
+		if ( ! sp_gf_ipn_payment_verified( $entry ) ) {
+			$this->log_error( __METHOD__ . "(): No verified Simple Payment transaction for entry {$custom_field}. Aborting." );
+			return false;
+		}
+
 		// TODO: should we check if callback is completed, or ok,
 		// and rather determine the correct action to call
 
@@ -1381,3 +1390,23 @@ class GF_Field_Card_Owner_ID extends GF_Field_Text {
 	}
 }
 
+
+// Confirm a Gravity Forms entry has a Simple Payment transaction that was
+// server-verified as successful for this entry and amount, before the public IPN
+// endpoint is allowed to complete the payment.
+function sp_gf_ipn_payment_verified( $entry ) {
+    global $wpdb;
+    if ( !class_exists( 'SimplePaymentPlugin' ) || empty( $entry[ 'id' ] ) ) return( false );
+    $table = $wpdb->prefix . SimplePaymentPlugin::$table_name;
+    $row = $wpdb->get_row( $wpdb->prepare(
+        "SELECT `amount`, `confirmation_code` FROM `{$table}` WHERE `source` = %s AND `source_id` = %s AND `status` = %s AND `confirmation_code` IS NOT NULL AND `confirmation_code` <> '' ORDER BY `id` DESC LIMIT 1",
+        'gravityforms', (string) $entry[ 'id' ], SimplePaymentPlugin::TRANSACTION_SUCCESS
+    ), ARRAY_A );
+    if ( !$row ) return( false );
+    $expected = isset( $entry[ 'payment_amount' ] ) && $entry[ 'payment_amount' ] !== '' ? (float) $entry[ 'payment_amount' ] : null;
+    if ( null !== $expected && $expected > 0 ) {
+        $epsilon = (float) apply_filters( 'sp_gf_amount_epsilon', 0.01, $entry, $row );
+        if ( abs( (float) $row[ 'amount' ] - $expected ) > $epsilon ) return( false );
+    }
+    return( (bool) apply_filters( 'sp_gf_ipn_payment_verified', true, $entry, $row ) );
+}
