@@ -468,6 +468,13 @@ $sp_settings = [
     'type' => 'password'
   ],
 
+  'yaadpay.apisign' => [
+    'title' => __( 'APISign Verification Key', 'simple-payment' ),
+    'section' => 'yaadpay_settings',
+    'type' => 'password',
+    'description' => __( 'Optional. When set, the payment callback is confirmed with YaadPay server-side (APISign / VERIFY) before the transaction is completed. Leave empty to trust the gateway response as before.', 'simple-payment' )
+  ],
+
 
   'meshulam.username' => [
     'title' => __( 'User ID', 'simple-payment' ),

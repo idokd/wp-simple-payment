@@ -67,8 +67,10 @@ class YaadPay extends Engine {
 
   public function post( $url, $params, $headers = null, $fail = true  ) {
     $params[ 'Masof' ] = $this->terminal;
-    $params[ 'PassP' ] = $this->password;
-    $params[ 'KEY' ] = $this->apikey;
+    // Let a caller override the signing credentials (e.g. APISign/VERIFY with the
+    // dedicated verification key); otherwise fall back to the configured ones.
+    if ( !isset( $params[ 'PassP' ] ) ) $params[ 'PassP' ] = $this->password;
+    if ( !isset( $params[ 'KEY' ] ) ) $params[ 'KEY' ] = $this->apikey;
     return( parent::post( $url, $params, $headers, $fail ) );
   }
 
@@ -81,41 +83,71 @@ class YaadPay extends Engine {
     return( is_bool( $params ) ? $params : $this->api . '?' . http_build_query( $params ) );
   }
 
+  // Confirm a payment server-side with YaadPay using APISign / VERIFY. The returned
+  // callback carries the signed transaction fields (Id, CCode, Amount, ACode, Order,
+  // ... , signature); re-posting them with What=VERIFY makes YaadPay recompute the
+  // signature and reject tampered or forged data. Returns the approval code (ACode)
+  // when the signature checks out and the deal is approved, false otherwise. Without a
+  // signature to validate (e.g. a stored row from the cron) there is nothing to verify.
   public function verify( $transaction = null ) {
-    if ( $transaction ) $this->transaction = $transaction[ 'transaction_id' ];
-    $payment_id = isset( $transaction[ 'payment_id' ] ) && $transaction[ 'payment_id' ] ? $transaction[ 'payment_id' ] : $transaction[ self::PAYMENT_ID ];
-    $params = [
-      'action' => 'APISign',
-      'What' => 'VERIFY',
-    ];
-    $status = $this->post( $this->api, $params ); 
+    $data = is_array( $transaction ) ? $transaction : [];
+    if ( !empty( $data[ 'transaction_id' ] ) ) $this->transaction = $data[ 'transaction_id' ];
+    $payment_id = !empty( $data[ 'payment_id' ] ) ? $data[ 'payment_id' ] : ( isset( $data[ self::PAYMENT_ID ] ) ? $data[ self::PAYMENT_ID ] : null );
+
+    // Keep only the gateway-returned fields; drop our own bookkeeping and any
+    // credential keys so post() supplies the verification credentials.
+    $params = $data;
+    foreach ( [ 'transaction_id', 'payment_id', 'confirmation_code', 'status', 'description',
+      'request', 'response', 'token', 'amount', 'engine', 'source', 'source_id', 'id',
+      'retries', 'created', 'updated', 'Masof', 'PassP', 'KEY', 'action', 'What' ] as $k ) unset( $params[ $k ] );
+
+    // A signature is required to validate anything.
+    if ( empty( $params[ 'signature' ] ) ) return( false );
+
+    $params[ 'action' ] = 'APISign';
+    $params[ 'What' ] = 'VERIFY';
+    if ( $apisign = $this->param( 'apisign' ) ) $params[ 'KEY' ] = $apisign;
+
+    $status = $this->post( $this->api, $params );
     parse_str( $status, $status );
-    if ( isset( $status[ 'ACode' ] ) && $status[ 'ACode' ] ) {
+
+    $ccode = isset( $status[ 'CCode' ] ) ? intval( $status[ 'CCode' ] ) : null;
+    if ( $ccode === 0 && isset( $status[ 'ACode' ] ) && $status[ 'ACode' ] ) {
       $this->confirmation_code = $status[ 'ACode' ];
     }
+
     $this->save( [
       'payment_id' => $payment_id,
       'transaction_id' => $this->transaction,
       'url' => $this->api . '#APISign-VERIFY',
-      'status' => isset( $status[ 'CCode' ] ) && $status[ 'CCode' ] ? $status[ 'CCode' ] : 0,
-      'description' => isset( $status[ 'CCode' ] ) && $status[ 'CCode' ] ? self::MESSAGES[ $status[ 'CCode' ] ] : null,
-      'request' => json_encode( $post ),
+      'status' => null === $ccode ? 0 : $ccode,
+      'description' => $ccode ? ( isset( self::MESSAGES[ $ccode ] ) ? self::MESSAGES[ $ccode ] : null ) : null,
+      'request' => json_encode( $params ),
       'response' => json_encode( $status )
     ] );
-    
-    if ( isset( $status[ 'CCode' ] ) && intval( $status[ 'CCode' ] ) ) {
-      throw new Exception( self::MESSAGES[ $status[ 'CCode' ] ] , intval( $status[ 'CCode' ] ) );
-    }
 
-    if ( $this->confirmation_code ) {
-      return( $this->confirmation_code );
+    if ( 0 !== $ccode ) return( false );
+    return( $this->confirmation_code ? $this->confirmation_code : false );
+  }
+
+  // Decide whether a callback may complete the payment. With an APISign verification
+  // key configured, confirm the signature with YaadPay (fail closed). Without one, keep
+  // the previous behaviour and trust the gateway's own result code.
+  protected function confirm( $params ) {
+    if ( $this->param( 'apisign' ) ) {
+      return( $this->verify( $params ) );
     }
-    return( false );
+    if ( isset( $params[ 'CCode' ] ) && intval( $params[ 'CCode' ] ) !== 0 ) {
+      $ccode = intval( $params[ 'CCode' ] );
+      throw new Exception( isset( self::MESSAGES[ $ccode ] ) ? self::MESSAGES[ $ccode ] : ( isset( $params[ 'errMsg' ] ) && $params[ 'errMsg' ] ? $params[ 'errMsg' ] : 'ERROR_IN_TRANSACTION' ), $ccode );
+    }
+    $this->confirmation_code = isset( $params[ 'ACode' ] ) && $params[ 'ACode' ] ? $params[ 'ACode' ] : null;
+    return( $this->confirmation_code );
   }
 
   public function status( $params ) {
-    return( $this->verify( $params ) );
-    //if ( $params[ 'status' ] != 1 ) 
+    return( $this->confirm( $params ) );
+    //if ( $params[ 'status' ] != 1 )
       //throw new Exception( isset( $params[ 'err' ] ) ? $params[ 'err' ][ 'message' ] : $params[ 'status' ], $params[ 'err' ][ 'id' ] );
       
     $token = null;
@@ -181,8 +213,7 @@ class YaadPay extends Engine {
       'request' => json_encode( $params ),
       'response' => json_encode( $params )
     ] );
-    // TODO: implement; verify
-    $this->confirmation_code = isset( $params[ 'ACode' ] ) && $params[ 'ACode' ] ? $params[ 'ACode' ] : $this->verify( $params );
+    $this->confirmation_code = $this->confirm( $params );
     return( $this->confirmation_code );
   }
 
