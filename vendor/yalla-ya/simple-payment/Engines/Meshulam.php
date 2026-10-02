@@ -136,7 +136,9 @@ class Meshulam extends Engine {
     if ( $token ) $data[ 'token' ] = $token;
     $this->save( $data );
 
-    $this->confirmation_code = $params[ 'status' ] == 1 ? $info[ 'asmachta' ] : null;
+    // Do not trust the request status / asmachta; the confirmation is derived from
+    // Meshulam's own response (approveTransaction below + getPaymentProcessInfo).
+    $this->confirmation_code = null;
 
     switch( $info[ 'transactionTypeId' ] ) {
       case 1:
@@ -161,6 +163,9 @@ class Meshulam extends Engine {
       'request' => json_encode( $info ),
       'response' => json_encode( $status ),
     ] );
+    // Confirm the payment with Meshulam server-side (getPaymentProcessInfo) and take
+    // the confirmation code from that response, never from the request.
+    $this->confirmation_code = $this->verify( [ 'transaction_id' => $this->transaction ] );
     return( $this->confirmation_code );
   }
 

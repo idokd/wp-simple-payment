@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.16
+Stable tag: 2.5.17
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,9 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.17 =
+* Security (Meshulam): the payment status/IPN callback now confirms the transaction with Meshulam server-side (getPaymentProcessInfo) and takes the confirmation code (asmachta) from that response, instead of trusting the status and asmachta sent in the request. An unauthenticated callback can no longer mark a pending transaction paid. **Test a real Meshulam payment (including Bit and subscriptions) before releasing.**
 
 = 2.5.16 =
 * Security (PayMe): the payment callback now confirms the sale with PayMe server-side (get-transactions API, requiring transaction_error_code 20000) using the sale id stored for the transaction, instead of trusting the status / auth number sent in the request. **Test a real PayMe payment before releasing.**
