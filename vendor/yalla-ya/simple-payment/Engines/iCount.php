@@ -29,6 +29,12 @@ class iCount extends Engine {
 
     public static $supports = [ 'cvv', 'tokenization', 'card_owner_id' ];
 
+    // Set to true once process() has charged the card and iCount confirmed it in THIS
+    // request. iCount is a direct engine and never completes through the public op=ok
+    // callback, so post_process() must not complete a payment unless this request
+    // actually ran the charge (or a server-side lookup verifies it).
+    protected $charged = false;
+
     public function __construct($params = null, $handler = null, $sandbox = true) {
       parent::__construct( $params, $handler, $sandbox );
       //if ( $this->param( 'use_storage' ) ) self::$supports[] = 'tokenization';
@@ -97,7 +103,9 @@ class iCount extends Engine {
       if ( !$response[ 'status' ] ) {
        throw new Exception( $response[ 'error_description' ], intval( $response[ 'status' ] ) );
       }
-      
+      // iCount confirmed the charge (bill / recurr) in this request.
+      $this->charged = true;
+
       if ( isset( $response[ 'currency_code' ] ) ) $params[ 'currency_code' ] = $response[ 'currency_code' ];
       if ( isset( $response[ 'confirmation_code' ] ) ) $params[ 'confirmation_code' ] = $response[ 'confirmation_code' ];
       if ( isset( $response[ 'cc_card_type' ] ) ) $params[ 'cc_card_type' ] = $response[ 'cc_card_type' ];
@@ -152,6 +160,12 @@ class iCount extends Engine {
 
     public function post_process($params) {
       parent::post_process( $params );
+      // Fail closed. A payment completes only when this request actually charged the
+      // card (process() ran and set $charged) or iCount verifies the transaction
+      // server-side. A forged op=ok callback runs neither, so it cannot mark a pending
+      // transaction paid on request data alone - this guards every branch below,
+      // including the recurring/provider and invoice-document paths.
+      if ( !$this->charged && !$this->verify( $params ) ) return( false );
       if ( !isset( $params[ 'token' ] ) && $this->param( 'use_storage' )
         && isset( $params[ SimplePayment::CARD_NUMBER ] ) && $params[ SimplePayment::CARD_NUMBER ]
         && ( ( isset( $params[ SimplePayment::FULL_NAME ] ) && $params[ SimplePayment::FULL_NAME ] )
@@ -172,10 +186,9 @@ class iCount extends Engine {
         return( true );
       }
       $doctype = $this->param( 'doc_type' );
-      // Verify the payment with iCount independently of the document-type setting: when
-      // no invoice document is created we must still confirm the transaction server-side
-      // rather than trusting the (forgeable) callback.
-      if ( !$doctype || $doctype == 'none' ) return( (bool) $this->verify( $params ) );
+      // Payment already confirmed by the fail-closed guard above; when no invoice
+      // document is created there is nothing more to do.
+      if ( !$doctype || $doctype == 'none' ) return( true );
       // Process the result of the transactions save
 
       $post = $this->basics( $params, false );
