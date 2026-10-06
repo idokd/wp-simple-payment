@@ -472,7 +472,7 @@ $sp_settings = [
     'title' => __( 'APISign Verification Key', 'simple-payment' ),
     'section' => 'yaadpay_settings',
     'type' => 'password',
-    'description' => __( 'Optional. When set, the payment callback is confirmed with YaadPay server-side (APISign / VERIFY) before the transaction is completed. Leave empty to trust the gateway response as before.', 'simple-payment' )
+    'description' => __( 'Optional. The payment callback is always confirmed with YaadPay server-side (APISign / VERIFY) before a transaction is completed. Set this only if YaadPay issued a separate key for verification; otherwise the API Key above is used.', 'simple-payment' )
   ],
 
 

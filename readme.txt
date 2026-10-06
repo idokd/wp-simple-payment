@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.20
+Stable tag: 2.5.21
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,9 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.21 =
+* Security (YaadPay): the payment callback is now always confirmed with YaadPay server-side (APISign / VERIFY) before a transaction is completed; the request approval code (ACode) is never accepted as proof of payment. Verification uses the dedicated APISign Verification Key when set, otherwise the API Key that the hosted-page flow already requires, so no new configuration is needed on existing terminals. This removes the previous opt-in behaviour where the callback was trusted when no verification key was set. **Test a real YaadPay payment before releasing: if VERIFY cannot confirm the transaction, the payment will not complete.**
 
 = 2.5.20 =
 * Security (iCount): the payment callback now fails closed. iCount is a direct engine that charges during the request and never completes through the public op=ok callback, but that callback could still reach post_process() for a pending transaction; the recurring/provider branch and the invoice-document branch returned success without any server-side check, taking the subscription flag from the request. post_process() now completes only when this request actually charged the card (process() confirmed it) or iCount verifies the transaction server-side. **Test a real iCount payment - one-time, and recurring/provider if used - before releasing.**
