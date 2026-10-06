@@ -130,19 +130,20 @@ class YaadPay extends Engine {
     return( $this->confirmation_code ? $this->confirmation_code : false );
   }
 
-  // Decide whether a callback may complete the payment. With an APISign verification
-  // key configured, confirm the signature with YaadPay (fail closed). Without one, keep
-  // the previous behaviour and trust the gateway's own result code.
+  // Decide whether a callback may complete the payment. Always confirm the callback
+  // with YaadPay server-side (APISign / VERIFY) and fail closed; the request ACode is
+  // never accepted as proof of payment. verify() uses the APISign key when set and
+  // otherwise the API Key that the hosted-page flow already requires.
   protected function confirm( $params ) {
-    if ( $this->param( 'apisign' ) ) {
-      return( $this->verify( $params ) );
-    }
+    $code = $this->verify( $params );
+    if ( !$code ) return( false );
+    // The signature validated, so the returned result code is authentic: a non-zero
+    // CCode is a declined/failed transaction and must not complete.
     if ( isset( $params[ 'CCode' ] ) && intval( $params[ 'CCode' ] ) !== 0 ) {
       $ccode = intval( $params[ 'CCode' ] );
       throw new Exception( isset( self::MESSAGES[ $ccode ] ) ? self::MESSAGES[ $ccode ] : ( isset( $params[ 'errMsg' ] ) && $params[ 'errMsg' ] ? $params[ 'errMsg' ] : 'ERROR_IN_TRANSACTION' ), $ccode );
     }
-    $this->confirmation_code = isset( $params[ 'ACode' ] ) && $params[ 'ACode' ] ? $params[ 'ACode' ] : null;
-    return( $this->confirmation_code );
+    return( $code );
   }
 
   public function status( $params ) {
