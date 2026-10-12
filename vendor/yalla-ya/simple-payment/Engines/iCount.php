@@ -172,7 +172,22 @@ class iCount extends Engine {
           || ( isset( $params[ SimplePayment::EMAIL ] ) && $params[ SimplePayment::EMAIL ] )
           || ( isset( $params[ SimplePayment::CARD_OWNER ] ) && $params[ SimplePayment::CARD_OWNER ] )
         ) ) {
-          $this->store( $params );
+          // The card is already charged by this point; card-token storage is
+          // best-effort and must NEVER fail a captured payment (otherwise the buyer
+          // sees an error, retries, and gets charged twice). Record a storage failure
+          // and continue to the document / success path.
+          try {
+            $this->store( $params );
+          } catch ( Exception $e ) {
+            $this->save( [
+              'transaction_id' => $this->transaction,
+              'url' => ':store_failed',
+              'status' => false,
+              'description' => $e->getMessage(),
+              'request' => null,
+              'response' => null
+            ] );
+          }
       }
       if ( self::is_subscription( $params ) && $this->param( 'reurring' ) == 'provider' ) {
         $this->save( [
@@ -289,8 +304,45 @@ class iCount extends Engine {
       return( $params );
     }
 
+    // PCI-DSS: card data and the API password are sent to iCount over the wire but must
+    // never be persisted. The transaction log stores the raw request/response JSON, so
+    // mask the card number (keep last 4), drop the CVV, and redact the password/keys
+    // before anything is written. Applies to every save() this engine makes.
+    protected function save( $params ) {
+      foreach ( [ 'request', 'response' ] as $k ) {
+        if ( isset( $params[ $k ] ) && is_string( $params[ $k ] ) && $params[ $k ] !== '' ) {
+          $params[ $k ] = self::redact_secrets( $params[ $k ] );
+        }
+      }
+      return( parent::save( $params ) );
+    }
+
+    protected static function redact_secrets( $json ) {
+      $data = json_decode( $json, true );
+      if ( !is_array( $data ) ) return( $json );
+      $data = self::redact_walk( $data );
+      $out = json_encode( $data );
+      return( false === $out ? null : $out );
+    }
+
+    protected static function redact_walk( $data ) {
+      foreach ( $data as $key => $value ) {
+        if ( is_array( $value ) ) { $data[ $key ] = self::redact_walk( $value ); continue; }
+        $k = strtolower( (string) $key );
+        if ( in_array( $k, [ 'cc_cvv', 'cvv', 'cc_cvv2', 'pass', 'passp', 'password', 'key', 'apikey' ], true ) ) {
+          $data[ $key ] = '***';
+        } else if ( in_array( $k, [ 'cc_number', 'cardno', 'cc', 'card_number', 'cardnumber' ], true ) && is_scalar( $value ) ) {
+          $digits = preg_replace( '/\D/', '', (string) $value );
+          $data[ $key ] = strlen( $digits ) >= 4 ? ( '****' . substr( $digits, -4 ) ) : '****';
+        }
+      }
+      return( $data );
+    }
+
     public function store( $params ) {
       $token = null;
+      $client_id = null;
+      $created = false;
       if ( !$this->transaction ) {
         $this->transaction = self::uuid();
         $token = false;
@@ -324,6 +376,8 @@ class iCount extends Engine {
         'request' => json_encode( $post ),
         'response' => json_encode( $response )
       ] );
+      // Keep the client_id the lookup resolved so storage need not re-match by name/email.
+      if ( isset( $response[ 'status' ] ) && $response[ 'status' ] && isset( $response[ 'client_id' ] ) ) $client_id = $response[ 'client_id' ];
 
       if ( !$response[ 'status' ] ) {
         $post = $this->basics( $params, ( !isset( $params[ 'token' ] ) || !$params[ 'token' ] ) );
@@ -337,16 +391,31 @@ class iCount extends Engine {
           'request' => json_encode( $post ),
           'response' => json_encode( $response )
         ] );
+        if ( isset( $response[ 'status' ] ) && $response[ 'status' ] ) {
+          $created = true;
+          if ( isset( $response[ 'client_id' ] ) ) $client_id = $response[ 'client_id' ];
+        }
         if ( !$response[ 'status' ] ) {
           throw new Exception( $response[ 'error_description' ], intval( $response[ 'status' ] ) );
         }
       }
 
       $post = $this->basics( $params );
-      //$post[ 'client_id' ] = $status[ 'client_id' ];
+      // Pass the client_id resolved above instead of forcing iCount to re-match the
+      // client by name/email at storage time - that re-match fails for some email
+      // aliases and on replication lag right after client/create.
+      if ( $client_id ) $post[ 'client_id' ] = $client_id;
       if ( !defined( 'SP_FORCE_CVV_STORE' ) || !SP_FORCE_CVV_STORE ) unset( $post[ 'cc_cvv' ] );
       $status = $this->post( $this->api[ 'store' ], $post );
       $response = json_decode( $status, true );
+      // Belt: if storage still cannot find the client we just created, wait briefly
+      // (replication lag) and retry once with the explicit client_id.
+      if ( ( !isset( $response[ 'status' ] ) || !$response[ 'status' ] ) && $created && $client_id ) {
+        sleep( 1 );
+        $post[ 'client_id' ] = $client_id;
+        $status = $this->post( $this->api[ 'store' ], $post );
+        $response = json_decode( $status, true );
+      }
       if ( $response[ 'status' ] ) {
         $token = [
             'token' => $response[ 'cc_token_id' ] . ( $response[ 'client_id' ] ? '-' . $response[ 'client_id' ] : '' ),
