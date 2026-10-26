@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.22
+Stable tag: 2.5.23
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,10 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.23 =
+* Fixed (Cardcom): monthly (recurring / standing order) payments no longer skip creating the Cardcom standing order. Since 2.5.6 the plugin stops processing a payment once Cardcom's status callback has marked it successful, so with "Process Recurring Upon" set to Post Process the standing order was never created. It is now created by whichever path (status callback or customer return) completes the payment first, so the setting no longer affects whether it is created.
+* Security (Cardcom): with recurring set to Post Process, a monthly payment was marked successful and its standing order created before the deal was verified server-side. The deal is now verified first.
 
 = 2.5.22 =
 * Fixed (iCount): a captured charge is no longer reported as failed when post-charge bookkeeping fails. Card-token storage in post_process() is now best-effort - if it fails the charge still completes, a receipt/thank-you is shown, and the failure is logged - instead of throwing and marking the paid transaction failed (which caused buyers to retry and be charged twice).

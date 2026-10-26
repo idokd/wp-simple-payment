@@ -205,10 +205,18 @@ class Cardcom extends Engine {
     if ( !isset( $response[ 'OperationResponse' ]) || $response[ 'OperationResponse' ] != 0 ) {
       throw new Exception( isset( $response[ 'OperationResponseText' ] ) ? $response[ 'OperationResponseText' ] : $response[ 'Description' ], isset( $response[ 'OperationResponse' ] ) ? $response[ 'OperationResponse' ] : $response[ 'DealResponse' ] );
     }
-    if ( $params[ 'Operation' ] == 2 && isset( $params[ 'payments' ] ) && $params[ 'payments' ] == 'monthly' ) {
-      if ( $this->param( 'recurr_at' ) == 'status' && $this->param( 'reurring' ) == 'provider' ) $this->recur_by_provider( $params );
-    }
+    $this->maybe_recur( $params );
     return( $this->confirmation_code );
+  }
+
+  // Create the provider standing order from whichever path completes the payment first:
+  // the plugin skips the other path once the payment is marked successful, so honouring
+  // recurr_at here would leave monthly payments with no standing order.
+  // ponytail: status + return arriving concurrently could both get here; add a per-payment lock if that shows up.
+  protected function maybe_recur( $params ) {
+    if ( $this->param( 'reurring' ) != 'provider' ) return;
+    if ( !isset( $params[ 'Operation' ], $params[ 'payments' ] ) || $params[ 'Operation' ] != 2 || $params[ 'payments' ] != 'monthly' ) return;
+    $this->recur_by_provider( $params );
   }
 
   public function post_process($params) {
@@ -222,16 +230,15 @@ class Cardcom extends Engine {
       'request' => json_encode($params),
       'response' => json_encode($response)
     ]);
-    if ( isset( $params[ 'Operation' ] ) && $params[ 'Operation' ] == 2 && isset($params[ 'payments' ]) && $params[ 'payments' ] == "monthly") {
-      if ($this->param( 'recurr_at' ) == 'post' && $this->param( 'reurring' ) == 'provider' ) return($this->recur_by_provider($params) );
-    }
     // Fail closed: confirm the deal with Cardcom server-side (indicator API, via
     // verify()) using the stored lowprofilecode, rather than trusting the redirect's
     // response code (which was request-supplied, and the key was misspelled so an
     // unset value passed). verify() throws / returns false unless Cardcom reports
-    // the deal approved.
+    // the deal approved. Only then create the standing order.
     if ( !$this->transaction ) return( false );
-    return( (bool) $this->verify( array_merge( is_array( $params ) ? $params : [], [ 'transaction_id' => $this->transaction ] ) ) );
+    if ( !$this->verify( array_merge( is_array( $params ) ? $params : [], [ 'transaction_id' => $this->transaction ] ) ) ) return( false );
+    $this->maybe_recur( $params );
+    return( true );
   }
 
   protected function param_part( $params, $name = 'terminal' ) {
