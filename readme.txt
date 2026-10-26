@@ -4,7 +4,7 @@ Donate link: https://simple-payment.yalla-ya.com/get
 Tags: credit card, simple payment, donation, membership, checkout, payment request, payment gateway, sales, woocommerce, store, ecommerce, e-commerce, commerce, gutenberg, elementor, cardcom, icount, icredit, payme, isracard, paypal, installments, subscriptions, tokenization, iframe, modal, gravityforms
 Requires at least: 4.6
 Tested up to: 7.0.1
-Stable tag: 2.5.23
+Stable tag: 2.5.24
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,9 @@ Also you can contact me on my personal page [Ido Kobelkowsky](https://wordpress.
 I hope it is useful for you and look forward to reading your reviews! 😉 Thanks!
 
 == Changelog ==
+
+= 2.5.24 =
+* Hardening (Cardcom): create the recurring standing order only once per payment. The status callback and the customer's return can both complete the payment, which could create a second standing order (double monthly charges); an atomic per-deal lock now prevents that. The guard fails open - it is released unless a standing order was actually confirmed, so a failed attempt never leaves a monthly payment without a standing order.
 
 = 2.5.23 =
 * Fixed (Cardcom): monthly (recurring / standing order) payments no longer skip creating the Cardcom standing order. Since 2.5.6 the plugin stops processing a payment once Cardcom's status callback has marked it successful, so with "Process Recurring Upon" set to Post Process the standing order was never created. It is now created by whichever path (status callback or customer return) completes the payment first, so the setting no longer affects whether it is created.
