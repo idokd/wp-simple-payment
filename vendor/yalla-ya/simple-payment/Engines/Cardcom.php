@@ -212,11 +212,38 @@ class Cardcom extends Engine {
   // Create the provider standing order from whichever path completes the payment first:
   // the plugin skips the other path once the payment is marked successful, so honouring
   // recurr_at here would leave monthly payments with no standing order.
-  // ponytail: status + return arriving concurrently could both get here; add a per-payment lock if that shows up.
+  //
+  // The status callback (IndicatorUrl) and the customer's browser return can each
+  // complete the payment and reach here, which would create a SECOND standing order
+  // (double monthly charges). Guard with an atomic per-deal lock: add_option() fails for
+  // a concurrent second caller because option_name is unique, so only one creates it.
+  // The lock is released unless a standing order was actually confirmed, so a failed or
+  // unconfirmed attempt never blocks a retry - a monthly payment is never left without a
+  // standing order (the guard fails open).
   protected function maybe_recur( $params ) {
     if ( $this->param( 'reurring' ) != 'provider' ) return;
     if ( !isset( $params[ 'Operation' ], $params[ 'payments' ] ) || $params[ 'Operation' ] != 2 || $params[ 'payments' ] != 'monthly' ) return;
-    $this->recur_by_provider( $params );
+
+    $deal = $this->transaction ? $this->transaction
+          : ( isset( $params[ 'lowprofilecode' ] ) ? $params[ 'lowprofilecode' ]
+          : ( isset( $params[ 'transaction_id' ] ) ? $params[ 'transaction_id' ] : null ) );
+    $lock = ( $deal && function_exists( 'add_option' ) ) ? 'sp_cardcom_recur_' . md5( (string) $deal ) : null;
+    if ( $lock ) {
+      if ( false !== get_option( $lock ) ) return;            // already created for this deal
+      if ( !add_option( $lock, time(), '', 'no' ) ) return;   // lost the race to a concurrent caller
+    }
+
+    $ok = false;
+    try {
+      $result = $this->recur_by_provider( $params );
+      $ok = is_array( $result )
+        && ( ( isset( $result[ 'ResponseCode' ] ) && (string) $result[ 'ResponseCode' ] === '0' )
+          || ( isset( $result[ 'OperationResponse' ] ) && (string) $result[ 'OperationResponse' ] === '0' ) );
+    } catch ( \Exception $e ) {
+      if ( $lock ) delete_option( $lock );                    // free the lock so a retry can create it
+      throw $e;
+    }
+    if ( $lock && !$ok ) delete_option( $lock );              // not confirmed; allow a retry to create it
   }
 
   public function post_process($params) {
